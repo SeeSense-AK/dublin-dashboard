@@ -89,3 +89,11 @@ EVENT_TYPE_LABELS = {
     "cornering": "Sharp Turn",
     "pothole": "Pothole/Bump",
 }
+# Severity Colors (for visualizations)
+SEVERITY_COLORS = {
+    0: "#90EE90",  # Light Green
+    1: "#FFD700",  # Gold
+    2: "#FFA500",  # Orange
+    3: "#FF4500",  # Orange Red
+    4: "#DC143C",  # Crimson
+}
