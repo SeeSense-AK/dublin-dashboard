@@ -5,7 +5,7 @@ numpy==1.26.3
 
 # Geospatial
 geopandas==0.14.2
-folium==0.15.1
+folium>=0.14.0,<0.15.0
 streamlit-folium==0.16.0
 shapely==2.0.2
 
@@ -15,7 +15,7 @@ matplotlib==3.8.2
 seaborn==0.13.1
 
 # Machine Learning & Clustering
-scikit-learn==1.4.0
+scikit-learn>=1.6
 scipy==1.11.4
 
 # NLP & Sentiment Analysis (using OpenAI-compatible API for Grok)
