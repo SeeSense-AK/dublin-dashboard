@@ -1,25 +1,22 @@
 """
-Sentiment analysis module using Grok API
+Sentiment analysis module using Groq API
 Analyzes perception report comments to understand context and severity
 """
 import streamlit as st
-from openai import OpenAI
-from config import XAI_API_KEY, XAI_BASE_URL, XAI_MODEL
+from groq import Groq
+from config import GROQ_API_KEY, GROQ_MODEL
 
 
-def get_grok_client():
+def get_groq_client():
     """
-    Initialize Grok API client
-    Returns: OpenAI client configured for Grok
+    Initialize Groq API client
+    Returns: Groq client
     """
-    if not XAI_API_KEY:
-        st.warning("Grok API key not configured. Sentiment analysis will be disabled.")
+    if not GROQ_API_KEY:
+        st.warning("Groq API key not configured. Sentiment analysis will be disabled.")
         return None
     
-    return OpenAI(
-        api_key=XAI_API_KEY,
-        base_url=XAI_BASE_URL
-    )
+    return Groq(api_key=GROQ_API_KEY)
 
 
 @st.cache_data(ttl=3600, show_spinner=False)
@@ -33,7 +30,7 @@ def analyze_perception_sentiment(comments_list):
     Returns:
         dict with sentiment analysis results
     """
-    client = get_grok_client()
+    client = get_groq_client()
     
     if not client or not comments_list:
         return {
@@ -62,7 +59,7 @@ Be concise and focus on actionable insights."""
 
     try:
         response = client.chat.completions.create(
-            model=XAI_MODEL,
+            model=GROQ_MODEL,
             messages=[
                 {"role": "system", "content": "You are a road safety analyst. Provide brief, actionable analysis."},
                 {"role": "user", "content": prompt}
@@ -78,7 +75,7 @@ Be concise and focus on actionable insights."""
         return result
         
     except Exception as e:
-        st.error(f"Error calling Grok API: {str(e)}")
+        st.error(f"Error calling Groq API: {str(e)}")
         return {
             'sentiment': 'neutral',
             'severity': 'medium',
@@ -89,10 +86,10 @@ Be concise and focus on actionable insights."""
 
 def parse_sentiment_response(response_text):
     """
-    Parse the structured response from Grok
+    Parse the structured response from Groq
     
     Args:
-        response_text: Raw response from Grok
+        response_text: Raw response from Groq
     
     Returns:
         dict with parsed fields

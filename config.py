@@ -24,9 +24,8 @@ INFRA_REPORTS_FILE = RAW_DATA_DIR / "dublin_infra_reports_dublin2025_upto2025092
 RIDE_REPORTS_FILE = RAW_DATA_DIR / "dublin_ride_reports_dublin2025_upto20250924.csv"
 
 # API Configuration - Grok (xAI)
-XAI_API_KEY = os.getenv("XAI_API_KEY")
-XAI_BASE_URL = "https://api.x.ai/v1"
-XAI_MODEL = "grok-beta"  # or "grok-vision-beta" if needed
+GROQ_API_KEY = os.getenv("GROQ_API_KEY")
+GROQ_MODEL = "llama-3.1-70b-versatile"
 
 # Hotspot Detection Parameters
 HOTSPOT_CONFIG = {
