@@ -48,7 +48,7 @@ st.set_page_config(
 )
 
 # Title and description
-st.title("🚗 Dublin Road Safety Dashboard")
+st.title("See.Sense Safety Dashboard")
 st.markdown("### Comprehensive Road Safety Analysis using Sensor Data and Perception Reports")
 
 # Sidebar
