@@ -1,0 +1,31 @@
+# Core
+streamlit==1.31.0
+pandas==2.1.4
+numpy==1.26.3
+
+# Geospatial
+geopandas==0.14.2
+folium==0.15.1
+streamlit-folium==0.16.0
+shapely==2.0.2
+
+# Visualization
+plotly==5.18.0
+matplotlib==3.8.2
+seaborn==0.13.1
+
+# Machine Learning & Clustering
+scikit-learn==1.4.0
+scipy==1.11.4
+
+# NLP & Sentiment Analysis (using OpenAI-compatible API for Grok)
+openai==1.12.0
+
+# Data Processing
+pyarrow==14.0.2
+openpyxl==3.1.2
+
+# Utilities
+python-dotenv==1.0.0
+tqdm==4.66.1
+requests==2.31.0
