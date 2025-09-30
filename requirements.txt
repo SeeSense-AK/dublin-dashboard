@@ -29,3 +29,7 @@ openpyxl==3.1.2
 python-dotenv==1.0.0
 tqdm==4.66.1
 requests==2.31.0
+
+# AWS
+boto3>=1.28.0
+pyathena>=3.0.0
