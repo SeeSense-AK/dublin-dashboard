@@ -50,15 +50,25 @@ def load_infrastructure_reports():
             # Data cleaning
             df = df.dropna(subset=['lat', 'lng'])
             
-            # Convert date/time to datetime if possible
+            # Convert date/time to datetime - FIXED: Added dayfirst and format parameters
             if 'date' in df.columns and 'time' in df.columns:
                 try:
                     df['datetime'] = pd.to_datetime(
                         df['date'] + ' ' + df['time'], 
+                        format='%d-%m-%Y %H:%M:%S',
+                        dayfirst=True,
                         errors='coerce'
                     )
                 except:
-                    pass
+                    # Fallback if format doesn't match
+                    try:
+                        df['datetime'] = pd.to_datetime(
+                            df['date'] + ' ' + df['time'], 
+                            dayfirst=True,
+                            errors='coerce'
+                        )
+                    except:
+                        pass
             
             # Filter invalid coordinates
             df = df[
@@ -89,15 +99,25 @@ def load_ride_reports():
             # Data cleaning
             df = df.dropna(subset=['lat', 'lng'])
             
-            # Convert date/time to datetime if possible
+            # Convert date/time to datetime - FIXED: Added dayfirst and format parameters
             if 'date' in df.columns and 'time' in df.columns:
                 try:
                     df['datetime'] = pd.to_datetime(
                         df['date'] + ' ' + df['time'], 
+                        format='%d-%m-%Y %H:%M:%S',
+                        dayfirst=True,
                         errors='coerce'
                     )
                 except:
-                    pass
+                    # Fallback if format doesn't match
+                    try:
+                        df['datetime'] = pd.to_datetime(
+                            df['date'] + ' ' + df['time'], 
+                            dayfirst=True,
+                            errors='coerce'
+                        )
+                    except:
+                        pass
             
             # Filter invalid coordinates
             df = df[
