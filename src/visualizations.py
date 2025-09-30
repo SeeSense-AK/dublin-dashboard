@@ -10,6 +10,7 @@ import streamlit as st
 from streamlit_folium import folium_static
 from config import VIZ_CONFIG, SEVERITY_COLORS
 from utils.geo_utils import generate_street_view_url, calculate_bounding_box
+from utils.constants import MAP_TILES, STREET_VIEW_URL_TEMPLATE
 
 
 def create_hotspot_map(hotspots_df, infra_reports_df=None, ride_reports_df=None, show_perception=True):
@@ -29,46 +30,71 @@ def create_hotspot_map(hotspots_df, infra_reports_df=None, ride_reports_df=None,
     m = folium.Map(
         location=VIZ_CONFIG['map_center'],
         zoom_start=VIZ_CONFIG['map_zoom_start'],
-        tiles='CartoDB positron'
+        tiles=None
     )
+    
+    # Add custom tile layer
+    folium.TileLayer(
+        tiles=MAP_TILES["CartoDB Positron"],
+        name="CartoDB Positron",
+        attr='Map data'
+    ).add_to(m)
     
     if hotspots_df.empty:
         return m
     
     # Add hotspots
     for idx, hotspot in hotspots_df.iterrows():
+        # Handle both Athena format (latitude/longitude) and original format (lat/lng)
+        lat = hotspot.get('latitude', hotspot.get('lat', 0))
+        lng = hotspot.get('longitude', hotspot.get('lng', 0))
+        
         # Determine color based on severity
-        severity = int(hotspot.get('avg_severity', 2))
-        color = SEVERITY_COLORS.get(severity, '#FF0000')
+        severity = hotspot.get('avg_severity', hotspot.get('severity_score', 2))
+        severity_level = min(4, max(0, int(severity)))
+        color_hex = SEVERITY_COLORS.get(severity_level, SEVERITY_COLORS[2])
+        
+        # Map severity to folium colors
+        if severity >= 4:
+            marker_color = 'red'
+        elif severity >= 3:
+            marker_color = 'orange'
+        elif severity >= 2:
+            marker_color = 'yellow'
+        else:
+            marker_color = 'green'
         
         # Create popup content
+        incident_count = hotspot.get('incident_count', hotspot.get('event_count', 0))
+        perception_reports = hotspot.get('total_perception_reports', 0)
+        
         popup_html = f"""
-        <div style="font-family: Arial; width: 250px;">
-            <h4 style="margin-bottom: 10px;">Hotspot #{hotspot.get('hotspot_id', idx+1)}</h4>
-            <p><b>Incidents:</b> {hotspot.get('incident_count', 0)}</p>
-            <p><b>Avg Severity:</b> {hotspot.get('avg_severity', 0):.2f}</p>
-            <p><b>Max Severity:</b> {hotspot.get('max_severity', 0)}</p>
-            <p><b>Devices:</b> {hotspot.get('device_count', 0)}</p>
+        <div style="font-family: Arial; width: 280px;">
+            <h4 style="margin-bottom: 10px; color: {color_hex};">🚨 Hotspot #{hotspot.get('hotspot_id', idx+1)}</h4>
+            <p><b>📊 Incidents:</b> {incident_count}</p>
+            <p><b>⚠️ Avg Severity:</b> {severity:.2f}/5</p>
+            <p><b>🏆 Max Severity:</b> {hotspot.get('max_severity', severity)}</p>
+            <p><b>📱 Devices:</b> {hotspot.get('device_count', 'Unknown')}</p>
         """
         
         # Add perception reports count if available
-        if 'total_perception_reports' in hotspot:
-            popup_html += f"<p><b>Perception Reports:</b> {hotspot.get('total_perception_reports', 0)}</p>"
+        if perception_reports > 0:
+            popup_html += f"<p><b>📝 Perception Reports:</b> {perception_reports}</p>"
         
-        # Add Street View link
-        street_view_url = generate_street_view_url(hotspot['latitude'], hotspot['longitude'])
-        popup_html += f'<p><a href="{street_view_url}" target="_blank">🔍 View in Street View</a></p>'
-        
+        # Add Street View link using your template
+        street_view_url = STREET_VIEW_URL_TEMPLATE.format(lat=lat, lng=lng, heading=0)
+        popup_html += f'<br><a href="{street_view_url}" target="_blank" style="color: #4285f4;">📍 View in Street View</a>'
         popup_html += "</div>"
         
         # Add circle marker
         folium.CircleMarker(
-            location=[hotspot['latitude'], hotspot['longitude']],
-            radius=10 + (hotspot.get('incident_count', 0) / 10),  # Size based on incidents
-            popup=folium.Popup(popup_html, max_width=300),
-            color=color,
+            location=[lat, lng],
+            radius=8 + (incident_count / 5),  # Size based on incidents
+            popup=folium.Popup(popup_html, max_width=320),
+            tooltip=f"Hotspot #{hotspot.get('hotspot_id', idx+1)}: {incident_count} incidents",
+            color=marker_color,
             fill=True,
-            fillColor=color,
+            fillColor=color_hex,
             fillOpacity=0.7,
             weight=2
         ).add_to(m)
@@ -82,9 +108,14 @@ def create_hotspot_map(hotspots_df, infra_reports_df=None, ride_reports_df=None,
             add_perception_markers(m, ride_reports_df, 'ride')
     
     # Fit bounds to show all hotspots
-    bounds = calculate_bounding_box(hotspots_df, lat_col='latitude', lon_col='longitude')
-    if bounds:
-        m.fit_bounds(bounds)
+    if not hotspots_df.empty:
+        # Handle both coordinate formats
+        lat_col = 'latitude' if 'latitude' in hotspots_df.columns else 'lat'
+        lng_col = 'longitude' if 'longitude' in hotspots_df.columns else 'lng'
+        
+        bounds = calculate_bounding_box(hotspots_df, lat_col=lat_col, lon_col=lng_col)
+        if bounds:
+            m.fit_bounds(bounds)
     
     # Add layer control
     folium.LayerControl().add_to(m)
@@ -105,27 +136,31 @@ def add_perception_markers(map_obj, reports_df, report_type):
     fg = folium.FeatureGroup(name=f'{report_type.title()} Reports', show=False)
     
     for idx, report in reports_df.iterrows():
-        popup_html = f"<div style='width: 200px;'><b>{report_type.title()} Report</b><br>"
-        
-        if report_type == 'infrastructure':
-            popup_html += f"Type: {report.get('infrastructuretype', 'N/A')}<br>"
-            comment = report.get('finalcomment', '')
-        else:
-            popup_html += f"Incident: {report.get('incidenttype', 'N/A')}<br>"
-            popup_html += f"Rating: {report.get('incidentrating', 'N/A')}<br>"
-            comment = report.get('commentfinal', '')
-        
-        if comment and len(str(comment)) > 3:
-            popup_html += f"Comment: {comment[:100]}...</div>"
-        
-        folium.CircleMarker(
-            location=[report['lat'], report['lng']],
-            radius=5,
-            popup=folium.Popup(popup_html, max_width=250),
-            color='blue' if report_type == 'infrastructure' else 'green',
-            fill=True,
-            fillOpacity=0.5
-        ).add_to(fg)
+        if pd.notna(report['lat']) and pd.notna(report['lng']):
+            popup_html = f"<div style='width: 200px;'><b>{report_type.title()} Report</b><br>"
+            
+            if report_type == 'infrastructure':
+                popup_html += f"Type: {report.get('infrastructuretype', 'N/A')}<br>"
+                comment = report.get('finalcomment', '')
+            else:
+                popup_html += f"Incident: {report.get('incidenttype', 'N/A')}<br>"
+                popup_html += f"Rating: {report.get('incidentrating', 'N/A')}<br>"
+                comment = report.get('commentfinal', '')
+            
+            if comment and len(str(comment)) > 3:
+                popup_html += f"Comment: {str(comment)[:100]}...</div>"
+            
+            color = 'blue' if report_type == 'infrastructure' else 'green'
+            
+            folium.CircleMarker(
+                location=[report['lat'], report['lng']],
+                radius=4,
+                popup=folium.Popup(popup_html, max_width=250),
+                tooltip=f"{report_type.title()} Report",
+                color=color,
+                fill=True,
+                fillOpacity=0.6
+            ).add_to(fg)
     
     fg.add_to(map_obj)
 
@@ -143,9 +178,16 @@ def create_severity_distribution_chart(hotspots_df):
     if hotspots_df.empty:
         return go.Figure()
     
+    # Handle both severity column formats
+    severity_col = 'avg_severity' if 'avg_severity' in hotspots_df.columns else 'severity_score'
+    
+    if severity_col not in hotspots_df.columns:
+        return go.Figure()
+    
     # Bin severity scores
+    hotspots_df = hotspots_df.copy()
     hotspots_df['severity_category'] = pd.cut(
-        hotspots_df['avg_severity'],
+        hotspots_df[severity_col],
         bins=[0, 1, 2, 3, 5],
         labels=['Low', 'Medium', 'High', 'Critical']
     )
@@ -159,10 +201,10 @@ def create_severity_distribution_chart(hotspots_df):
         title='Hotspot Severity Distribution',
         color=severity_counts.index,
         color_discrete_map={
-            'Low': '#90EE90',
-            'Medium': '#FFD700',
-            'High': '#FF4500',
-            'Critical': '#DC143C'
+            'Low': SEVERITY_COLORS[1],
+            'Medium': SEVERITY_COLORS[2],
+            'High': SEVERITY_COLORS[3],
+            'Critical': SEVERITY_COLORS[4]
         }
     )
     
@@ -186,11 +228,24 @@ def create_time_series_chart(time_series_df, column='reading_count', anomalies_d
     if time_series_df.empty:
         return go.Figure()
     
+    # Handle column name mapping
+    if column == 'reading_count':
+        if 'unique_users' in time_series_df.columns:
+            column = 'unique_users'
+        elif 'total_readings' in time_series_df.columns:
+            column = 'total_readings'
+    
+    if column not in time_series_df.columns:
+        return go.Figure()
+    
+    # Handle datetime column
+    datetime_col = 'datetime' if 'datetime' in time_series_df.columns else 'date'
+    
     fig = go.Figure()
     
     # Add main time series
     fig.add_trace(go.Scatter(
-        x=time_series_df['datetime'],
+        x=time_series_df[datetime_col],
         y=time_series_df[column],
         mode='lines+markers',
         name='Actual',
@@ -201,7 +256,7 @@ def create_time_series_chart(time_series_df, column='reading_count', anomalies_d
     # Add rolling average if available
     if 'rolling_mean' in time_series_df.columns:
         fig.add_trace(go.Scatter(
-            x=time_series_df['datetime'],
+            x=time_series_df[datetime_col],
             y=time_series_df['rolling_mean'],
             mode='lines',
             name='7-day Average',
@@ -214,7 +269,7 @@ def create_time_series_chart(time_series_df, column='reading_count', anomalies_d
         drops = anomalies_df[anomalies_df['anomaly_type'] == 'drop']
         if not drops.empty:
             fig.add_trace(go.Scatter(
-                x=drops['datetime'],
+                x=drops[datetime_col],
                 y=drops[column],
                 mode='markers',
                 name='Usage Drops',
@@ -225,7 +280,7 @@ def create_time_series_chart(time_series_df, column='reading_count', anomalies_d
         spikes = anomalies_df[anomalies_df['anomaly_type'] == 'spike']
         if not spikes.empty:
             fig.add_trace(go.Scatter(
-                x=spikes['datetime'],
+                x=spikes[datetime_col],
                 y=spikes[column],
                 mode='markers',
                 name='Usage Spikes',
@@ -246,30 +301,30 @@ def create_time_series_chart(time_series_df, column='reading_count', anomalies_d
 def create_incident_heatmap(sensor_df):
     """
     Create heatmap of incident locations
+    Note: This function is kept for compatibility but needs sensor data
     
     Args:
-        sensor_df: DataFrame with sensor data
+        sensor_df: DataFrame with sensor data (ignored for now)
     
     Returns:
-        folium Map with heatmap layer
+        folium Map with placeholder
     """
-    if sensor_df.empty:
-        return folium.Map(location=VIZ_CONFIG['map_center'], zoom_start=12)
-    
     # Create base map
     m = folium.Map(
-        location=VIZ_CONFIG['map_center'],
+        location=VIZ_CONFIG['map_center'], 
         zoom_start=VIZ_CONFIG['map_zoom_start'],
-        tiles='CartoDB positron'
+        tiles=None
     )
     
-    # Prepare heatmap data
-    heat_data = [[row['position_latitude'], row['position_longitude'], row.get('max_severity', 1)] 
-                 for idx, row in sensor_df.iterrows()]
+    # Add tile layer
+    folium.TileLayer(
+        tiles=MAP_TILES["CartoDB Positron"],
+        name="CartoDB Positron",
+        attr='Map data'
+    ).add_to(m)
     
-    # Add heatmap
-    plugins.HeatMap(heat_data, radius=15, blur=25, max_zoom=13).add_to(m)
-    
+    # TODO: Implement heatmap with Athena data
+    # For now, return basic map
     return m
 
 
@@ -283,6 +338,9 @@ def create_metric_cards(stats_dict):
     Returns:
         None (displays metrics in Streamlit)
     """
+    if not stats_dict:
+        return
+    
     cols = st.columns(len(stats_dict))
     
     for idx, (label, value) in enumerate(stats_dict.items()):
@@ -312,8 +370,14 @@ def create_comparison_chart(period_comparison):
         return go.Figure()
     
     categories = ['Incident Count', 'Avg Severity']
-    period1_values = [period_comparison['period1_count'], period_comparison['period1_avg_severity']]
-    period2_values = [period_comparison['period2_count'], period_comparison['period2_avg_severity']]
+    period1_values = [
+        period_comparison.get('period1_count', 0), 
+        period_comparison.get('period1_avg_severity', 0)
+    ]
+    period2_values = [
+        period_comparison.get('period2_count', 0), 
+        period_comparison.get('period2_avg_severity', 0)
+    ]
     
     fig = go.Figure(data=[
         go.Bar(name='Period 1', x=categories, y=period1_values, marker_color='lightblue'),
