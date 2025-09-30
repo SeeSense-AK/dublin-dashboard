@@ -4,7 +4,10 @@ from pyathena import connect
 import streamlit as st
 from typing import List, Dict, Tuple, Optional
 import os
-import boto3
+import warnings
+
+# Suppress pandas warnings about PyAthena connections
+warnings.filterwarnings('ignore', category=UserWarning, module='pandas')
 
 class AthenaCyclingSafetyDB:
     """
@@ -13,9 +16,11 @@ class AthenaCyclingSafetyDB:
     """
     
     def __init__(self):
-        """Initialize Athena connection using Streamlit secrets or env variables"""
+        """Initialize Athena connection using multiple fallback methods"""
+        connection_established = False
+        
+        # Method 1: Try Streamlit secrets (for deployment)
         try:
-            # Try Streamlit secrets first (for deployment)
             self.conn = connect(
                 aws_access_key_id=st.secrets["aws"]["access_key_id"],
                 aws_secret_access_key=st.secrets["aws"]["secret_access_key"],
@@ -23,17 +28,53 @@ class AthenaCyclingSafetyDB:
                 region_name=st.secrets["aws"]["region"]
             )
             print("✅ Connected to Athena using Streamlit secrets")
-        except:
-            # Fallback to environment variables or default AWS credentials
+            connection_established = True
+        except Exception as e:
+            print(f"⚠️  Streamlit secrets not available: {e}")
+        
+        # Method 2: Try environment variables from .env file
+        if not connection_established:
             try:
+                from dotenv import load_dotenv
+                load_dotenv()
+                
+                aws_key = os.getenv('AWS_ACCESS_KEY_ID')
+                aws_secret = os.getenv('AWS_SECRET_ACCESS_KEY')
+                s3_staging = os.getenv('AWS_S3_STAGING_DIR', 's3://seesense-air/summit2/spinovate-replay/athena-results/')
+                region = os.getenv('AWS_REGION', 'eu-west-1')
+                
+                if aws_key and aws_secret:
+                    self.conn = connect(
+                        aws_access_key_id=aws_key,
+                        aws_secret_access_key=aws_secret,
+                        s3_staging_dir=s3_staging,
+                        region_name=region
+                    )
+                    print("✅ Connected to Athena using .env file")
+                    connection_established = True
+            except Exception as e:
+                print(f"⚠️  .env file credentials not available: {e}")
+        
+        # Method 3: Try default AWS credentials (from ~/.aws/credentials)
+        if not connection_established:
+            try:
+                s3_staging = 's3://seesense-air/summit2/spinovate-replay/athena-results/'
+                region = 'eu-west-1'
+                
                 self.conn = connect(
-                    s3_staging_dir='s3://seesense-air/summit2/spinovate-replay/athena-results/',
-                    region_name='eu-west-1'  # Change to your region if different
+                    s3_staging_dir=s3_staging,
+                    region_name=region
                 )
                 print("✅ Connected to Athena using default AWS credentials")
+                connection_established = True
             except Exception as e:
                 print(f"❌ Failed to connect to Athena: {e}")
-                raise
+                raise Exception(
+                    "Could not connect to Athena. Please ensure one of the following:\n"
+                    "1. Create .streamlit/secrets.toml with AWS credentials\n"
+                    "2. Add AWS credentials to .env file\n"
+                    "3. Configure AWS CLI with 'aws configure'"
+                )
     
     @st.cache_data(ttl=3600)  # Cache for 1 hour
     def get_dashboard_metrics(_self) -> Dict:
