@@ -1,83 +1,46 @@
 # src/athena_database.py
 import pandas as pd
 from pyathena import connect
-import streamlit as st
-from typing import List, Dict, Tuple, Optional
-import os
 import warnings
+import os
+from dotenv import load_dotenv
 
-# Suppress pandas warnings about PyAthena connections
+# Load environment variables from .env file
+load_dotenv()
+
+# Suppress pandas warnings
 warnings.filterwarnings('ignore', category=UserWarning, module='pandas')
 
 class AthenaCyclingSafetyDB:
-    """
-    AWS Athena backend for cycling safety dashboard
-    Connects to your optimized Parquet tables in Athena
-    """
+    """AWS Athena backend for cycling safety dashboard"""
     
     def __init__(self):
-        """Initialize Athena connection using multiple fallback methods"""
-        connection_established = False
-        
-        # Method 1: Try Streamlit secrets (for deployment)
+        """Initialize Athena connection using .env file"""
         try:
-            self.conn = connect(
-                aws_access_key_id=st.secrets["aws"]["access_key_id"],
-                aws_secret_access_key=st.secrets["aws"]["secret_access_key"],
-                s3_staging_dir=st.secrets["aws"]["s3_staging_dir"],
-                region_name=st.secrets["aws"]["region"]
-            )
-            print("✅ Connected to Athena using Streamlit secrets")
-            connection_established = True
-        except Exception as e:
-            print(f"⚠️  Streamlit secrets not available: {e}")
-        
-        # Method 2: Try environment variables from .env file
-        if not connection_established:
-            try:
-                from dotenv import load_dotenv
-                load_dotenv()
-                
-                aws_key = os.getenv('AWS_ACCESS_KEY_ID')
-                aws_secret = os.getenv('AWS_SECRET_ACCESS_KEY')
-                s3_staging = os.getenv('AWS_S3_STAGING_DIR', 's3://seesense-air/summit2/spinovate-replay/athena-results/')
-                region = os.getenv('AWS_REGION', 'eu-west-1')
-                
-                if aws_key and aws_secret:
-                    self.conn = connect(
-                        aws_access_key_id=aws_key,
-                        aws_secret_access_key=aws_secret,
-                        s3_staging_dir=s3_staging,
-                        region_name=region
-                    )
-                    print("✅ Connected to Athena using .env file")
-                    connection_established = True
-            except Exception as e:
-                print(f"⚠️  .env file credentials not available: {e}")
-        
-        # Method 3: Try default AWS credentials (from ~/.aws/credentials)
-        if not connection_established:
-            try:
-                s3_staging = 's3://seesense-air/summit2/spinovate-replay/athena-results/'
-                region = 'eu-west-1'
-                
-                self.conn = connect(
-                    s3_staging_dir=s3_staging,
-                    region_name=region
-                )
-                print("✅ Connected to Athena using default AWS credentials")
-                connection_established = True
-            except Exception as e:
-                print(f"❌ Failed to connect to Athena: {e}")
+            # Get credentials from environment variables
+            aws_key = os.getenv('AWS_ACCESS_KEY_ID')
+            aws_secret = os.getenv('AWS_SECRET_ACCESS_KEY')
+            s3_staging = os.getenv('AWS_S3_STAGING_DIR', 's3://seesense-air/summit2/spinovate-replay/athena-results/')
+            region = os.getenv('AWS_REGION', 'eu-west-1')
+            
+            if not aws_key or not aws_secret:
                 raise Exception(
-                    "Could not connect to Athena. Please ensure one of the following:\n"
-                    "1. Create .streamlit/secrets.toml with AWS credentials\n"
-                    "2. Add AWS credentials to .env file\n"
-                    "3. Configure AWS CLI with 'aws configure'"
+                    "AWS credentials not found in .env file!\n"
+                    "Please add AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY to your .env file"
                 )
+            
+            self.conn = connect(
+                aws_access_key_id=aws_key,
+                aws_secret_access_key=aws_secret,
+                s3_staging_dir=s3_staging,
+                region_name=region
+            )
+            print("✅ Connected to Athena using .env credentials")
+            
+        except Exception as e:
+            raise Exception(f"❌ Failed to connect to Athena: {e}")
     
-    @st.cache_data(ttl=3600)  # Cache for 1 hour
-    def get_dashboard_metrics(_self) -> Dict:
+    def get_dashboard_metrics(self) -> dict:
         """Get key metrics for dashboard overview"""
         
         query = """
@@ -92,7 +55,7 @@ class AthenaCyclingSafetyDB:
         """
         
         try:
-            df = pd.read_sql(query, _self.conn)
+            df = pd.read_sql(query, self.conn)
             result = df.iloc[0]
             
             return {
@@ -104,7 +67,7 @@ class AthenaCyclingSafetyDB:
                 'earliest_reading': result['earliest_reading']
             }
         except Exception as e:
-            st.error(f"Error getting metrics: {e}")
+            print(f"Error getting metrics: {e}")
             return {
                 'total_readings': 0,
                 'unique_devices': 0,
@@ -114,8 +77,7 @@ class AthenaCyclingSafetyDB:
                 'earliest_reading': None
             }
     
-    @st.cache_data(ttl=1800)  # Cache for 30 minutes
-    def detect_sensor_hotspots(_self, min_events: int = 3, severity_threshold: int = 2, 
+    def detect_sensor_hotspots(self, min_events: int = 3, severity_threshold: int = 2, 
                               start_date: str = None, end_date: str = None) -> pd.DataFrame:
         """Detect hotspots from sensor data using spatial clustering"""
         
@@ -138,7 +100,6 @@ class AthenaCyclingSafetyDB:
                 AND lng IS NOT NULL
                 {date_filter}
         ),
-        -- Grid-based clustering (simplified alternative to DBSCAN)
         grid_clusters AS (
             SELECT 
                 ROUND(lat, 3) as lat_cluster,
@@ -169,13 +130,12 @@ class AthenaCyclingSafetyDB:
         """
         
         try:
-            return pd.read_sql(query, _self.conn)
+            return pd.read_sql(query, self.conn)
         except Exception as e:
-            st.error(f"Error detecting hotspots: {e}")
+            print(f"Error detecting hotspots: {e}")
             return pd.DataFrame()
     
-    @st.cache_data(ttl=1800)
-    def get_usage_trends(_self, days: int = 30) -> pd.DataFrame:
+    def get_usage_trends(self, days: int = 30) -> pd.DataFrame:
         """Get daily usage trends for time series analysis"""
         
         query = f"""
@@ -192,20 +152,19 @@ class AthenaCyclingSafetyDB:
         """
         
         try:
-            df = pd.read_sql(query, _self.conn)
+            df = pd.read_sql(query, self.conn)
             
-            # Calculate day-over-day changes
             if not df.empty:
                 df['prev_day_users'] = df['unique_users'].shift(1)
                 df['usage_change_pct'] = ((df['unique_users'] - df['prev_day_users']) / df['prev_day_users'] * 100).fillna(0)
             
             return df
         except Exception as e:
-            st.error(f"Error getting usage trends: {e}")
+            print(f"Error getting usage trends: {e}")
             return pd.DataFrame()
     
     def detect_usage_anomalies(self) -> pd.DataFrame:
-        """Detect significant drops in usage that warrant investigation"""
+        """Detect significant drops in usage"""
         
         query = """
         WITH daily_usage AS (
@@ -234,15 +193,15 @@ class AthenaCyclingSafetyDB:
                 ELSE NULL 
             END as week_over_week_change
         FROM usage_with_lag
-        WHERE (prev_day_users > 0 AND (daily_users - prev_day_users) * 100.0 / prev_day_users < -30)  -- 30% daily drop
-           OR (week_ago_users > 0 AND (daily_users - week_ago_users) * 100.0 / week_ago_users < -20)  -- 20% weekly drop
+        WHERE (prev_day_users > 0 AND (daily_users - prev_day_users) * 100.0 / prev_day_users < -30)
+           OR (week_ago_users > 0 AND (daily_users - week_ago_users) * 100.0 / week_ago_users < -20)
         ORDER BY date DESC
         """
         
         try:
             return pd.read_sql(query, self.conn)
         except Exception as e:
-            st.error(f"Error detecting anomalies: {e}")
+            print(f"Error detecting anomalies: {e}")
             return pd.DataFrame()
     
     def close(self):
@@ -250,12 +209,12 @@ class AthenaCyclingSafetyDB:
         if hasattr(self, 'conn') and self.conn:
             self.conn.close()
 
-# Streamlit integration
-@st.cache_resource
-def get_athena_database():
-    """Initialize Athena database connection (cached)"""
-    return AthenaCyclingSafetyDB()
+# Cache the database connection
+_db_instance = None
 
-def generate_street_view_url(lat: float, lng: float) -> str:
-    """Generate Google Street View URL"""
-    return f"https://www.google.com/maps/@?api=1&map_action=pano&viewpoint={lat},{lng}"
+def get_athena_database():
+    """Get or create Athena database instance"""
+    global _db_instance
+    if _db_instance is None:
+        _db_instance = AthenaCyclingSafetyDB()
+    return _db_instance
