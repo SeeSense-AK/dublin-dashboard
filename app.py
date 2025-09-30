@@ -1,12 +1,12 @@
 """
 Dublin Road Safety Dashboard
-Main Streamlit application
+Main Streamlit application with AWS Athena backend
 """
 import streamlit as st
 from streamlit_folium import folium_static
 import pandas as pd
 
-# Import custom modules
+# Import custom modules (your existing structure)
 from config import DASHBOARD_CONFIG, PERCEPTION_CONFIG
 from src.data_loader import (
     load_all_data, 
@@ -16,7 +16,9 @@ from src.data_loader import (
 from src.hotspot_analysis import (
     detect_hotspots,
     get_hotspot_statistics,
-    get_hotspot_details
+    get_hotspot_details,
+    classify_hotspot_severity,
+    analyze_event_types
 )
 from src.perception_matcher import (
     match_perception_to_hotspots,
@@ -38,6 +40,11 @@ from src.visualizations import (
     create_metric_cards,
     create_incident_heatmap
 )
+from utils.constants import (
+    STREET_VIEW_URL_TEMPLATE,
+    MAP_TILES,
+    SEVERITY_COLORS
+)
 
 # Configure page
 st.set_page_config(
@@ -48,7 +55,7 @@ st.set_page_config(
 )
 
 # Title and description
-st.title("See.Sense Safety Dashboard")
+st.title("🚴‍♂️ Spinovate Safety Dashboard")
 st.markdown("### Comprehensive Road Safety Analysis using Sensor Data and Perception Reports")
 
 # Sidebar
@@ -57,24 +64,24 @@ st.sidebar.markdown("---")
 
 # Data validation
 validation = validate_data()
-if not validation['sensor_data']:
-    st.error("⚠️ Sensor data file not found! Please place `20250831_complete_dataset.csv` in `data/raw/`")
+if not validation['athena_connection']:
+    st.error("⚠️ Cannot connect to AWS Athena! Please check your credentials.")
     st.stop()
 
 # Load data
 with st.spinner("Loading data..."):
     data = load_all_data()
-    sensor_df = data['sensor']
+    sensor_metrics = data['sensor_metrics']
     infra_df = data['infrastructure']
     ride_df = data['ride']
 
-if sensor_df.empty:
+if sensor_metrics['total_readings'] == 0:
     st.error("No sensor data available. Please check your data files.")
     st.stop()
 
 # Sidebar - Data Overview
 st.sidebar.subheader("📊 Data Overview")
-st.sidebar.write(f"**Sensor Records:** {len(sensor_df):,}")
+st.sidebar.write(f"**Sensor Records:** {sensor_metrics['total_readings']:,}")
 st.sidebar.write(f"**Infra Reports:** {len(infra_df):,}")
 st.sidebar.write(f"**Ride Reports:** {len(ride_df):,}")
 st.sidebar.markdown("---")
@@ -113,10 +120,9 @@ with tab1:
     st.header("Hotspot Analysis")
     st.markdown("Identifying dangerous road segments using sensor data and perception reports")
     
-    # Detect hotspots
+    # Detect hotspots using your existing module
     with st.spinner("Detecting hotspots..."):
         hotspots = detect_hotspots(
-            sensor_df,
             severity_threshold=severity_threshold,
             min_samples=min_incidents
         )
@@ -124,7 +130,7 @@ with tab1:
     if hotspots.empty:
         st.warning("No hotspots detected with current settings. Try adjusting the parameters in the sidebar.")
     else:
-        # Match perception reports
+        # Match perception reports using your existing module
         with st.spinner("Matching perception reports to hotspots..."):
             matched_hotspots = match_perception_to_hotspots(
                 hotspots,
@@ -133,10 +139,10 @@ with tab1:
                 radius_m=perception_radius
             )
         
-        # Get statistics
+        # Get statistics using your existing module
         stats = get_hotspot_statistics(matched_hotspots)
         
-        # Display metrics
+        # Display metrics using your existing module
         st.subheader("📊 Key Metrics")
         metrics = {
             "Total Hotspots": stats['total_hotspots'],
@@ -155,6 +161,7 @@ with tab1:
             st.subheader("🗺️ Interactive Hotspot Map")
             show_perception = st.checkbox("Show Perception Reports", value=True)
             
+            # Create map using your existing module
             hotspot_map = create_hotspot_map(
                 matched_hotspots,
                 infra_df if show_perception else None,
@@ -196,21 +203,19 @@ with tab1:
                 st.metric("Avg Severity", f"{hotspot_data['avg_severity']:.2f}")
             
             with col2:
-                st.metric("Max Severity", int(hotspot_data['max_severity']))
-                st.metric("Devices", int(hotspot_data['device_count']))
+                st.metric("Max Severity", int(hotspot_data.get('max_severity', 0)))
+                st.metric("Devices", int(hotspot_data.get('device_count', 0)))
             
             with col3:
                 st.metric("Perception Reports", int(hotspot_data['total_perception_reports']))
                 
-                # Street View link
-                from utils.geo_utils import generate_street_view_url
-                street_view_url = generate_street_view_url(
-                    hotspot_data['latitude'],
-                    hotspot_data['longitude']
-                )
+                # Street View link using your constants
+                lat = hotspot_data['latitude']
+                lng = hotspot_data['longitude']
+                street_view_url = STREET_VIEW_URL_TEMPLATE.format(lat=lat, lng=lng, heading=0)
                 st.markdown(f"[🔍 View in Google Street View]({street_view_url})")
             
-            # Perception reports details
+            # Perception reports details using your existing module
             if hotspot_data['total_perception_reports'] > 0:
                 st.markdown("#### 💬 Perception Reports")
                 
@@ -242,7 +247,7 @@ with tab1:
                                 st.write(f"**Date:** {report.get('date', 'N/A')}")
                                 st.markdown("---")
                     
-                    # Sentiment Analysis (optional - requires API key)
+                    # Sentiment Analysis using your existing module
                     if st.button("🤖 Analyze Sentiment with AI"):
                         with st.spinner("Analyzing perception reports..."):
                             # Collect comments
@@ -281,251 +286,39 @@ with tab2:
     st.markdown("Analyzing road usage patterns and detecting anomalies over time")
     
     # Check if datetime data is available
-    if 'datetime' not in sensor_df.columns:
-        st.warning("Timestamp data not available. Cannot perform trend analysis.")
-    else:
-        # Prepare time series
-        with st.spinner("Preparing time series data..."):
-            time_series = prepare_time_series(sensor_df, freq='D')
-        
-        if time_series.empty:
-            st.warning("Insufficient data for trend analysis.")
-        else:
-            # Date range selector
-            st.subheader("📅 Date Range Selection")
-            col1, col2 = st.columns(2)
-            
-            min_date = time_series['datetime'].min()
-            max_date = time_series['datetime'].max()
-            
-            with col1:
-                start_date = st.date_input(
-                    "Start Date",
-                    value=min_date,
-                    min_value=min_date,
-                    max_value=max_date
-                )
-            
-            with col2:
-                end_date = st.date_input(
-                    "End Date",
-                    value=max_date,
-                    min_value=min_date,
-                    max_value=max_date
-                )
-            
-            # Filter time series
-            filtered_ts = time_series[
-                (time_series['datetime'] >= pd.to_datetime(start_date)) &
-                (time_series['datetime'] <= pd.to_datetime(end_date))
-            ]
-            
-            if filtered_ts.empty:
-                st.warning("No data available for selected date range.")
-            else:
-                # Detect anomalies
-                with st.spinner("Detecting anomalies..."):
-                    ts_with_anomalies = detect_anomalies(filtered_ts, column='reading_count')
-                
-                # Calculate trends
-                trend_stats = calculate_trends(filtered_ts, column='reading_count')
-                
-                # Display key insights
-                st.subheader("📊 Key Insights")
-                
-                col1, col2, col3, col4 = st.columns(4)
-                
-                with col1:
-                    st.metric(
-                        "Trend Direction",
-                        trend_stats.get('trend_direction', 'N/A').title()
-                    )
-                
-                with col2:
-                    pct_change = trend_stats.get('percent_change', 0)
-                    st.metric(
-                        "Overall Change",
-                        f"{pct_change:+.1f}%",
-                        delta=f"{pct_change:.1f}%"
-                    )
-                
-                with col3:
-                    anomaly_count = len(ts_with_anomalies[ts_with_anomalies['is_anomaly'] == True])
-                    st.metric("Anomalies Detected", anomaly_count)
-                
-                with col4:
-                    avg_daily = trend_stats.get('mean_value', 0)
-                    st.metric("Avg Daily Readings", f"{avg_daily:.0f}")
-                
-                st.markdown("---")
-                
-                # Time series chart
-                st.subheader("📈 Usage Trends Over Time")
-                
-                anomalies = ts_with_anomalies[ts_with_anomalies['is_anomaly'] == True]
-                ts_chart = create_time_series_chart(
-                    ts_with_anomalies,
-                    column='reading_count',
-                    anomalies_df=anomalies if not anomalies.empty else None
-                )
-                st.plotly_chart(ts_chart, use_container_width=True)
-                
-                st.markdown("---")
-                
-                # Anomaly Analysis
-                st.subheader("⚠️ Anomaly Analysis")
-                
-                if not anomalies.empty:
-                    # Find usage drops
-                    drops = find_usage_drops(filtered_ts, column='reading_count', drop_threshold=0.3)
-                    
-                    if not drops.empty:
-                        st.markdown("#### 📉 Significant Usage Drops")
-                        st.write("These dates show significant drops in road usage and may warrant investigation:")
-                        
-                        # Display top drops
-                        top_drops = drops.nlargest(5, 'deviation_pct', keep='all')[
-                            ['datetime', 'reading_count', 'baseline', 'deviation_pct']
-                        ].copy()
-                        top_drops['deviation_pct'] = top_drops['deviation_pct'].round(1)
-                        top_drops.columns = ['Date', 'Actual Count', 'Expected (Baseline)', 'Drop %']
-                        
-                        st.dataframe(top_drops, use_container_width=True, hide_index=True)
-                        
-                        # Investigate button
-                        st.markdown("**Possible reasons for drops:**")
-                        st.write("- Weather events (storms, snow)")
-                        st.write("- Road closures or construction")
-                        st.write("- Public holidays or special events")
-                        st.write("- Data collection issues")
-                    else:
-                        st.info("No significant usage drops detected in the selected period.")
-                    
-                    # Spikes
-                    spikes = ts_with_anomalies[ts_with_anomalies['anomaly_type'] == 'spike']
-                    if not spikes.empty:
-                        st.markdown("#### 📈 Usage Spikes")
-                        st.write(f"Detected {len(spikes)} dates with unusually high activity")
-                        
-                        with st.expander("View spike details"):
-                            spike_details = spikes[['datetime', 'reading_count', 'rolling_mean']].copy()
-                            spike_details.columns = ['Date', 'Count', 'Expected (7-day avg)']
-                            st.dataframe(spike_details, use_container_width=True, hide_index=True)
-                else:
-                    st.info("No anomalies detected in the selected period.")
-                
-                st.markdown("---")
-                
-                # Seasonal Patterns
-                st.subheader("📆 Seasonal Patterns")
-                
-                seasonal = analyze_seasonal_patterns(filtered_ts, column='reading_count')
-                
-                if seasonal and 'weekly_pattern' in seasonal:
-                    col1, col2 = st.columns(2)
-                    
-                    with col1:
-                        st.markdown("#### Day of Week Pattern")
-                        weekly_df = pd.DataFrame(
-                            list(seasonal['weekly_pattern'].items()),
-                            columns=['Day', 'Avg Readings']
-                        )
-                        weekly_df['Day'] = weekly_df['Day'].map({
-                            0: 'Monday', 1: 'Tuesday', 2: 'Wednesday',
-                            3: 'Thursday', 4: 'Friday', 5: 'Saturday', 6: 'Sunday'
-                        })
-                        
-                        import plotly.express as px
-                        weekly_chart = px.bar(
-                            weekly_df,
-                            x='Day',
-                            y='Avg Readings',
-                            title='Average Readings by Day of Week',
-                            color='Avg Readings',
-                            color_continuous_scale='Blues'
-                        )
-                        st.plotly_chart(weekly_chart, use_container_width=True)
-                    
-                    with col2:
-                        st.markdown("#### Weekday vs Weekend")
-                        weekday_avg = seasonal.get('weekday_avg', 0)
-                        weekend_avg = seasonal.get('weekend_avg', 0)
-                        
-                        comparison_df = pd.DataFrame({
-                            'Period': ['Weekday', 'Weekend'],
-                            'Avg Readings': [weekday_avg, weekend_avg]
-                        })
-                        
-                        comparison_chart = px.bar(
-                            comparison_df,
-                            x='Period',
-                            y='Avg Readings',
-                            title='Weekday vs Weekend Comparison',
-                            color='Period',
-                            color_discrete_map={'Weekday': '#1f77b4', 'Weekend': '#ff7f0e'}
-                        )
-                        st.plotly_chart(comparison_chart, use_container_width=True)
-                        
-                        # Calculate difference
-                        diff_pct = ((weekday_avg - weekend_avg) / weekend_avg) * 100
-                        if diff_pct > 10:
-                            st.success(f"Weekdays show {diff_pct:.1f}% more activity than weekends")
-                        elif diff_pct < -10:
-                            st.info(f"Weekends show {abs(diff_pct):.1f}% more activity than weekdays")
-                        else:
-                            st.info("Similar activity levels on weekdays and weekends")
-                
-                st.markdown("---")
-                
-                # Additional Insights
-                st.subheader("💡 Additional Insights")
-                
-                with st.expander("📊 Statistical Summary"):
-                    from src.trend_analysis import get_time_series_summary
-                    summary = get_time_series_summary(filtered_ts, column='reading_count')
-                    
-                    col1, col2 = st.columns(2)
-                    with col1:
-                        st.write(f"**Total Observations:** {summary.get('total_observations', 0):,}")
-                        st.write(f"**Mean:** {summary.get('mean', 0):.2f}")
-                        st.write(f"**Median:** {summary.get('median', 0):.2f}")
-                        st.write(f"**Std Dev:** {summary.get('std', 0):.2f}")
-                    
-                    with col2:
-                        st.write(f"**Min:** {summary.get('min', 0):.0f}")
-                        st.write(f"**Max:** {summary.get('max', 0):.0f}")
-                        st.write(f"**Range:** {summary.get('range', 0):.0f}")
-                        st.write(f"**CV:** {summary.get('coefficient_of_variation', 0):.2f}%")
-                
-                with st.expander("🔍 Investigative Questions"):
-                    st.markdown("""
-                    Based on the trend analysis, here are some questions worth investigating:
-                    
-                    **For Usage Drops:**
-                    - Were there any road closures or construction during these periods?
-                    - Did weather conditions impact road usage?
-                    - Were there any major events or holidays?
-                    - Are there patterns in specific routes or areas?
-                    
-                    **For Usage Spikes:**
-                    - What caused the increased activity?
-                    - Were there any special events or diversions?
-                    - Is this a recurring pattern?
-                    
-                    **For Trend Changes:**
-                    - What factors might explain the overall trend direction?
-                    - Are there infrastructure changes or new routes?
-                    - Has population or traffic pattern shifted?
-                    """)
+    st.warning("Trend analysis requires refactoring for Athena backend. Coming soon!")
+    
+    # Placeholder for when trend_analysis.py is updated
+    st.info("""
+    **Next Steps for Trend Analysis:**
+    
+    1. Update trend_analysis.py to use Athena backend
+    2. Implement time series queries for usage patterns
+    3. Add anomaly detection for sudden usage drops
+    4. Display weekly/monthly cycling patterns
+    
+    This will be completed in the next refactoring step.
+    """)
 
 # Footer
-st.markdown("---")
-st.markdown(
-    """
-    <div style='text-align: center; color: #666;'>
-        <p>Dublin Road Safety Dashboard | Built with Streamlit</p>
-        <p>Data updated: {}</p>
-    </div>
-    """.format(pd.Timestamp.now().strftime("%Y-%m-%d")),
-    unsafe_allow_html=True
-)
+st.divider()
+st.markdown("""
+### 🔧 How This Works
+
+**Hotspot Detection:**
+- **Sensor-based hotspots** (red markers): Use clustering to find locations where multiple abnormal events occurred
+- **Report-based hotspots** (orange markers): Cluster user reports of incidents and infrastructure issues  
+- **Report matching**: Find perception reports within specified radius of each hotspot to add context
+
+**Data Sources:**
+- Sensor readings: {total_readings:,} records from AWS Athena
+- User reports: {ride_reports} ride reports + {infra_reports} infrastructure reports (local CSV)
+
+**Architecture:**
+- **Backend**: AWS Athena (Parquet optimized) + Local CSV files
+- **Modules**: Using your existing hotspot_analysis.py, perception_matcher.py, visualizations.py
+""".format(
+    total_readings=sensor_metrics['total_readings'],
+    ride_reports=len(ride_df),
+    infra_reports=len(infra_df)
+))
