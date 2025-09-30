@@ -1,44 +1,63 @@
 """
 Time series and trend analysis module
-Detects anomalies, usage patterns, and temporal trends
+Detects anomalies, usage patterns, and temporal trends using AWS Athena
 """
 import pandas as pd
 import numpy as np
 import streamlit as st
 from scipy import stats
 from config import TIMESERIES_CONFIG
+from src.athena_database import get_athena_database
 
 
 @st.cache_data(ttl=3600)
-def prepare_time_series(sensor_df, freq='D'):
+def prepare_time_series(sensor_df=None, freq='D'):
     """
-    Prepare time series data from sensor readings
+    Prepare time series data from Athena sensor readings
     
     Args:
-        sensor_df: DataFrame with sensor data
+        sensor_df: Ignored - we use Athena now
         freq: Frequency for aggregation ('D'=daily, 'W'=weekly, 'M'=monthly)
     
     Returns:
         DataFrame with time series aggregated by frequency
     """
-    if sensor_df.empty or 'datetime' not in sensor_df.columns:
+    try:
+        db = get_athena_database()
+        
+        # Map frequency to days for Athena query
+        if freq == 'D':
+            days = 90  # Default to 90 days for daily analysis
+        elif freq == 'W':
+            days = 365  # Full year for weekly analysis
+        elif freq == 'M':
+            days = 730  # 2 years for monthly analysis
+        else:
+            days = 90
+        
+        # Get usage trends from Athena
+        time_series_df = db.get_usage_trends(days)
+        
+        if time_series_df.empty:
+            return pd.DataFrame()
+        
+        # Rename columns to match original format
+        if 'date' in time_series_df.columns:
+            time_series_df = time_series_df.rename(columns={'date': 'datetime'})
+        
+        # Add missing columns with default values
+        if 'reading_count' not in time_series_df.columns:
+            time_series_df['reading_count'] = time_series_df.get('total_readings', 0)
+        if 'avg_severity' not in time_series_df.columns:
+            time_series_df['avg_severity'] = 2.0  # Default severity
+        if 'max_severity' not in time_series_df.columns:
+            time_series_df['max_severity'] = time_series_df.get('avg_severity', 2.0)
+        
+        return time_series_df
+        
+    except Exception as e:
+        st.error(f"Error preparing time series from Athena: {e}")
         return pd.DataFrame()
-    
-    # Set datetime as index
-    ts_df = sensor_df.set_index('datetime').copy()
-    
-    # Aggregate by frequency
-    aggregated = ts_df.resample(freq).agg({
-        'device_id': 'count',  # Number of readings
-        'max_severity': ['mean', 'max'],
-        'speed_kmh': 'mean'
-    })
-    
-    # Flatten columns
-    aggregated.columns = ['reading_count', 'avg_severity', 'max_severity', 'avg_speed']
-    aggregated = aggregated.reset_index()
-    
-    return aggregated
 
 
 @st.cache_data(ttl=3600)
@@ -55,6 +74,12 @@ def detect_anomalies(time_series_df, column='reading_count', threshold=None):
         DataFrame with anomaly flags and scores
     """
     threshold = threshold or TIMESERIES_CONFIG['anomaly_threshold']
+    
+    # Map column names for compatibility
+    if column == 'reading_count' and 'total_readings' in time_series_df.columns:
+        column = 'total_readings'
+    elif column == 'reading_count' and 'unique_users' in time_series_df.columns:
+        column = 'unique_users'
     
     if time_series_df.empty or column not in time_series_df.columns:
         return pd.DataFrame()
@@ -91,6 +116,12 @@ def calculate_trends(time_series_df, column='reading_count'):
     Returns:
         dict with trend statistics
     """
+    # Map column names for compatibility
+    if column == 'reading_count' and 'total_readings' in time_series_df.columns:
+        column = 'total_readings'
+    elif column == 'reading_count' and 'unique_users' in time_series_df.columns:
+        column = 'unique_users'
+    
     if time_series_df.empty or column not in time_series_df.columns:
         return {}
     
@@ -137,6 +168,12 @@ def find_usage_drops(time_series_df, column='reading_count', drop_threshold=0.3)
     Returns:
         DataFrame with significant drops
     """
+    # Map column names for compatibility
+    if column == 'reading_count' and 'total_readings' in time_series_df.columns:
+        column = 'total_readings'
+    elif column == 'reading_count' and 'unique_users' in time_series_df.columns:
+        column = 'unique_users'
+    
     if time_series_df.empty or column not in time_series_df.columns:
         return pd.DataFrame()
     
@@ -168,16 +205,24 @@ def analyze_seasonal_patterns(time_series_df, column='reading_count'):
     Returns:
         dict with seasonal statistics
     """
+    # Map column names for compatibility
+    if column == 'reading_count' and 'total_readings' in time_series_df.columns:
+        column = 'total_readings'
+    elif column == 'reading_count' and 'unique_users' in time_series_df.columns:
+        column = 'unique_users'
+    
     if time_series_df.empty or column not in time_series_df.columns:
         return {}
     
     df = time_series_df.copy()
     
     # Extract time features if datetime column exists
-    if 'datetime' in df.columns:
-        df['day_of_week'] = df['datetime'].dt.dayofweek
-        df['month'] = df['datetime'].dt.month
-        df['hour'] = df['datetime'].dt.hour if df['datetime'].dt.hour.nunique() > 1 else None
+    datetime_col = 'datetime' if 'datetime' in df.columns else 'date'
+    
+    if datetime_col in df.columns:
+        df['day_of_week'] = pd.to_datetime(df[datetime_col]).dt.dayofweek
+        df['month'] = pd.to_datetime(df[datetime_col]).dt.month
+        df['hour'] = pd.to_datetime(df[datetime_col]).dt.hour if pd.to_datetime(df[datetime_col]).dt.hour.nunique() > 1 else None
         
         # Weekly pattern
         weekly_pattern = df.groupby('day_of_week')[column].mean().to_dict()
@@ -199,9 +244,10 @@ def analyze_seasonal_patterns(time_series_df, column='reading_count'):
 def compare_time_periods(sensor_df, period1_start, period1_end, period2_start, period2_end):
     """
     Compare two time periods to identify changes
+    Note: This function needs Athena implementation for period comparison
     
     Args:
-        sensor_df: DataFrame with sensor data
+        sensor_df: Ignored - we use Athena now
         period1_start: Start date of first period
         period1_end: End date of first period
         period2_start: Start date of second period
@@ -210,34 +256,43 @@ def compare_time_periods(sensor_df, period1_start, period1_end, period2_start, p
     Returns:
         dict with comparison metrics
     """
-    if sensor_df.empty or 'datetime' not in sensor_df.columns:
+    try:
+        db = get_athena_database()
+        
+        # Get data for period 1
+        period1_df = db.get_usage_trends(90)  # Get recent data
+        if not period1_df.empty:
+            period1_df = period1_df[
+                (pd.to_datetime(period1_df['date']) >= pd.to_datetime(period1_start)) &
+                (pd.to_datetime(period1_df['date']) <= pd.to_datetime(period1_end))
+            ]
+        
+        # Get data for period 2
+        period2_df = db.get_usage_trends(90)  # Get recent data
+        if not period2_df.empty:
+            period2_df = period2_df[
+                (pd.to_datetime(period2_df['date']) >= pd.to_datetime(period2_start)) &
+                (pd.to_datetime(period2_df['date']) <= pd.to_datetime(period2_end))
+            ]
+        
+        if period1_df.empty or period2_df.empty:
+            return {}
+        
+        # Calculate metrics for each period
+        comparison = {
+            'period1_count': period1_df['unique_users'].sum(),
+            'period2_count': period2_df['unique_users'].sum(),
+            'count_change_pct': ((period2_df['unique_users'].sum() - period1_df['unique_users'].sum()) / period1_df['unique_users'].sum()) * 100,
+            'period1_avg_severity': 2.0,  # Default since we don't have severity in trends
+            'period2_avg_severity': 2.0,  # Default since we don't have severity in trends
+            'severity_change': 0.0
+        }
+        
+        return comparison
+        
+    except Exception as e:
+        st.error(f"Error comparing time periods: {e}")
         return {}
-    
-    # Filter data for each period
-    period1 = sensor_df[
-        (sensor_df['datetime'] >= period1_start) & 
-        (sensor_df['datetime'] <= period1_end)
-    ]
-    
-    period2 = sensor_df[
-        (sensor_df['datetime'] >= period2_start) & 
-        (sensor_df['datetime'] <= period2_end)
-    ]
-    
-    if period1.empty or period2.empty:
-        return {}
-    
-    # Calculate metrics for each period
-    comparison = {
-        'period1_count': len(period1),
-        'period2_count': len(period2),
-        'count_change_pct': ((len(period2) - len(period1)) / len(period1)) * 100,
-        'period1_avg_severity': period1['max_severity'].mean(),
-        'period2_avg_severity': period2['max_severity'].mean(),
-        'severity_change': period2['max_severity'].mean() - period1['max_severity'].mean()
-    }
-    
-    return comparison
 
 
 def identify_trend_changes(time_series_df, column='reading_count', sensitivity=0.2):
@@ -252,6 +307,12 @@ def identify_trend_changes(time_series_df, column='reading_count', sensitivity=0
     Returns:
         DataFrame with trend change points
     """
+    # Map column names for compatibility
+    if column == 'reading_count' and 'total_readings' in time_series_df.columns:
+        column = 'total_readings'
+    elif column == 'reading_count' and 'unique_users' in time_series_df.columns:
+        column = 'unique_users'
+    
     if time_series_df.empty or column not in time_series_df.columns:
         return pd.DataFrame()
     
@@ -287,6 +348,12 @@ def get_time_series_summary(time_series_df, column='reading_count'):
     Returns:
         dict with summary statistics
     """
+    # Map column names for compatibility
+    if column == 'reading_count' and 'total_readings' in time_series_df.columns:
+        column = 'total_readings'
+    elif column == 'reading_count' and 'unique_users' in time_series_df.columns:
+        column = 'unique_users'
+    
     if time_series_df.empty or column not in time_series_df.columns:
         return {}
     
