@@ -5,6 +5,8 @@ Main Streamlit application with AWS Athena backend
 import streamlit as st
 from streamlit_folium import folium_static
 import pandas as pd
+import plotly.express as px  # ADDED: Missing import
+import plotly.graph_objects as go  # ADDED: Missing import
 
 # Import custom modules (your existing structure)
 from config import DASHBOARD_CONFIG, PERCEPTION_CONFIG
@@ -31,7 +33,8 @@ from src.trend_analysis import (
     detect_anomalies,
     calculate_trends,
     find_usage_drops,
-    analyze_seasonal_patterns
+    analyze_seasonal_patterns,
+    get_time_series_summary  # ADDED: Missing import
 )
 from src.visualizations import (
     create_hotspot_map,
@@ -301,8 +304,8 @@ with tab2:
         col1, col2 = st.columns(2)
         
         datetime_col = 'datetime' if 'datetime' in time_series.columns else 'date'
-        min_date = time_series[datetime_col].min()
-        max_date = time_series[datetime_col].max()
+        min_date = pd.to_datetime(time_series[datetime_col].min()).date()
+        max_date = pd.to_datetime(time_series[datetime_col].max()).date()
         
         with col1:
             start_date = st.date_input(
@@ -322,8 +325,8 @@ with tab2:
         
         # Filter time series
         filtered_ts = time_series[
-            (pd.to_datetime(time_series[datetime_col]) >= pd.to_datetime(start_date)) &
-            (pd.to_datetime(time_series[datetime_col]) <= pd.to_datetime(end_date))
+            (pd.to_datetime(time_series[datetime_col]).dt.date >= start_date) &
+            (pd.to_datetime(time_series[datetime_col]).dt.date <= end_date)
         ]
         
         if filtered_ts.empty:
