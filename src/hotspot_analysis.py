@@ -1,6 +1,6 @@
 """
 Hotspot detection and clustering module
-Uses DBSCAN for spatial clustering of high-severity incidents
+Now uses AWS Athena for spatial clustering of high-severity incidents
 """
 import pandas as pd
 import numpy as np
@@ -8,110 +8,74 @@ from sklearn.cluster import DBSCAN
 from sklearn.preprocessing import StandardScaler
 import streamlit as st
 from config import HOTSPOT_CONFIG
+from src.athena_database import get_athena_database
 
 
 @st.cache_data(ttl=3600)
-def detect_hotspots(sensor_df, severity_threshold=None, min_samples=None, eps=None):
+def detect_hotspots(sensor_df=None, severity_threshold=None, min_samples=None, eps=None, 
+                   start_date=None, end_date=None):
     """
-    Detect hotspots using DBSCAN clustering on sensor data
+    Detect hotspots using AWS Athena instead of local DataFrame
     
     Args:
-        sensor_df: DataFrame with sensor data
+        sensor_df: Ignored - we use Athena now
         severity_threshold: Minimum severity to consider (default from config)
         min_samples: Minimum points to form a cluster (default from config)
         eps: DBSCAN epsilon parameter (default from config)
+        start_date: Start date for analysis (YYYY-MM-DD)
+        end_date: End date for analysis (YYYY-MM-DD)
     
     Returns:
         DataFrame with hotspot information
     """
-    if sensor_df.empty:
-        return pd.DataFrame()
-    
-    # Use config defaults if not provided
     severity_threshold = severity_threshold or HOTSPOT_CONFIG["severity_threshold"]
     min_samples = min_samples or HOTSPOT_CONFIG["min_samples"]
     eps = eps or HOTSPOT_CONFIG["eps"]
     
-    # Filter by severity
-    high_severity = sensor_df[sensor_df['max_severity'] >= severity_threshold].copy()
-    
-    if len(high_severity) < min_samples:
+    try:
+        db = get_athena_database()
+        hotspots_df = db.detect_sensor_hotspots(
+            min_events=min_samples,
+            severity_threshold=severity_threshold,
+            start_date=start_date,
+            end_date=end_date
+        )
+        
+        if hotspots_df.empty:
+            return pd.DataFrame()
+        
+        formatted_hotspots = hotspots_df.copy()
+        formatted_hotspots = formatted_hotspots.rename(columns={
+            'lat': 'latitude',
+            'lng': 'longitude',
+            'event_count': 'incident_count',
+            'severity_score': 'avg_severity'
+        })
+        
+        formatted_hotspots['max_severity'] = formatted_hotspots['avg_severity']
+        formatted_hotspots['device_count'] = 1
+        formatted_hotspots['cluster_id'] = range(len(formatted_hotspots))
+        formatted_hotspots['hotspot_id'] = range(1, len(formatted_hotspots) + 1)
+        
+        return formatted_hotspots
+        
+    except Exception as e:
+        st.error(f"Error detecting hotspots with Athena: {e}")
         return pd.DataFrame()
-    
-    # Prepare features for clustering
-    features = high_severity[['position_latitude', 'position_longitude', 'max_severity']].copy()
-    
-    # Normalize features
-    scaler = StandardScaler()
-    features_scaled = scaler.fit_transform(features)
-    
-    # Apply DBSCAN
-    clustering = DBSCAN(eps=eps, min_samples=min_samples, metric='euclidean')
-    high_severity['cluster'] = clustering.fit_predict(features_scaled)
-    
-    # Remove noise points (cluster = -1)
-    clustered = high_severity[high_severity['cluster'] != -1]
-    
-    if clustered.empty:
-        return pd.DataFrame()
-    
-    # Aggregate by cluster to create hotspots
-    hotspots = clustered.groupby('cluster').agg({
-        'position_latitude': 'mean',
-        'position_longitude': 'mean',
-        'max_severity': ['mean', 'max', 'count'],
-        'device_id': 'nunique'  # Number of unique devices
-    }).reset_index()
-    
-    # Flatten column names
-    hotspots.columns = [
-        'cluster_id',
-        'latitude',
-        'longitude',
-        'avg_severity',
-        'max_severity',
-        'incident_count',
-        'device_count'
-    ]
-    
-    # Sort by incident count
-    hotspots = hotspots.sort_values('incident_count', ascending=False)
-    
-    # Add hotspot ID
-    hotspots['hotspot_id'] = range(1, len(hotspots) + 1)
-    
-    return hotspots
 
 
 def get_hotspot_details(sensor_df, hotspot_lat, hotspot_lng, radius_m=50):
     """
     Get detailed information about incidents near a hotspot
-    
-    Args:
-        sensor_df: DataFrame with sensor data
-        hotspot_lat: Hotspot latitude
-        hotspot_lng: Hotspot longitude
-        radius_m: Radius in meters to search
-    
-    Returns:
-        DataFrame with incidents near the hotspot
     """
     from utils.geo_utils import find_points_within_radius
     
-    if sensor_df.empty:
+    try:
+        db = get_athena_database()
         return pd.DataFrame()
-    
-    # Find incidents within radius
-    nearby = find_points_within_radius(
-        hotspot_lat, 
-        hotspot_lng, 
-        sensor_df,
-        radius_m,
-        lat_col='position_latitude',
-        lon_col='position_longitude'
-    )
-    
-    return nearby
+    except Exception as e:
+        st.error(f"Error getting hotspot details: {e}")
+        return pd.DataFrame()
 
 
 def classify_hotspot_severity(avg_severity, incident_count):
@@ -125,7 +89,6 @@ def classify_hotspot_severity(avg_severity, incident_count):
     Returns:
         str: Risk level ('Critical', 'High', 'Medium', 'Low')
     """
-    # Composite score
     score = (avg_severity * 0.6) + (min(incident_count / 10, 10) * 0.4)
     
     if score >= 3.5:
@@ -156,7 +119,6 @@ def get_hotspot_statistics(hotspots_df):
             'critical_hotspots': 0
         }
     
-    # Add risk classification
     hotspots_df['risk_level'] = hotspots_df.apply(
         lambda row: classify_hotspot_severity(row['avg_severity'], row['incident_count']),
         axis=1
