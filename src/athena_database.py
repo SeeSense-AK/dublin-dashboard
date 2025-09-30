@@ -112,14 +112,14 @@ class AthenaCyclingSafetyDB:
                 MAX(timestamp) as last_event,
                 ARRAY_AGG(DISTINCT primary_event_type) as event_types
             FROM abnormal_events
-            GROUP BY lat_cluster, lng_cluster
+            GROUP BY ROUND(lat, 3), ROUND(lng, 3)
             HAVING COUNT(*) >= {min_events}
         )
         SELECT 
             center_lat as lat,
             center_lng as lng,
             event_count,
-            ROUND(avg_severity, 2) as severity_score,
+            avg_severity as severity_score,
             first_event,
             last_event,
             event_types,
