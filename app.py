@@ -285,40 +285,240 @@ with tab2:
     st.header("Trend Analysis")
     st.markdown("Analyzing road usage patterns and detecting anomalies over time")
     
-    # Check if datetime data is available
-    st.warning("Trend analysis requires refactoring for Athena backend. Coming soon!")
+    # Get time series data using your existing module
+    with st.spinner("Preparing time series data from Athena..."):
+        time_series = prepare_time_series(freq='D')
     
-    # Placeholder for when trend_analysis.py is updated
-    st.info("""
-    **Next Steps for Trend Analysis:**
-    
-    1. Update trend_analysis.py to use Athena backend
-    2. Implement time series queries for usage patterns
-    3. Add anomaly detection for sudden usage drops
-    4. Display weekly/monthly cycling patterns
-    
-    This will be completed in the next refactoring step.
-    """)
-
-# Footer
-st.divider()
-st.markdown("""
-### 🔧 How This Works
-
-**Hotspot Detection:**
-- **Sensor-based hotspots** (red markers): Use clustering to find locations where multiple abnormal events occurred
-- **Report-based hotspots** (orange markers): Cluster user reports of incidents and infrastructure issues  
-- **Report matching**: Find perception reports within specified radius of each hotspot to add context
-
-**Data Sources:**
-- Sensor readings: {total_readings:,} records from AWS Athena
-- User reports: {ride_reports} ride reports + {infra_reports} infrastructure reports (local CSV)
-
-**Architecture:**
-- **Backend**: AWS Athena (Parquet optimized) + Local CSV files
-- **Modules**: Using your existing hotspot_analysis.py, perception_matcher.py, visualizations.py
-""".format(
-    total_readings=sensor_metrics['total_readings'],
-    ride_reports=len(ride_df),
-    infra_reports=len(infra_df)
-))
+    if time_series.empty:
+        st.warning("No time series data available for trend analysis.")
+        st.info("This might be due to:")
+        st.write("- No data in the Athena table")
+        st.write("- AWS connection issues")
+        st.write("- Insufficient data for time series analysis")
+    else:
+        # Date range selector
+        st.subheader("📅 Date Range Selection")
+        col1, col2 = st.columns(2)
+        
+        datetime_col = 'datetime' if 'datetime' in time_series.columns else 'date'
+        min_date = time_series[datetime_col].min()
+        max_date = time_series[datetime_col].max()
+        
+        with col1:
+            start_date = st.date_input(
+                "Start Date",
+                value=min_date,
+                min_value=min_date,
+                max_value=max_date
+            )
+        
+        with col2:
+            end_date = st.date_input(
+                "End Date",
+                value=max_date,
+                min_value=min_date,
+                max_value=max_date
+            )
+        
+        # Filter time series
+        filtered_ts = time_series[
+            (pd.to_datetime(time_series[datetime_col]) >= pd.to_datetime(start_date)) &
+            (pd.to_datetime(time_series[datetime_col]) <= pd.to_datetime(end_date))
+        ]
+        
+        if filtered_ts.empty:
+            st.warning("No data available for selected date range.")
+        else:
+            # Detect anomalies using your existing module
+            with st.spinner("Detecting anomalies..."):
+                ts_with_anomalies = detect_anomalies(filtered_ts, column='unique_users')
+            
+            # Calculate trends using your existing module
+            trend_stats = calculate_trends(filtered_ts, column='unique_users')
+            
+            # Display key insights
+            st.subheader("📊 Key Insights")
+            
+            col1, col2, col3, col4 = st.columns(4)
+            
+            with col1:
+                st.metric(
+                    "Trend Direction",
+                    trend_stats.get('trend_direction', 'N/A').title()
+                )
+            
+            with col2:
+                pct_change = trend_stats.get('percent_change', 0)
+                st.metric(
+                    "Overall Change",
+                    f"{pct_change:+.1f}%",
+                    delta=f"{pct_change:.1f}%"
+                )
+            
+            with col3:
+                anomaly_count = len(ts_with_anomalies[ts_with_anomalies.get('is_anomaly', False) == True]) if not ts_with_anomalies.empty else 0
+                st.metric("Anomalies Detected", anomaly_count)
+            
+            with col4:
+                avg_daily = trend_stats.get('mean_value', 0)
+                st.metric("Avg Daily Users", f"{avg_daily:.0f}")
+            
+            st.markdown("---")
+            
+            # Time series chart using your existing module
+            st.subheader("📈 Usage Trends Over Time")
+            
+            anomalies = ts_with_anomalies[ts_with_anomalies.get('is_anomaly', False) == True] if not ts_with_anomalies.empty else pd.DataFrame()
+            ts_chart = create_time_series_chart(
+                ts_with_anomalies,
+                column='unique_users',
+                anomalies_df=anomalies if not anomalies.empty else None
+            )
+            st.plotly_chart(ts_chart, use_container_width=True)
+            
+            st.markdown("---")
+            
+            # Anomaly Analysis using your existing module
+            st.subheader("⚠️ Anomaly Analysis")
+            
+            if not anomalies.empty:
+                # Find usage drops using your existing module
+                drops = find_usage_drops(filtered_ts, column='unique_users', drop_threshold=0.3)
+                
+                if not drops.empty:
+                    st.markdown("#### 📉 Significant Usage Drops")
+                    st.write("These dates show significant drops in road usage and may warrant investigation:")
+                    
+                    # Display top drops
+                    top_drops = drops.nlargest(5, 'deviation_pct', keep='all')[
+                        [datetime_col, 'unique_users', 'baseline', 'deviation_pct']
+                    ].copy()
+                    top_drops['deviation_pct'] = top_drops['deviation_pct'].round(1)
+                    top_drops.columns = ['Date', 'Actual Users', 'Expected (Baseline)', 'Drop %']
+                    
+                    st.dataframe(top_drops, use_container_width=True, hide_index=True)
+                    
+                    # Investigate button
+                    st.markdown("**Possible reasons for drops:**")
+                    st.write("- Weather events (storms, snow)")
+                    st.write("- Road closures or construction")
+                    st.write("- Public holidays or special events")
+                    st.write("- Data collection issues")
+                else:
+                    st.info("No significant usage drops detected in the selected period.")
+                
+                # Spikes
+                spikes = ts_with_anomalies[ts_with_anomalies.get('anomaly_type', '') == 'spike'] if not ts_with_anomalies.empty else pd.DataFrame()
+                if not spikes.empty:
+                    st.markdown("#### 📈 Usage Spikes")
+                    st.write(f"Detected {len(spikes)} dates with unusually high activity")
+                    
+                    with st.expander("View spike details"):
+                        spike_details = spikes[[datetime_col, 'unique_users', 'rolling_mean']].copy()
+                        spike_details.columns = ['Date', 'Count', 'Expected (7-day avg)']
+                        st.dataframe(spike_details, use_container_width=True, hide_index=True)
+            else:
+                st.info("No anomalies detected in the selected period.")
+            
+            st.markdown("---")
+            
+            # Seasonal Patterns using your existing module
+            st.subheader("📆 Seasonal Patterns")
+            
+            seasonal = analyze_seasonal_patterns(filtered_ts, column='unique_users')
+            
+            if seasonal and 'weekly_pattern' in seasonal:
+                col1, col2 = st.columns(2)
+                
+                with col1:
+                    st.markdown("#### Day of Week Pattern")
+                    weekly_df = pd.DataFrame(
+                        list(seasonal['weekly_pattern'].items()),
+                        columns=['Day', 'Avg Users']
+                    )
+                    weekly_df['Day'] = weekly_df['Day'].map({
+                        0: 'Monday', 1: 'Tuesday', 2: 'Wednesday',
+                        3: 'Thursday', 4: 'Friday', 5: 'Saturday', 6: 'Sunday'
+                    })
+                    
+                    weekly_chart = px.bar(
+                        weekly_df,
+                        x='Day',
+                        y='Avg Users',
+                        title='Average Users by Day of Week',
+                        color='Avg Users',
+                        color_continuous_scale='Blues'
+                    )
+                    st.plotly_chart(weekly_chart, use_container_width=True)
+                
+                with col2:
+                    st.markdown("#### Weekday vs Weekend")
+                    weekday_avg = seasonal.get('weekday_avg', 0)
+                    weekend_avg = seasonal.get('weekend_avg', 0)
+                    
+                    comparison_df = pd.DataFrame({
+                        'Period': ['Weekday', 'Weekend'],
+                        'Avg Users': [weekday_avg, weekend_avg]
+                    })
+                    
+                    comparison_chart = px.bar(
+                        comparison_df,
+                        x='Period',
+                        y='Avg Users',
+                        title='Weekday vs Weekend Comparison',
+                        color='Period',
+                        color_discrete_map={'Weekday': '#1f77b4', 'Weekend': '#ff7f0e'}
+                    )
+                    st.plotly_chart(comparison_chart, use_container_width=True)
+                    
+                    # Calculate difference
+                    if weekend_avg > 0:
+                        diff_pct = ((weekday_avg - weekend_avg) / weekend_avg) * 100
+                        if diff_pct > 10:
+                            st.success(f"Weekdays show {diff_pct:.1f}% more activity than weekends")
+                        elif diff_pct < -10:
+                            st.info(f"Weekends show {abs(diff_pct):.1f}% more activity than weekdays")
+                        else:
+                            st.info("Similar activity levels on weekdays and weekends")
+            
+            st.markdown("---")
+            
+            # Additional Insights using your existing module
+            st.subheader("💡 Additional Insights")
+            
+            with st.expander("📊 Statistical Summary"):
+                summary = get_time_series_summary(filtered_ts, column='unique_users')
+                
+                col1, col2 = st.columns(2)
+                with col1:
+                    st.write(f"**Total Observations:** {summary.get('total_observations', 0):,}")
+                    st.write(f"**Mean:** {summary.get('mean', 0):.2f}")
+                    st.write(f"**Median:** {summary.get('median', 0):.2f}")
+                    st.write(f"**Std Dev:** {summary.get('std', 0):.2f}")
+                
+                with col2:
+                    st.write(f"**Min:** {summary.get('min', 0):.0f}")
+                    st.write(f"**Max:** {summary.get('max', 0):.0f}")
+                    st.write(f"**Range:** {summary.get('range', 0):.0f}")
+                    st.write(f"**CV:** {summary.get('coefficient_of_variation', 0):.2f}%")
+            
+            with st.expander("🔍 Investigative Questions"):
+                st.markdown("""
+                Based on the trend analysis, here are some questions worth investigating:
+                
+                **For Usage Drops:**
+                - Were there any road closures or construction during these periods?
+                - Did weather conditions impact road usage?
+                - Were there any major events or holidays?
+                - Are there patterns in specific routes or areas?
+                
+                **For Usage Spikes:**
+                - What caused the increased activity?
+                - Were there any special events or diversions?
+                - Is this a recurring pattern?
+                
+                **For Trend Changes:**
+                - What factors might explain the overall trend direction?
+                - Are there infrastructure changes or new routes?
+                - Has population or traffic pattern shifted?
+                """)
