@@ -31,10 +31,14 @@ def match_perception_to_hotspots(hotspots_df, infra_reports_df, ride_reports_df,
     for idx, hotspot in hotspots_df.iterrows():
         hotspot_data = hotspot.to_dict()
         
+        # Use latitude/longitude columns (from Athena format)
+        lat_col = 'latitude' if 'latitude' in hotspot_data else 'lat'
+        lng_col = 'longitude' if 'longitude' in hotspot_data else 'lng'
+        
         # Find nearby infrastructure reports
         infra_nearby = find_points_within_radius(
-            hotspot['latitude'],
-            hotspot['longitude'],
+            hotspot[lat_col],
+            hotspot[lng_col],
             infra_reports_df,
             radius_m,
             lat_col='lat',
@@ -43,8 +47,8 @@ def match_perception_to_hotspots(hotspots_df, infra_reports_df, ride_reports_df,
         
         # Find nearby ride reports
         ride_nearby = find_points_within_radius(
-            hotspot['latitude'],
-            hotspot['longitude'],
+            hotspot[lat_col],
+            hotspot[lng_col],
             ride_reports_df,
             radius_m,
             lat_col='lat',
