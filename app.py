@@ -1,14 +1,15 @@
 """
 Dublin Road Safety Dashboard
-Main Streamlit application with AWS Athena backend
+Main Streamlit application with AWS Athena backend - WITH DATE SLICER
 """
 import streamlit as st
 from streamlit_folium import folium_static
 import pandas as pd
-import plotly.express as px  # ADDED: Missing import
-import plotly.graph_objects as go  # ADDED: Missing import
+import plotly.express as px
+import plotly.graph_objects as go
+from datetime import datetime, timedelta
 
-# Import custom modules (your existing structure)
+# Import custom modules
 from config import DASHBOARD_CONFIG, PERCEPTION_CONFIG
 from src.data_loader import (
     load_all_data, 
@@ -34,7 +35,7 @@ from src.trend_analysis import (
     calculate_trends,
     find_usage_drops,
     analyze_seasonal_patterns,
-    get_time_series_summary  # ADDED: Missing import
+    get_time_series_summary
 )
 from src.visualizations import (
     create_hotspot_map,
@@ -87,6 +88,11 @@ st.sidebar.subheader("📊 Data Overview")
 st.sidebar.write(f"**Sensor Records:** {sensor_metrics['total_readings']:,}")
 st.sidebar.write(f"**Infra Reports:** {len(infra_df):,}")
 st.sidebar.write(f"**Ride Reports:** {len(ride_df):,}")
+
+# Display date range from sensor data
+if sensor_metrics['earliest_reading'] and sensor_metrics['latest_reading']:
+    st.sidebar.write(f"**Data Range:** {sensor_metrics['earliest_reading']} to {sensor_metrics['latest_reading']}")
+
 st.sidebar.markdown("---")
 
 # Sidebar - Hotspot Settings
@@ -118,35 +124,112 @@ perception_radius = st.sidebar.slider(
 # Main content - Tabs
 tab1, tab2 = st.tabs(["📍 Hotspot Analysis", "📈 Trend Analysis"])
 
-# ==================== TAB 1: HOTSPOT ANALYSIS ====================
+# ==================== TAB 1: HOTSPOT ANALYSIS WITH DATE SLICER ====================
 with tab1:
     st.header("Hotspot Analysis")
     st.markdown("Identifying dangerous road segments using sensor data and perception reports")
     
-    # Detect hotspots using your existing module
-    with st.spinner("Detecting hotspots..."):
+    # ========== DATE SLICER SECTION ==========
+    st.subheader("📅 Date Range Filter")
+    
+    # Get date range from sensor data
+    try:
+        earliest = pd.to_datetime(sensor_metrics['earliest_reading']).date()
+        latest = pd.to_datetime(sensor_metrics['latest_reading']).date()
+    except:
+        # Fallback to reasonable defaults if dates not available
+        latest = datetime.now().date()
+        earliest = latest - timedelta(days=90)
+    
+    # Create date input columns
+    col1, col2, col3 = st.columns([2, 2, 1])
+    
+    with col1:
+        start_date = st.date_input(
+            "Start Date",
+            value=earliest,
+            min_value=earliest,
+            max_value=latest,
+            help="Select the start date for hotspot analysis"
+        )
+    
+    with col2:
+        end_date = st.date_input(
+            "End Date",
+            value=latest,
+            min_value=earliest,
+            max_value=latest,
+            help="Select the end date for hotspot analysis"
+        )
+    
+    with col3:
+        st.write("")  # Spacing
+        st.write("")  # Spacing
+        if st.button("🔄 Reset Dates", use_container_width=True):
+            st.rerun()
+    
+    # Validate date range
+    if start_date > end_date:
+        st.error("⚠️ Start date must be before end date!")
+        st.stop()
+    
+    # Show selected date range
+    days_selected = (end_date - start_date).days + 1
+    st.info(f"📊 Analyzing data from **{start_date.strftime('%d %b %Y')}** to **{end_date.strftime('%d %b %Y')}** ({days_selected} days)")
+    
+    st.markdown("---")
+    
+    # ========== HOTSPOT DETECTION WITH DATE FILTER ==========
+    # Detect hotspots using the selected date range
+    with st.spinner("Detecting hotspots for selected date range..."):
         hotspots = detect_hotspots(
             severity_threshold=severity_threshold,
-            min_samples=min_incidents
+            min_samples=min_incidents,
+            start_date=start_date.strftime('%Y-%m-%d'),
+            end_date=end_date.strftime('%Y-%m-%d')
         )
     
     if hotspots.empty:
-        st.warning("No hotspots detected with current settings. Try adjusting the parameters in the sidebar.")
+        st.warning("No hotspots detected with current settings. Try adjusting the parameters in the sidebar or selecting a different date range.")
+        
+        # Show helpful suggestions
+        with st.expander("💡 Suggestions"):
+            st.write("**To find more hotspots, try:**")
+            st.write("- Lowering the 'Minimum Severity' threshold")
+            st.write("- Reducing the 'Minimum Incidents' count")
+            st.write("- Selecting a longer date range")
+            st.write("- Checking if there's data available for the selected period")
     else:
-        # Match perception reports using your existing module
+        # Filter perception reports by date range
+        infra_df_filtered = infra_df.copy()
+        ride_df_filtered = ride_df.copy()
+        
+        if 'datetime' in infra_df_filtered.columns:
+            infra_df_filtered = infra_df_filtered[
+                (pd.to_datetime(infra_df_filtered['datetime']).dt.date >= start_date) &
+                (pd.to_datetime(infra_df_filtered['datetime']).dt.date <= end_date)
+            ]
+        
+        if 'datetime' in ride_df_filtered.columns:
+            ride_df_filtered = ride_df_filtered[
+                (pd.to_datetime(ride_df_filtered['datetime']).dt.date >= start_date) &
+                (pd.to_datetime(ride_df_filtered['datetime']).dt.date <= end_date)
+            ]
+        
+        # Match perception reports using filtered data
         with st.spinner("Matching perception reports to hotspots..."):
             matched_hotspots = match_perception_to_hotspots(
                 hotspots,
-                infra_df,
-                ride_df,
+                infra_df_filtered,
+                ride_df_filtered,
                 radius_m=perception_radius
             )
         
-        # Get statistics using your existing module
+        # Get statistics
         stats = get_hotspot_statistics(matched_hotspots)
         
-        # Display metrics using your existing module
-        st.subheader("📊 Key Metrics")
+        # Display metrics
+        st.subheader("📊 Key Metrics for Selected Period")
         metrics = {
             "Total Hotspots": stats['total_hotspots'],
             "Total Incidents": stats['total_incidents'],
@@ -154,6 +237,13 @@ with tab1:
             "Critical Hotspots": stats['critical_hotspots']
         }
         create_metric_cards(metrics)
+        
+        # Show perception reports stats for the filtered period
+        col1, col2 = st.columns(2)
+        with col1:
+            st.metric("Infrastructure Reports (Period)", len(infra_df_filtered))
+        with col2:
+            st.metric("Ride Reports (Period)", len(ride_df_filtered))
         
         st.markdown("---")
         
@@ -164,11 +254,11 @@ with tab1:
             st.subheader("🗺️ Interactive Hotspot Map")
             show_perception = st.checkbox("Show Perception Reports", value=True)
             
-            # Create map using your existing module
+            # Create map with filtered data
             hotspot_map = create_hotspot_map(
                 matched_hotspots,
-                infra_df if show_perception else None,
-                ride_df if show_perception else None,
+                infra_df_filtered if show_perception else None,
+                ride_df_filtered if show_perception else None,
                 show_perception=show_perception
             )
             folium_static(hotspot_map, width=800, height=600)
@@ -178,8 +268,8 @@ with tab1:
             severity_chart = create_severity_distribution_chart(matched_hotspots)
             st.plotly_chart(severity_chart, use_container_width=True)
             
-            # Top hotspots
-            st.subheader("🔝 Top 5 Hotspots")
+            # Top hotspots for the period
+            st.subheader("🔝 Top 5 Hotspots (Period)")
             top_hotspots = matched_hotspots.nlargest(5, 'incident_count')[
                 ['hotspot_id', 'incident_count', 'avg_severity', 'total_perception_reports']
             ]
@@ -212,13 +302,13 @@ with tab1:
             with col3:
                 st.metric("Perception Reports", int(hotspot_data['total_perception_reports']))
                 
-                # Street View link using your constants
+                # Street View link
                 lat = hotspot_data['latitude']
                 lng = hotspot_data['longitude']
                 street_view_url = STREET_VIEW_URL_TEMPLATE.format(lat=lat, lng=lng, heading=0)
                 st.markdown(f"[🔍 View in Google Street View]({street_view_url})")
             
-            # Perception reports details using your existing module
+            # Perception reports details
             if hotspot_data['total_perception_reports'] > 0:
                 st.markdown("#### 💬 Perception Reports")
                 
@@ -250,7 +340,7 @@ with tab1:
                                 st.write(f"**Date:** {report.get('date', 'N/A')}")
                                 st.markdown("---")
                     
-                    # Sentiment Analysis using your existing module
+                    # Sentiment Analysis
                     if st.button("🤖 Analyze Sentiment with AI"):
                         with st.spinner("Analyzing perception reports..."):
                             # Collect comments
@@ -288,7 +378,7 @@ with tab2:
     st.header("Trend Analysis")
     st.markdown("Analyzing road usage patterns and detecting anomalies over time")
     
-    # Get time series data using your existing module
+    # Get time series data
     with st.spinner("Preparing time series data from Athena..."):
         time_series = prepare_time_series(freq='D')
     
@@ -308,35 +398,37 @@ with tab2:
         max_date = pd.to_datetime(time_series[datetime_col].max()).date()
         
         with col1:
-            start_date = st.date_input(
+            start_date_ts = st.date_input(
                 "Start Date",
                 value=min_date,
                 min_value=min_date,
-                max_value=max_date
+                max_value=max_date,
+                key="ts_start_date"
             )
         
         with col2:
-            end_date = st.date_input(
+            end_date_ts = st.date_input(
                 "End Date",
                 value=max_date,
                 min_value=min_date,
-                max_value=max_date
+                max_value=max_date,
+                key="ts_end_date"
             )
         
         # Filter time series
         filtered_ts = time_series[
-            (pd.to_datetime(time_series[datetime_col]).dt.date >= start_date) &
-            (pd.to_datetime(time_series[datetime_col]).dt.date <= end_date)
+            (pd.to_datetime(time_series[datetime_col]).dt.date >= start_date_ts) &
+            (pd.to_datetime(time_series[datetime_col]).dt.date <= end_date_ts)
         ]
         
         if filtered_ts.empty:
             st.warning("No data available for selected date range.")
         else:
-            # Detect anomalies using your existing module
+            # Detect anomalies
             with st.spinner("Detecting anomalies..."):
                 ts_with_anomalies = detect_anomalies(filtered_ts, column='unique_users')
             
-            # Calculate trends using your existing module
+            # Calculate trends
             trend_stats = calculate_trends(filtered_ts, column='unique_users')
             
             # Display key insights
@@ -368,7 +460,7 @@ with tab2:
             
             st.markdown("---")
             
-            # Time series chart using your existing module
+            # Time series chart
             st.subheader("📈 Usage Trends Over Time")
             
             anomalies = ts_with_anomalies[ts_with_anomalies.get('is_anomaly', False) == True] if not ts_with_anomalies.empty else pd.DataFrame()
@@ -381,11 +473,11 @@ with tab2:
             
             st.markdown("---")
             
-            # Anomaly Analysis using your existing module
+            # Anomaly Analysis
             st.subheader("⚠️ Anomaly Analysis")
             
             if not anomalies.empty:
-                # Find usage drops using your existing module
+                # Find usage drops
                 drops = find_usage_drops(filtered_ts, column='unique_users', drop_threshold=0.3)
                 
                 if not drops.empty:
@@ -425,7 +517,7 @@ with tab2:
             
             st.markdown("---")
             
-            # Seasonal Patterns using your existing module
+            # Seasonal Patterns
             st.subheader("📆 Seasonal Patterns")
             
             seasonal = analyze_seasonal_patterns(filtered_ts, column='unique_users')
@@ -486,7 +578,7 @@ with tab2:
             
             st.markdown("---")
             
-            # Additional Insights using your existing module
+            # Additional Insights
             st.subheader("💡 Additional Insights")
             
             with st.expander("📊 Statistical Summary"):
