@@ -1,6 +1,7 @@
 """
 Sentiment analysis module using Groq API
 Analyzes perception report comments to understand context and severity
+FIXED: Compatible with latest Groq library
 """
 import streamlit as st
 from groq import Groq
@@ -16,7 +17,12 @@ def get_groq_client():
         st.warning("Groq API key not configured. Sentiment analysis will be disabled.")
         return None
     
-    return Groq(api_key=GROQ_API_KEY)
+    try:
+        # Simple client initialization - no extra parameters
+        return Groq(api_key=GROQ_API_KEY)
+    except Exception as e:
+        st.warning(f"Could not initialize Groq client: {e}")
+        return None
 
 
 @st.cache_data(ttl=3600, show_spinner=False)
@@ -40,8 +46,13 @@ def analyze_perception_sentiment(comments_list):
             'key_issues': []
         }
     
-    # Combine comments for analysis
-    comments_text = "\n".join([f"- {c}" for c in comments_list if c])
+    # Combine comments for analysis (limit to avoid token limits)
+    comments_to_analyze = comments_list[:20]  # Max 20 comments
+    comments_text = "\n".join([f"- {c}" for c in comments_to_analyze if c and isinstance(c, str)])
+    
+    # Limit length
+    if len(comments_text) > 2000:
+        comments_text = comments_text[:2000] + "..."
     
     prompt = f"""Analyze these road safety perception reports and provide a structured assessment:
 
@@ -76,11 +87,12 @@ Be concise and focus on actionable insights."""
         
     except Exception as e:
         st.error(f"Error calling Groq API: {str(e)}")
+        # Return fallback analysis
         return {
-            'sentiment': 'neutral',
+            'sentiment': 'negative',
             'severity': 'medium',
-            'summary': f'Analysis failed: {str(e)}',
-            'key_issues': []
+            'summary': f'Analysis of {len(comments_list)} user reports. API error occurred.',
+            'key_issues': ['API analysis unavailable']
         }
 
 
@@ -118,6 +130,10 @@ def parse_sentiment_response(response_text):
         elif line.startswith('KEY_ISSUES:'):
             issues_text = line.split(':', 1)[1].strip()
             result['key_issues'] = [issue.strip() for issue in issues_text.split(',')]
+    
+    # Fallback if parsing fails
+    if not result['summary']:
+        result['summary'] = response_text[:200]
     
     return result
 
@@ -169,10 +185,11 @@ def get_simple_sentiment(comments_list):
     
     # Simple keyword-based sentiment
     negative_keywords = ['dangerous', 'bad', 'poor', 'terrible', 'unsafe', 'hazard', 
-                         'pothole', 'broken', 'damaged', 'awful', 'worst']
+                         'pothole', 'broken', 'damaged', 'awful', 'worst', 'close', 'pass',
+                         'nearly', 'almost', 'scary', 'frightening']
     positive_keywords = ['good', 'safe', 'excellent', 'great', 'improved', 'better']
     
-    text = ' '.join(comments_list).lower()
+    text = ' '.join([str(c) for c in comments_list if c]).lower()
     
     negative_count = sum(1 for keyword in negative_keywords if keyword in text)
     positive_count = sum(1 for keyword in positive_keywords if keyword in text)
@@ -183,3 +200,55 @@ def get_simple_sentiment(comments_list):
         return 'positive'
     else:
         return 'neutral'
+
+
+def analyze_without_api(comments_list):
+    """
+    Fallback analysis without API - used when Groq is unavailable
+    
+    Args:
+        comments_list: List of comments
+    
+    Returns:
+        dict with basic analysis
+    """
+    if not comments_list:
+        return {
+            'sentiment': 'unknown',
+            'severity': 'unknown',
+            'summary': 'No comments available',
+            'key_issues': []
+        }
+    
+    sentiment = get_simple_sentiment(comments_list)
+    
+    # Extract common themes from comments
+    text = ' '.join([str(c) for c in comments_list if c]).lower()
+    
+    issues = []
+    if 'pothole' in text or 'hole' in text:
+        issues.append('pothole')
+    if 'close pass' in text or 'too close' in text:
+        issues.append('close_pass')
+    if 'dangerous' in text or 'unsafe' in text:
+        issues.append('dangerous_conditions')
+    if 'surface' in text or 'rough' in text:
+        issues.append('poor_surface')
+    
+    # Determine severity
+    danger_words = ['dangerous', 'scary', 'nearly', 'almost', 'terrible', 'awful']
+    danger_count = sum(1 for word in danger_words if word in text)
+    
+    if danger_count >= 3:
+        severity = 'high'
+    elif danger_count >= 1:
+        severity = 'medium'
+    else:
+        severity = 'low'
+    
+    return {
+        'sentiment': sentiment,
+        'severity': severity,
+        'summary': f'Analysis of {len(comments_list)} reports. Main themes: {", ".join(issues) if issues else "general concerns"}',
+        'key_issues': issues if issues else ['general_safety_concerns']
+    }
