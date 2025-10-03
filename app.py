@@ -1,6 +1,7 @@
 """
 Dublin Road Safety Dashboard
-Main Streamlit application with AWS Athena backend - WITH DATE SLICER
+Main Streamlit application with AWS Athena backend
+UPDATED: Strict hotspot filtering (10-20 hotspots max)
 """
 import streamlit as st
 from streamlit_folium import folium_static
@@ -95,22 +96,34 @@ if sensor_metrics['earliest_reading'] and sensor_metrics['latest_reading']:
 
 st.sidebar.markdown("---")
 
-# Sidebar - Hotspot Settings
+# Sidebar - Hotspot Settings (UPDATED WITH STRICT DEFAULTS)
 st.sidebar.subheader("🎯 Hotspot Detection")
+st.sidebar.info("⚠️ **Strict Mode**: Only showing the most dangerous locations")
+
 severity_threshold = st.sidebar.slider(
     "Minimum Severity",
-    min_value=1,
+    min_value=2,
     max_value=4,
-    value=2,
-    help="Minimum severity level to consider for hotspot detection"
+    value=3,  # CHANGED: Default to 3 (high severity only)
+    help="Minimum severity level - set to 3 or 4 to see only dangerous hotspots"
 )
 
 min_incidents = st.sidebar.slider(
     "Minimum Incidents",
-    min_value=2,
-    max_value=10,
-    value=3,
-    help="Minimum number of incidents to form a hotspot"
+    min_value=5,
+    max_value=50,
+    value=15,  # CHANGED: Default to 15 (was 3)
+    step=5,
+    help="Minimum number of incidents required - higher = fewer but more critical hotspots"
+)
+
+top_n_hotspots = st.sidebar.slider(
+    "Max Hotspots to Show",
+    min_value=5,
+    max_value=50,
+    value=20,  # NEW: Cap at 20 by default
+    step=5,
+    help="Show only the top N most dangerous hotspots"
 )
 
 perception_radius = st.sidebar.slider(
@@ -120,6 +133,19 @@ perception_radius = st.sidebar.slider(
     value=25,
     help="Radius in meters to match perception reports to hotspots"
 )
+
+# Add filtering explanation
+with st.sidebar.expander("ℹ️ How Filtering Works"):
+    st.markdown("""
+    **Hotspots are filtered using:**
+    
+    1. **Minimum Incidents**: At least N high-severity events
+    2. **Statistical Significance**: 1.5+ standard deviations above average
+    3. **Risk Score**: Composite score combining frequency + severity
+    4. **Temporal Consistency**: Must occur on 2+ different days
+    
+    **Result**: Only the 10-20 most critical locations are shown.
+    """)
 
 # Main content - Tabs
 tab1, tab2 = st.tabs(["📍 Hotspot Analysis", "📈 Trend Analysis"])
@@ -179,27 +205,55 @@ with tab1:
     
     st.markdown("---")
     
-    # ========== HOTSPOT DETECTION WITH DATE FILTER ==========
-    # Detect hotspots using the selected date range
-    with st.spinner("Detecting hotspots for selected date range..."):
+    # ========== HOTSPOT DETECTION WITH STRICT FILTERING ==========
+    with st.spinner("Detecting critical hotspots for selected date range..."):
         hotspots = detect_hotspots(
             severity_threshold=severity_threshold,
             min_samples=min_incidents,
             start_date=start_date.strftime('%Y-%m-%d'),
             end_date=end_date.strftime('%Y-%m-%d')
         )
+        
+        # Apply top_n limit
+        if not hotspots.empty and len(hotspots) > top_n_hotspots:
+            # Sort by risk_score if available, otherwise by incident_count
+            if 'risk_score' in hotspots.columns:
+                hotspots = hotspots.nlargest(top_n_hotspots, 'risk_score')
+            else:
+                hotspots = hotspots.nlargest(top_n_hotspots, 'incident_count')
     
     if hotspots.empty:
-        st.warning("No hotspots detected with current settings. Try adjusting the parameters in the sidebar or selecting a different date range.")
+        st.warning("No critical hotspots detected with current settings.")
         
-        # Show helpful suggestions
-        with st.expander("💡 Suggestions"):
-            st.write("**To find more hotspots, try:**")
-            st.write("- Lowering the 'Minimum Severity' threshold")
-            st.write("- Reducing the 'Minimum Incidents' count")
-            st.write("- Selecting a longer date range")
-            st.write("- Checking if there's data available for the selected period")
+        # Enhanced suggestions
+        with st.expander("💡 Why no hotspots found?"):
+            st.write("**Your current settings are very strict. This could mean:**")
+            st.write("✅ Good news! No extremely dangerous spots in this period")
+            st.write("OR")
+            st.write("⚙️ Settings might be too restrictive")
+            st.write("")
+            st.write("**To see more hotspots, try:**")
+            st.write(f"- Lower 'Minimum Severity' (currently: {severity_threshold})")
+            st.write(f"- Reduce 'Minimum Incidents' (currently: {min_incidents})")
+            st.write(f"- Increase 'Max Hotspots' (currently: {top_n_hotspots})")
+            st.write("- Select a longer date range")
     else:
+        # Show filtering summary
+        st.success(f"✅ Found **{len(hotspots)}** critical hotspots using strict filtering")
+        
+        # Show filtering stats if available
+        if 'risk_score' in hotspots.columns:
+            col1, col2, col3 = st.columns(3)
+            with col1:
+                st.metric("Avg Risk Score", f"{hotspots['risk_score'].mean():.1f}")
+            with col2:
+                if 'event_zscore' in hotspots.columns:
+                    above_avg = (hotspots['event_zscore'] >= 1.5).sum()
+                    st.metric("Statistically Significant", f"{above_avg}/{len(hotspots)}")
+            with col3:
+                if 'days_with_events' in hotspots.columns:
+                    st.metric("Avg Days Active", f"{hotspots['days_with_events'].mean():.1f}")
+        
         # Filter perception reports by date range
         infra_df_filtered = infra_df.copy()
         ride_df_filtered = ride_df.copy()
@@ -231,10 +285,10 @@ with tab1:
         # Display metrics
         st.subheader("📊 Key Metrics for Selected Period")
         metrics = {
-            "Total Hotspots": stats['total_hotspots'],
+            "Critical Hotspots": stats['total_hotspots'],
             "Total Incidents": stats['total_incidents'],
             "Avg Severity": f"{stats['avg_severity']:.2f}",
-            "Critical Hotspots": stats['critical_hotspots']
+            "High Risk": stats.get('critical_hotspots', 0)
         }
         create_metric_cards(metrics)
         
@@ -251,7 +305,7 @@ with tab1:
         col1, col2 = st.columns([2, 1])
         
         with col1:
-            st.subheader("🗺️ Interactive Hotspot Map")
+            st.subheader("🗺️ Critical Hotspot Map")
             show_perception = st.checkbox("Show Perception Reports", value=True)
             
             # Create map with filtered data
@@ -264,15 +318,42 @@ with tab1:
             folium_static(hotspot_map, width=800, height=600)
         
         with col2:
-            st.subheader("📊 Severity Distribution")
-            severity_chart = create_severity_distribution_chart(matched_hotspots)
-            st.plotly_chart(severity_chart, use_container_width=True)
+            st.subheader("📊 Risk Distribution")
+            
+            # Show risk categories if available
+            if 'risk_category' in matched_hotspots.columns:
+                risk_counts = matched_hotspots['risk_category'].value_counts()
+                
+                fig = px.bar(
+                    x=risk_counts.index,
+                    y=risk_counts.values,
+                    labels={'x': 'Risk Category', 'y': 'Count'},
+                    title='Hotspots by Risk Level',
+                    color=risk_counts.index,
+                    color_discrete_map={
+                        'Medium': '#FFD700',
+                        'High': '#FFA500', 
+                        'Critical': '#FF4500',
+                        'Extreme': '#DC143C'
+                    }
+                )
+                st.plotly_chart(fig, use_container_width=True)
+            else:
+                severity_chart = create_severity_distribution_chart(matched_hotspots)
+                st.plotly_chart(severity_chart, use_container_width=True)
             
             # Top hotspots for the period
-            st.subheader("🔝 Top 5 Hotspots (Period)")
-            top_hotspots = matched_hotspots.nlargest(5, 'incident_count')[
-                ['hotspot_id', 'incident_count', 'avg_severity', 'total_perception_reports']
-            ]
+            st.subheader("🔝 Top 5 Critical Hotspots")
+            
+            # Sort by risk_score if available
+            if 'risk_score' in matched_hotspots.columns:
+                top_cols = ['hotspot_id', 'incident_count', 'risk_score', 'total_perception_reports']
+                top_hotspots = matched_hotspots.nlargest(5, 'risk_score')[top_cols].copy()
+                top_hotspots['risk_score'] = top_hotspots['risk_score'].round(1)
+            else:
+                top_cols = ['hotspot_id', 'incident_count', 'avg_severity', 'total_perception_reports']
+                top_hotspots = matched_hotspots.nlargest(5, 'incident_count')[top_cols]
+            
             st.dataframe(top_hotspots, use_container_width=True, hide_index=True)
         
         st.markdown("---")
@@ -297,7 +378,10 @@ with tab1:
             
             with col2:
                 st.metric("Max Severity", int(hotspot_data.get('max_severity', 0)))
-                st.metric("Devices", int(hotspot_data.get('device_count', 0)))
+                if 'risk_score' in hotspot_data:
+                    st.metric("Risk Score", f"{hotspot_data['risk_score']:.1f}")
+                else:
+                    st.metric("Devices", int(hotspot_data.get('device_count', 0)))
             
             with col3:
                 st.metric("Perception Reports", int(hotspot_data['total_perception_reports']))
@@ -307,6 +391,15 @@ with tab1:
                 lng = hotspot_data['longitude']
                 street_view_url = STREET_VIEW_URL_TEMPLATE.format(lat=lat, lng=lng, heading=0)
                 st.markdown(f"[🔍 View in Google Street View]({street_view_url})")
+            
+            # Show additional metrics if available
+            if 'days_with_events' in hotspot_data:
+                col1, col2 = st.columns(2)
+                with col1:
+                    st.metric("Days with Events", int(hotspot_data['days_with_events']))
+                with col2:
+                    if 'unique_devices' in hotspot_data:
+                        st.metric("Unique Cyclists Affected", int(hotspot_data['unique_devices']))
             
             # Perception reports details
             if hotspot_data['total_perception_reports'] > 0:
