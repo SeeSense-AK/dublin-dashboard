@@ -8,7 +8,7 @@ import streamlit as st
 import pandas as pd
 from keplergl import KeplerGl
 from streamlit_keplergl import keplergl_static
-from modules.smart_hotspot_detector_v2 import SmartHotspotDetectorV2
+from src.smart_hotspot_detector import SmartHotspotDetectorV2
 
 # -------------------------------------------------------------------
 # 🧠 APP CONFIGURATION
