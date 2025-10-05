@@ -1,113 +1,116 @@
 """
-Sentiment analysis module using Groq API
-Analyzes perception report comments to understand context and severity
-FIXED: Compatible with latest Groq library
+Sentiment analysis module - ULTRA SIMPLE VERSION
+No fancy parameters, just works
 """
 import streamlit as st
-from groq import Groq
-from config import GROQ_API_KEY, GROQ_MODEL
+import os
+
+# Try to import Groq, but don't fail if it doesn't work
+try:
+    from groq import Groq
+    GROQ_AVAILABLE = True
+except ImportError:
+    GROQ_AVAILABLE = False
+    print("Groq not available - using fallback analysis")
 
 
 def get_groq_client():
     """
-    Initialize Groq API client
-    Returns: Groq client
+    Initialize Groq API client - SIMPLEST POSSIBLE VERSION
     """
-    if not GROQ_API_KEY:
-        st.warning("Groq API key not configured. Sentiment analysis will be disabled.")
+    if not GROQ_AVAILABLE:
         return None
     
     try:
-        # Simple client initialization - no extra parameters
-        return Groq(api_key=GROQ_API_KEY)
+        # Get API key from environment
+        api_key = os.getenv("GROQ_API_KEY")
+        
+        if not api_key:
+            st.warning("⚠️ Groq API key not found. Using basic analysis.")
+            return None
+        
+        # SIMPLEST POSSIBLE INITIALIZATION - NO EXTRA PARAMETERS
+        client = Groq(api_key=api_key)
+        return client
+        
     except Exception as e:
-        st.warning(f"Could not initialize Groq client: {e}")
+        st.warning(f"⚠️ Could not use Groq API: {str(e)}. Using basic analysis.")
         return None
 
 
 @st.cache_data(ttl=3600, show_spinner=False)
 def analyze_perception_sentiment(comments_list):
     """
-    Analyze sentiment and themes from a list of perception reports
-    
-    Args:
-        comments_list: List of comment strings
-    
-    Returns:
-        dict with sentiment analysis results
+    Analyze sentiment - tries AI first, falls back to keywords
     """
-    client = get_groq_client()
-    
-    if not client or not comments_list:
+    # Always have a fallback ready
+    if not comments_list or len(comments_list) == 0:
         return {
-            'sentiment': 'neutral',
-            'severity': 'medium',
-            'summary': 'No analysis available',
+            'sentiment': 'unknown',
+            'severity': 'unknown',
+            'summary': 'No comments available',
             'key_issues': []
         }
     
-    # Combine comments for analysis (limit to avoid token limits)
-    comments_to_analyze = comments_list[:20]  # Max 20 comments
-    comments_text = "\n".join([f"- {c}" for c in comments_to_analyze if c and isinstance(c, str)])
+    # Try AI analysis
+    client = get_groq_client()
     
-    # Limit length
-    if len(comments_text) > 2000:
-        comments_text = comments_text[:2000] + "..."
+    if client:
+        try:
+            return analyze_with_groq(client, comments_list)
+        except Exception as e:
+            print(f"Groq analysis failed: {e}, using fallback")
+            # Fall through to fallback
     
-    prompt = f"""Analyze these road safety perception reports and provide a structured assessment:
+    # Fallback: Simple keyword analysis
+    return analyze_without_api(comments_list)
+
+
+def analyze_with_groq(client, comments_list):
+    """
+    Use Groq API for analysis
+    """
+    # Limit comments to avoid token limits
+    comments_to_analyze = comments_list[:15]
+    comments_text = "\n".join([f"- {c}" for c in comments_to_analyze if c and isinstance(c, str) and len(str(c).strip()) > 0])
+    
+    # Truncate if too long
+    if len(comments_text) > 1500:
+        comments_text = comments_text[:1500] + "..."
+    
+    prompt = f"""Analyze these road safety reports. Be brief.
 
 Reports:
 {comments_text}
 
-Provide your analysis in this exact format:
-
-SENTIMENT: [positive/neutral/negative]
+Format:
+SENTIMENT: [negative/neutral/positive]
 SEVERITY: [low/medium/high/critical]
-SUMMARY: [2-3 sentence summary of the main issues]
-KEY_ISSUES: [comma-separated list of 3-5 key problems mentioned]
+SUMMARY: [1-2 sentences]
+KEY_ISSUES: [3-4 main problems, comma-separated]"""
 
-Be concise and focus on actionable insights."""
-
-    try:
-        response = client.chat.completions.create(
-            model=GROQ_MODEL,
-            messages=[
-                {"role": "system", "content": "You are a road safety analyst. Provide brief, actionable analysis."},
-                {"role": "user", "content": prompt}
-            ],
-            temperature=0.3,
-            max_tokens=300
-        )
-        
-        analysis_text = response.choices[0].message.content
-        
-        # Parse the structured response
-        result = parse_sentiment_response(analysis_text)
-        return result
-        
-    except Exception as e:
-        st.error(f"Error calling Groq API: {str(e)}")
-        # Return fallback analysis
-        return {
-            'sentiment': 'negative',
-            'severity': 'medium',
-            'summary': f'Analysis of {len(comments_list)} user reports. API error occurred.',
-            'key_issues': ['API analysis unavailable']
-        }
+    # Call API
+    response = client.chat.completions.create(
+        model="llama-3.1-70b-versatile",
+        messages=[
+            {"role": "system", "content": "You are a road safety analyst. Be concise."},
+            {"role": "user", "content": prompt}
+        ],
+        temperature=0.3,
+        max_tokens=250
+    )
+    
+    # Parse response
+    analysis_text = response.choices[0].message.content
+    return parse_sentiment_response(analysis_text)
 
 
 def parse_sentiment_response(response_text):
     """
-    Parse the structured response from Groq
-    
-    Args:
-        response_text: Raw response from Groq
-    
-    Returns:
-        dict with parsed fields
+    Parse structured response from AI
     """
     result = {
-        'sentiment': 'neutral',
+        'sentiment': 'negative',
         'severity': 'medium',
         'summary': '',
         'key_issues': []
@@ -118,36 +121,139 @@ def parse_sentiment_response(response_text):
     for line in lines:
         line = line.strip()
         
-        if line.startswith('SENTIMENT:'):
-            result['sentiment'] = line.split(':', 1)[1].strip().lower()
+        if 'SENTIMENT:' in line.upper():
+            parts = line.split(':', 1)
+            if len(parts) > 1:
+                result['sentiment'] = parts[1].strip().lower()
         
-        elif line.startswith('SEVERITY:'):
-            result['severity'] = line.split(':', 1)[1].strip().lower()
+        elif 'SEVERITY:' in line.upper():
+            parts = line.split(':', 1)
+            if len(parts) > 1:
+                result['severity'] = parts[1].strip().lower()
         
-        elif line.startswith('SUMMARY:'):
-            result['summary'] = line.split(':', 1)[1].strip()
+        elif 'SUMMARY:' in line.upper():
+            parts = line.split(':', 1)
+            if len(parts) > 1:
+                result['summary'] = parts[1].strip()
         
-        elif line.startswith('KEY_ISSUES:'):
-            issues_text = line.split(':', 1)[1].strip()
-            result['key_issues'] = [issue.strip() for issue in issues_text.split(',')]
+        elif 'KEY_ISSUES:' in line.upper() or 'KEY ISSUES:' in line.upper():
+            parts = line.split(':', 1)
+            if len(parts) > 1:
+                issues_text = parts[1].strip()
+                result['key_issues'] = [issue.strip() for issue in issues_text.split(',') if issue.strip()]
     
-    # Fallback if parsing fails
+    # Fallback if parsing failed
     if not result['summary']:
-        result['summary'] = response_text[:200]
+        result['summary'] = response_text[:150]
+    
+    if not result['key_issues']:
+        result['key_issues'] = ['road_safety_concerns']
     
     return result
 
 
+def analyze_without_api(comments_list):
+    """
+    Fallback: Simple keyword-based analysis
+    NO API REQUIRED
+    """
+    if not comments_list or len(comments_list) == 0:
+        return {
+            'sentiment': 'unknown',
+            'severity': 'unknown',
+            'summary': 'No comments available',
+            'key_issues': []
+        }
+    
+    # Combine all comments
+    text = ' '.join([str(c).lower() for c in comments_list if c and len(str(c).strip()) > 0])
+    
+    # Keyword lists
+    danger_keywords = ['dangerous', 'scary', 'terrifying', 'nearly', 'almost', 'crashed', 'hit']
+    pothole_keywords = ['pothole', 'hole', 'crater', 'damage', 'broken', 'rough']
+    close_pass_keywords = ['close', 'pass', 'too close', 'nearly hit', 'close call']
+    surface_keywords = ['surface', 'road', 'pavement', 'bumpy', 'uneven']
+    traffic_keywords = ['traffic', 'cars', 'vehicles', 'junction', 'turning']
+    
+    # Count keywords
+    danger_count = sum(1 for word in danger_keywords if word in text)
+    
+    # Identify main issues
+    issues = []
+    if any(word in text for word in pothole_keywords):
+        issues.append('potholes')
+    if any(word in text for word in close_pass_keywords):
+        issues.append('close_passes')
+    if any(word in text for word in surface_keywords):
+        issues.append('poor_surface')
+    if any(word in text for word in traffic_keywords):
+        issues.append('traffic_issues')
+    
+    if not issues:
+        issues = ['general_safety_concerns']
+    
+    # Determine severity
+    if danger_count >= 3 or 'terrifying' in text or 'dangerous' in text:
+        severity = 'high'
+    elif danger_count >= 1:
+        severity = 'medium'
+    else:
+        severity = 'low'
+    
+    # Sentiment
+    negative_words = ['bad', 'poor', 'terrible', 'awful', 'dangerous', 'unsafe']
+    negative_count = sum(1 for word in negative_words if word in text)
+    
+    if negative_count >= 2:
+        sentiment = 'very_negative'
+    elif negative_count >= 1:
+        sentiment = 'negative'
+    else:
+        sentiment = 'neutral'
+    
+    # Summary
+    num_comments = len(comments_list)
+    main_issue = issues[0].replace('_', ' ')
+    summary = f"Analysis of {num_comments} user report{'s' if num_comments != 1 else ''} highlighting {main_issue} and related safety concerns."
+    
+    return {
+        'sentiment': sentiment,
+        'severity': severity,
+        'summary': summary,
+        'key_issues': issues[:5]  # Max 5 issues
+    }
+
+
+def get_simple_sentiment(comments_list):
+    """
+    Quick sentiment check - positive/neutral/negative
+    """
+    if not comments_list:
+        return 'neutral'
+    
+    text = ' '.join([str(c).lower() for c in comments_list if c])
+    
+    negative_keywords = ['dangerous', 'bad', 'poor', 'terrible', 'unsafe', 'hazard', 
+                         'pothole', 'broken', 'damaged', 'awful', 'worst', 'nearly',
+                         'close pass', 'scary']
+    positive_keywords = ['good', 'safe', 'excellent', 'great', 'improved', 'better']
+    
+    negative_count = sum(1 for keyword in negative_keywords if keyword in text)
+    positive_count = sum(1 for keyword in positive_keywords if keyword in text)
+    
+    if negative_count > positive_count:
+        return 'negative'
+    elif positive_count > negative_count:
+        return 'positive'
+    else:
+        return 'neutral'
+
+
+# For backwards compatibility
 @st.cache_data(ttl=3600, show_spinner=False)
 def batch_analyze_hotspots(hotspots_with_comments):
     """
-    Analyze sentiment for multiple hotspots in batch
-    
-    Args:
-        hotspots_with_comments: List of dicts with hotspot_id and comments
-    
-    Returns:
-        dict mapping hotspot_id to sentiment analysis
+    Analyze sentiment for multiple hotspots
     """
     results = {}
     
@@ -167,88 +273,3 @@ def batch_analyze_hotspots(hotspots_with_comments):
             }
     
     return results
-
-
-def get_simple_sentiment(comments_list):
-    """
-    Get simple sentiment without API call (fallback method)
-    Uses keyword matching for basic sentiment
-    
-    Args:
-        comments_list: List of comments
-    
-    Returns:
-        str: 'positive', 'neutral', or 'negative'
-    """
-    if not comments_list:
-        return 'neutral'
-    
-    # Simple keyword-based sentiment
-    negative_keywords = ['dangerous', 'bad', 'poor', 'terrible', 'unsafe', 'hazard', 
-                         'pothole', 'broken', 'damaged', 'awful', 'worst', 'close', 'pass',
-                         'nearly', 'almost', 'scary', 'frightening']
-    positive_keywords = ['good', 'safe', 'excellent', 'great', 'improved', 'better']
-    
-    text = ' '.join([str(c) for c in comments_list if c]).lower()
-    
-    negative_count = sum(1 for keyword in negative_keywords if keyword in text)
-    positive_count = sum(1 for keyword in positive_keywords if keyword in text)
-    
-    if negative_count > positive_count:
-        return 'negative'
-    elif positive_count > negative_count:
-        return 'positive'
-    else:
-        return 'neutral'
-
-
-def analyze_without_api(comments_list):
-    """
-    Fallback analysis without API - used when Groq is unavailable
-    
-    Args:
-        comments_list: List of comments
-    
-    Returns:
-        dict with basic analysis
-    """
-    if not comments_list:
-        return {
-            'sentiment': 'unknown',
-            'severity': 'unknown',
-            'summary': 'No comments available',
-            'key_issues': []
-        }
-    
-    sentiment = get_simple_sentiment(comments_list)
-    
-    # Extract common themes from comments
-    text = ' '.join([str(c) for c in comments_list if c]).lower()
-    
-    issues = []
-    if 'pothole' in text or 'hole' in text:
-        issues.append('pothole')
-    if 'close pass' in text or 'too close' in text:
-        issues.append('close_pass')
-    if 'dangerous' in text or 'unsafe' in text:
-        issues.append('dangerous_conditions')
-    if 'surface' in text or 'rough' in text:
-        issues.append('poor_surface')
-    
-    # Determine severity
-    danger_words = ['dangerous', 'scary', 'nearly', 'almost', 'terrible', 'awful']
-    danger_count = sum(1 for word in danger_words if word in text)
-    
-    if danger_count >= 3:
-        severity = 'high'
-    elif danger_count >= 1:
-        severity = 'medium'
-    else:
-        severity = 'low'
-    
-    return {
-        'sentiment': sentiment,
-        'severity': severity,
-        'summary': f'Analysis of {len(comments_list)} reports. Main themes: {", ".join(issues) if issues else "general concerns"}',
-        'key_issues': issues if issues else ['general_safety_concerns']
-    }
