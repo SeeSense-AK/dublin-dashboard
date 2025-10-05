@@ -3,7 +3,7 @@ Dublin Road Safety Dashboard - Clean Version
 Main Streamlit application with AWS Athena backend and Kepler.gl
 """
 import streamlit as st
-from streamlit_kepler_gl import keplergl_static
+from streamlit_keplergl import keplergl_static
 import pandas as pd
 import plotly.express as px
 from datetime import datetime, timedelta
@@ -235,19 +235,24 @@ with tab1:
         with st.spinner("Detecting hotspots from Athena..."):
             detector = SmartHotspotDetector(filtered_infra, filtered_ride)
             
+            # Prepare parameters for detection
+            sensor_params = {
+                'min_severity': severity_threshold,
+                'min_events': min_sensor_events,
+                'start_date': start_date.strftime('%Y-%m-%d'),
+                'end_date': end_date.strftime('%Y-%m-%d'),
+                'perception_radius_m': perception_match_radius  # For enrichment
+            }
+            
+            perception_params = {
+                'cluster_radius_m': perception_cluster_radius,
+                'min_reports': min_perception_reports,
+                'sensor_radius_m': sensor_cluster_radius  # For enrichment
+            }
+            
             hotspots = detector.get_combined_hotspots(
-                sensor_params={
-                    'min_severity': severity_threshold,
-                    'min_events': min_sensor_events,
-                    'perception_radius_m': perception_match_radius,
-                    'start_date': start_date.strftime('%Y-%m-%d'),
-                    'end_date': end_date.strftime('%Y-%m-%d')
-                },
-                perception_params={
-                    'cluster_radius_m': perception_cluster_radius,
-                    'min_reports': min_perception_reports,
-                    'sensor_radius_m': sensor_cluster_radius
-                },
+                sensor_params=sensor_params,
+                perception_params=perception_params,
                 max_total_hotspots=max_hotspots
             )
             
@@ -312,7 +317,9 @@ with tab1:
             )
             
             try:
-                keplergl_static(kepler_data, config=kepler_config, height=600)
+                # Note: keplergl_static doesn't accept config parameter
+                # Map will use default configuration
+                keplergl_static(kepler_data, height=600)
             except Exception as e:
                 st.error(f"Kepler error: {e}")
                 st.dataframe(hotspots.head(10))

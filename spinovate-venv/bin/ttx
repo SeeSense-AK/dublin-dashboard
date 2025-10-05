@@ -1,4 +1,4 @@
-#!/Users/abhishekkumbhar/Documents/GitHub/dublin-dashboard/spinovate-venv/bin/python
+#!/Users/abhishekkumbhar/Documents/GitHub/spinovate-dashboard/spinovate-venv/bin/python3.9
 import sys
 from fontTools.ttx import main
 if __name__ == '__main__':
