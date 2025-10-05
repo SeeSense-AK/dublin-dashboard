@@ -162,61 +162,82 @@ class SmartHotspotDetectorV2:
         """
         Spatially join perception and sensor hotspots within given radius
         Produces unified, context-rich hotspots for visualization
+        Compatible with older GeoPandas versions.
         """
-        if sensor_gdf.empty and perception_gdf.empty:
+        import geopandas as gpd
+        import pandas as pd
+
+        # If both empty → nothing to do
+        if (sensor_gdf is None or sensor_gdf.empty) and (
+            perception_gdf is None or perception_gdf.empty
+        ):
             return gpd.GeoDataFrame()
 
-        # Convert to projected CRS for distance-based joins
-        sensor_gdf = sensor_gdf.to_crs(epsg=3857)
-        perception_gdf = perception_gdf.to_crs(epsg=3857)
+        # If one of them is empty → just return the other (flattened)
+        if sensor_gdf is None or sensor_gdf.empty:
+            perception_gdf["perception_count"] = perception_gdf.get("report_count", 0)
+            perception_gdf["priority_score"] = perception_gdf.get("urgency_score", 0)
+            perception_gdf["summary_text"] = perception_gdf.apply(
+                lambda r: f"{r.get('report_count',0)} reports ({r.get('dominant_theme','N/A')}), sentiment={r.get('sentiment_label','N/A')}",
+                axis=1,
+            )
+            return perception_gdf
 
-        joined = gpd.sjoin_nearest(
-            sensor_gdf,
-            perception_gdf,
-            how="outer",
-            distance_col="distance_m",
-            max_distance=radius_m,
-        ).to_crs(epsg=4326)
+        if perception_gdf is None or perception_gdf.empty:
+            sensor_gdf["perception_count"] = 0
+            sensor_gdf["priority_score"] = sensor_gdf.get("risk_score", 0)
+            sensor_gdf["summary_text"] = sensor_gdf.apply(
+                lambda r: f"{r.get('event_count',0)} sensor events (severity={r.get('avg_severity',0):.2f})",
+                axis=1,
+            )
+            return sensor_gdf
 
+        # Ensure both GeoDataFrames have valid geometries & CRS
+        if "geometry" not in sensor_gdf.columns:
+            sensor_gdf["geometry"] = [Point(xy) for xy in zip(sensor_gdf.center_lng, sensor_gdf.center_lat)]
+        if "geometry" not in perception_gdf.columns:
+            perception_gdf["geometry"] = [Point(xy) for xy in zip(perception_gdf.center_lng, perception_gdf.center_lat)]
+
+        sensor_gdf = sensor_gdf.set_crs("EPSG:4326", allow_override=True).to_crs(epsg=3857)
+        perception_gdf = perception_gdf.set_crs("EPSG:4326", allow_override=True).to_crs(epsg=3857)
+
+        # Perform spatial join safely
+        try:
+            joined = gpd.sjoin_nearest(
+                sensor_gdf,
+                perception_gdf,
+                how="left",  # compatible with all geopandas versions
+                distance_col="distance_m",
+                max_distance=radius_m,
+            ).to_crs(epsg=4326)
+        except Exception as e:
+            print(f"Spatial join failed: {e}")
+            return sensor_gdf  # fallback to sensor-only view
+
+        # Fill missing values
         joined["perception_count"] = joined["report_count"].fillna(0).astype(int)
         joined["avg_severity"] = joined["avg_severity"].fillna(0)
         joined["risk_score"] = joined["risk_score"].fillna(0)
         joined["urgency_score"] = joined["urgency_score"].fillna(0)
 
-        # Compute unified priority
+        # Compute priority score
         joined["priority_score"] = (
             0.6 * joined["risk_score"] + 0.4 * joined["urgency_score"]
         )
         joined["priority_score"] += joined["perception_count"] * 2
 
-        # Create unified summary text for map tooltip
+        # Create unified text summary
         def build_summary(row):
             return (
                 f"{int(row.get('event_count',0))} sensor events, "
-                f"{int(row.get('perception_count',0))} user reports "
+                f"{int(row.get('perception_count',0))} reports "
                 f"({row.get('dominant_theme','N/A')}), sentiment={row.get('sentiment_label','N/A')}"
-            )
+                )
 
         joined["summary_text"] = joined.apply(build_summary, axis=1)
 
-        # Generate Groq AI summary per hotspot
-        joined["ai_summary"] = joined.apply(
-            lambda r: generate_hotspot_summary(
-                lat=r["center_lat"],
-                lon=r["center_lng"],
-                theme=r.get("dominant_theme"),
-                sentiment=r.get("sentiment_label"),
-                sensor_events=r.get("event_count", 0),
-                perception_reports=r.get("perception_count", 0),
-                avg_severity=r.get("avg_severity", 0),
-            ),
-            axis=1,
-        )
+        return joined.reset_index(drop=True)
 
-        joined["final_hotspot_id"] = [
-            f"hotspot_{i+1}" for i in range(len(joined))
-        ]
-        return joined
 
     # -------------------------------------------------------------------------
     # 4. MASTER PIPELINE
@@ -241,6 +262,25 @@ class SmartHotspotDetectorV2:
         # Merge both
         enriched = self.enrich_hotspots(sensor_hotspots, perception_hotspots, radius_m)
 
-        # Sort by priority for dashboard display
-        return enriched.sort_values("priority_score", ascending=False).reset_index(drop=True)
+        # Ensure we have a consistent DataFrame
+        if enriched is None or enriched.empty:
+            print("⚠️ No enriched hotspots generated. Returning sensor or perception data directly.")
+            if not sensor_hotspots.empty:
+                return sensor_hotspots.reset_index(drop=True)
+            elif not perception_hotspots.empty:
+                return perception_hotspots.reset_index(drop=True)
+            else:
+                return pd.DataFrame()
 
+        # Ensure priority_score exists
+        if "priority_score" not in enriched.columns:
+            print("⚠️ priority_score missing; assigning default based on risk/urgency.")
+            if "risk_score" in enriched.columns:
+                enriched["priority_score"] = enriched.get("risk_score", 0)
+            elif "urgency_score" in enriched.columns:
+                enriched["priority_score"] = enriched.get("urgency_score", 0)
+            else:
+                enriched["priority_score"] = 0
+
+        # Sort and return
+        return enriched.sort_values("priority_score", ascending=False).reset_index(drop=True)
