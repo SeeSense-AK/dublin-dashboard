@@ -1,16 +1,18 @@
 """
 Dublin Road Safety Dashboard - Enhanced Version
-Main Streamlit application with AWS Athena backend and Kepler.gl
+Main Streamlit application with AWS Athena backend and Folium maps
 Uses SmartHotspotDetectorV2 with advanced features
 """
 import streamlit as st
-from streamlit_keplergl import keplergl_static
+from streamlit_folium import folium_static
+import folium
+from folium import plugins
 import pandas as pd
 import plotly.express as px
 from datetime import datetime, timedelta
 
 # Import custom modules - USING V2 DETECTOR
-from config import DASHBOARD_CONFIG, PERCEPTION_CONFIG
+from config import DASHBOARD_CONFIG, PERCEPTION_CONFIG, SEVERITY_COLORS
 from src.smart_hotspot_detector_v2 import SmartHotspotDetectorV2 as SmartHotspotDetector
 from utils.geocoding_utils import get_location_name_safe, enrich_hotspots_with_locations
 from utils.constants import STREET_VIEW_URL_TEMPLATE
@@ -316,50 +318,120 @@ with tab1:
         
         st.markdown("---")
         
-        # Kepler Map
+        # Interactive Map with Folium
         st.subheader("🗺️ Interactive Safety Map")
         col_map, col_stats = st.columns([2, 1])
         
         with col_map:
-            try:
-                from keplergl import KeplerGl
+            # Create Folium map
+            m = folium.Map(
+                location=[hotspots['center_lat'].mean(), hotspots['center_lng'].mean()],
+                zoom_start=12,
+                tiles='CartoDB positron'
+            )
+            
+            # Add hotspots to map
+            for idx, hotspot in hotspots.iterrows():
+                lat = hotspot['center_lat']
+                lng = hotspot['center_lng']
                 
-                # Create KeplerGl map object
-                map_1 = KeplerGl(height=600)
+                # Determine color based on priority
+                priority = hotspot.get('priority_score', 0)
+                if priority >= 75:
+                    color = 'red'
+                    severity_color = SEVERITY_COLORS[4]
+                elif priority >= 50:
+                    color = 'orange'
+                    severity_color = SEVERITY_COLORS[3]
+                elif priority >= 25:
+                    color = 'yellow'
+                    severity_color = SEVERITY_COLORS[2]
+                else:
+                    color = 'green'
+                    severity_color = SEVERITY_COLORS[1]
                 
-                # Prepare data for Kepler (convert timestamps and clean data)
-                if not hotspots.empty:
-                    hotspots_clean = hotspots.copy()
-                    # Convert any datetime columns to strings
-                    for col in hotspots_clean.columns:
-                        if pd.api.types.is_datetime64_any_dtype(hotspots_clean[col]):
-                            hotspots_clean[col] = hotspots_clean[col].astype(str)
-                        # Convert dict/list columns to strings
-                        elif hotspots_clean[col].dtype == 'object':
-                            hotspots_clean[col] = hotspots_clean[col].apply(
-                                lambda x: str(x) if isinstance(x, (dict, list)) else x
-                            )
-                    map_1.add_data(data=hotspots_clean, name='Hotspots')
+                # Create popup content
+                popup_html = f"""
+                <div style="font-family: Arial; width: 320px;">
+                    <h4 style="color: {severity_color};">🚨 Hotspot #{hotspot.get('final_hotspot_id', idx+1)}</h4>
+                    <p><b>📍 Location:</b> {hotspot.get('location_name', 'Unknown')}</p>
+                    <p><b>🎯 Source:</b> {hotspot.get('source', 'N/A').title()}</p>
+                    <p><b>⭐ Priority:</b> {priority:.1f}</p>
+                """
                 
-                if show_perception_layer and not filtered_ride.empty:
-                    ride_clean = filtered_ride.copy()
-                    # Convert datetime columns to strings
-                    for col in ride_clean.columns:
-                        if pd.api.types.is_datetime64_any_dtype(ride_clean[col]):
-                            ride_clean[col] = ride_clean[col].astype(str)
-                        elif ride_clean[col].dtype == 'object':
-                            ride_clean[col] = ride_clean[col].apply(
-                                lambda x: str(x) if isinstance(x, (dict, list)) else x
-                            )
-                    map_1.add_data(data=ride_clean, name='Perception Reports')
+                if hotspot.get('source') == 'sensor':
+                    popup_html += f"""
+                    <p><b>📊 Events:</b> {hotspot.get('event_count', 0)}</p>
+                    <p><b>⚠️ Avg Severity:</b> {hotspot.get('avg_severity', 0):.1f}</p>
+                    """
+                else:
+                    popup_html += f"""
+                    <p><b>📝 Reports:</b> {hotspot.get('report_count', 0)}</p>
+                    <p><b>🔥 Urgency:</b> {hotspot.get('urgency_score', 0)}/100</p>
+                    """
                 
-                # Render map
-                keplergl_static(map_1)
+                # Add V2 features
+                if hotspot.get('context_summary'):
+                    popup_html += f"<p><b>📋 Context:</b> {hotspot['context_summary']}</p>"
                 
-            except Exception as e:
-                st.error(f"Kepler error: {e}")
-                st.info("Showing data table instead")
-                st.dataframe(hotspots.head(10))
+                if hotspot.get('validation_reasoning'):
+                    validation_status = hotspot.get('sensor_validation', 'N/A')
+                    if isinstance(validation_status, str):
+                        status_display = validation_status.title()
+                    else:
+                        status_display = str(validation_status)
+                    
+                    confidence = hotspot.get('validation_confidence', 0)
+                    if isinstance(confidence, (int, float)):
+                        confidence_display = f"{confidence:.0%}"
+                    else:
+                        confidence_display = str(confidence)
+                    
+                    popup_html += f"""
+                    <p><b>✅ Validation:</b> {status_display}</p>
+                    <p><b>🎯 Confidence:</b> {confidence_display}</p>
+                    """
+                
+                street_view_url = STREET_VIEW_URL_TEMPLATE.format(lat=lat, lng=lng, heading=0)
+                popup_html += f'<br><a href="{street_view_url}" target="_blank" style="color: #4285f4;">📍 View in Street View</a>'
+                popup_html += "</div>"
+                
+                # Add circle marker
+                folium.CircleMarker(
+                    location=[lat, lng],
+                    radius=8 + (priority / 10),
+                    popup=folium.Popup(popup_html, max_width=350),
+                    tooltip=f"Hotspot #{hotspot.get('final_hotspot_id', idx+1)}: Priority {priority:.0f}",
+                    color=color,
+                    fill=True,
+                    fillColor=severity_color,
+                    fillOpacity=0.7,
+                    weight=2
+                ).add_to(m)
+            
+            # Add perception reports if enabled
+            if show_perception_layer and not filtered_ride.empty:
+                for idx, report in filtered_ride.head(100).iterrows():  # Limit to 100 for performance
+                    if pd.notna(report['lat']) and pd.notna(report['lng']):
+                        # Safely get comment
+                        comment = report.get('commentfinal', '')
+                        if pd.isna(comment) or not isinstance(comment, str):
+                            comment = 'No comment'
+                        else:
+                            comment = comment[:100]
+                        
+                        folium.CircleMarker(
+                            location=[report['lat'], report['lng']],
+                            radius=3,
+                            popup=f"<b>{report.get('incidenttype', 'N/A')}</b><br>{comment}",
+                            tooltip="Perception Report",
+                            color='blue',
+                            fill=True,
+                            fillOpacity=0.5
+                        ).add_to(m)
+            
+            # Render map
+            folium_static(m, width=800, height=600)
         
         with col_stats:
             st.markdown("#### 📈 Statistics")
@@ -434,8 +506,18 @@ with tab1:
                 # Show validation details if available (V2 feature)
                 if hotspot.get('validation_reasoning'):
                     st.markdown("##### 🔍 Validation Details")
-                    st.write(f"**Status:** {hotspot.get('sensor_validation', 'N/A').title()}")
-                    st.write(f"**Confidence:** {hotspot.get('validation_confidence', 0):.1%}")
+                    validation_status = hotspot.get('sensor_validation', 'N/A')
+                    if isinstance(validation_status, str):
+                        st.write(f"**Status:** {validation_status.title()}")
+                    else:
+                        st.write(f"**Status:** {validation_status}")
+                    
+                    confidence = hotspot.get('validation_confidence', 0)
+                    if isinstance(confidence, (int, float)):
+                        st.write(f"**Confidence:** {confidence:.1%}")
+                    else:
+                        st.write(f"**Confidence:** {confidence}")
+                    
                     st.write(f"**Reasoning:** {hotspot.get('validation_reasoning', 'N/A')}")
                 
                 street_view_url = STREET_VIEW_URL_TEMPLATE.format(lat=lat, lng=lng, heading=0)
