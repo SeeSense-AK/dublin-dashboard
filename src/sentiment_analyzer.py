@@ -1,22 +1,22 @@
 """
-Sentiment analysis module - ULTRA SIMPLE VERSION
-No fancy parameters, just works
+Sentiment analysis module - FIXED FOR GROQ
+Clean implementation that works with Groq API
 """
 import streamlit as st
 import os
 
-# Try to import Groq, but don't fail if it doesn't work
+# Try to import Groq
 try:
     from groq import Groq
     GROQ_AVAILABLE = True
 except ImportError:
     GROQ_AVAILABLE = False
-    print("Groq not available - using fallback analysis")
+    print("⚠️ Groq not available - install with: pip install groq")
 
 
 def get_groq_client():
     """
-    Initialize Groq API client - SIMPLEST POSSIBLE VERSION
+    Initialize Groq API client - CLEAN VERSION
     """
     if not GROQ_AVAILABLE:
         return None
@@ -26,24 +26,23 @@ def get_groq_client():
         api_key = os.getenv("GROQ_API_KEY")
         
         if not api_key:
-            st.warning("⚠️ Groq API key not found. Using basic analysis.")
             return None
         
-        # SIMPLEST POSSIBLE INITIALIZATION - NO EXTRA PARAMETERS
+        # Initialize with ONLY the api_key parameter
         client = Groq(api_key=api_key)
         return client
         
     except Exception as e:
-        st.warning(f"⚠️ Could not use Groq API: {str(e)}. Using basic analysis.")
+        print(f"Groq initialization error: {e}")
         return None
 
 
 @st.cache_data(ttl=3600, show_spinner=False)
 def analyze_perception_sentiment(comments_list):
     """
-    Analyze sentiment - tries AI first, falls back to keywords
+    Analyze sentiment - tries Groq first, falls back to keywords
     """
-    # Always have a fallback ready
+    # Validate input
     if not comments_list or len(comments_list) == 0:
         return {
             'sentiment': 'unknown',
@@ -52,15 +51,15 @@ def analyze_perception_sentiment(comments_list):
             'key_issues': []
         }
     
-    # Try AI analysis
+    # Try Groq API
     client = get_groq_client()
     
     if client:
         try:
             return analyze_with_groq(client, comments_list)
         except Exception as e:
-            print(f"Groq analysis failed: {e}, using fallback")
-            # Fall through to fallback
+            print(f"Groq analysis failed: {e}")
+            # Fall through to keyword analysis
     
     # Fallback: Simple keyword analysis
     return analyze_without_api(comments_list)
@@ -71,43 +70,56 @@ def analyze_with_groq(client, comments_list):
     Use Groq API for analysis
     """
     # Limit comments to avoid token limits
-    comments_to_analyze = comments_list[:15]
+    comments_to_analyze = comments_list[:10]
     comments_text = "\n".join([f"- {c}" for c in comments_to_analyze if c and isinstance(c, str) and len(str(c).strip()) > 0])
     
     # Truncate if too long
     if len(comments_text) > 1500:
         comments_text = comments_text[:1500] + "..."
     
-    prompt = f"""Analyze these road safety reports. Be brief.
+    if not comments_text.strip():
+        return {
+            'sentiment': 'unknown',
+            'severity': 'low',
+            'summary': 'No valid comments to analyze',
+            'key_issues': []
+        }
+    
+    prompt = f"""Analyze these road safety reports. Be brief and factual.
 
 Reports:
 {comments_text}
 
-Format:
-SENTIMENT: [negative/neutral/positive]
+Provide a structured analysis in this exact format:
+SENTIMENT: [positive/neutral/negative]
 SEVERITY: [low/medium/high/critical]
-SUMMARY: [1-2 sentences]
-KEY_ISSUES: [3-4 main problems, comma-separated]"""
+SUMMARY: [1-2 sentences describing the main safety concern]
+KEY_ISSUES: [list 2-3 main problems, separated by commas]"""
 
-    # Call API
-    response = client.chat.completions.create(
-        model="llama-3.1-70b-versatile",
-        messages=[
-            {"role": "system", "content": "You are a road safety analyst. Be concise."},
-            {"role": "user", "content": prompt}
-        ],
-        temperature=0.3,
-        max_tokens=250
-    )
-    
-    # Parse response
-    analysis_text = response.choices[0].message.content
-    return parse_sentiment_response(analysis_text)
+    try:
+        # Call Groq API
+        response = client.chat.completions.create(
+            model="llama-3.1-70b-versatile",
+            messages=[
+                {"role": "system", "content": "You are a road safety analyst. Provide concise, structured analysis."},
+                {"role": "user", "content": prompt}
+            ],
+            temperature=0.3,
+            max_tokens=250
+        )
+        
+        # Parse response
+        analysis_text = response.choices[0].message.content
+        return parse_groq_response(analysis_text)
+        
+    except Exception as e:
+        print(f"Groq API call failed: {e}")
+        raise  # Re-raise to trigger fallback
 
 
-def parse_sentiment_response(response_text):
+def parse_groq_response(response_text):
     """
-    Parse structured response from AI
+    Parse structured response from Groq
     """
     result = {
         'sentiment': 'negative',
@@ -124,12 +136,16 @@ def parse_sentiment_response(response_text):
         if 'SENTIMENT:' in line.upper():
             parts = line.split(':', 1)
             if len(parts) > 1:
-                result['sentiment'] = parts[1].strip().lower()
+                sentiment = parts[1].strip().lower()
+                if sentiment in ['positive', 'neutral', 'negative']:
+                    result['sentiment'] = sentiment
         
         elif 'SEVERITY:' in line.upper():
             parts = line.split(':', 1)
             if len(parts) > 1:
-                result['severity'] = parts[1].strip().lower()
+                severity = parts[1].strip().lower()
+                if severity in ['low', 'medium', 'high', 'critical']:
+                    result['severity'] = severity
         
         elif 'SUMMARY:' in line.upper():
             parts = line.split(':', 1)
@@ -168,6 +184,14 @@ def analyze_without_api(comments_list):
     # Combine all comments
     text = ' '.join([str(c).lower() for c in comments_list if c and len(str(c).strip()) > 0])
     
+    if not text.strip():
+        return {
+            'sentiment': 'unknown',
+            'severity': 'low',
+            'summary': 'No valid comments',
+            'key_issues': []
+        }
+    
     # Keyword lists
     danger_keywords = ['dangerous', 'scary', 'terrifying', 'nearly', 'almost', 'crashed', 'hit']
     pothole_keywords = ['pothole', 'hole', 'crater', 'damage', 'broken', 'rough']
@@ -205,7 +229,7 @@ def analyze_without_api(comments_list):
     negative_count = sum(1 for word in negative_words if word in text)
     
     if negative_count >= 2:
-        sentiment = 'very_negative'
+        sentiment = 'negative'
     elif negative_count >= 1:
         sentiment = 'negative'
     else:
@@ -220,56 +244,27 @@ def analyze_without_api(comments_list):
         'sentiment': sentiment,
         'severity': severity,
         'summary': summary,
-        'key_issues': issues[:5]  # Max 5 issues
+        'key_issues': issues[:5]
     }
 
 
-def get_simple_sentiment(comments_list):
+def test_groq_connection():
     """
-    Quick sentiment check - positive/neutral/negative
+    Test if Groq API is working
+    Returns: (success: bool, message: str)
     """
-    if not comments_list:
-        return 'neutral'
+    client = get_groq_client()
     
-    text = ' '.join([str(c).lower() for c in comments_list if c])
+    if not client:
+        return False, "Groq client initialization failed. Check GROQ_API_KEY in .env"
     
-    negative_keywords = ['dangerous', 'bad', 'poor', 'terrible', 'unsafe', 'hazard', 
-                         'pothole', 'broken', 'damaged', 'awful', 'worst', 'nearly',
-                         'close pass', 'scary']
-    positive_keywords = ['good', 'safe', 'excellent', 'great', 'improved', 'better']
-    
-    negative_count = sum(1 for keyword in negative_keywords if keyword in text)
-    positive_count = sum(1 for keyword in positive_keywords if keyword in text)
-    
-    if negative_count > positive_count:
-        return 'negative'
-    elif positive_count > negative_count:
-        return 'positive'
-    else:
-        return 'neutral'
-
-
-# For backwards compatibility
-@st.cache_data(ttl=3600, show_spinner=False)
-def batch_analyze_hotspots(hotspots_with_comments):
-    """
-    Analyze sentiment for multiple hotspots
-    """
-    results = {}
-    
-    for hotspot in hotspots_with_comments:
-        hotspot_id = hotspot['hotspot_id']
-        comments = hotspot['comments']
-        
-        if comments:
-            analysis = analyze_perception_sentiment(comments)
-            results[hotspot_id] = analysis
-        else:
-            results[hotspot_id] = {
-                'sentiment': 'unknown',
-                'severity': 'unknown',
-                'summary': 'No perception reports available',
-                'key_issues': []
-            }
-    
-    return results
+    try:
+        # Simple test call
+        response = client.chat.completions.create(
+            model="llama-3.1-70b-versatile",
+            messages=[{"role": "user", "content": "Say OK if you can read this"}],
+            max_tokens=10
+        )
+        return True, "Groq API connected successfully"
+    except Exception as e:
+        return False, f"Groq API test failed: {str(e)}"
