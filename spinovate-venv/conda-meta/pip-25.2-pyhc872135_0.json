@@ -5695,7 +5695,7 @@
     ],
     "paths_version": 1
   },
-  "requested_spec": "None",
+  "requested_spec": "pip",
   "sha256": "1ee3659b14ca2fc75ef679c711cc19bea31fa811d041808c2da06b70adee9222",
   "size": 1265880,
   "subdir": "noarch",
