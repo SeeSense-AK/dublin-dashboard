@@ -317,6 +317,9 @@ with tab1:
             )_m': sensor_cluster_radius
                 },
                 max_total_hotspots=max_hotspots
+            )_m': sensor_cluster_radius
+                },
+                max_total_hotspots=max_hotspots
             )
             
             # Enrich with location names if geocoding enabled
