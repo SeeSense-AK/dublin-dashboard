@@ -1,55 +1,28 @@
 """
-Dublin Road Safety Dashboard
-Main Streamlit application with AWS Athena backend
-UPDATED: Strict hotspot filtering (10-20 hotspots max)
+Dublin Road Safety Dashboard - UPDATED WITH KEPLER.GL
+Main Streamlit application - Tab 1 Implementation
 """
 import streamlit as st
-from streamlit_folium import folium_static
+from streamlit_kepler_gl import keplergl_static
 import pandas as pd
 import plotly.express as px
 import plotly.graph_objects as go
 from datetime import datetime, timedelta
+import json
 
 # Import custom modules
 from config import DASHBOARD_CONFIG, PERCEPTION_CONFIG
-from src.data_loader import (
-    load_all_data, 
-    get_data_summary,
-    validate_data
+from src.smart_hotspot_detector import SmartHotspotDetector
+from src.kepler_config import (
+    build_kepler_config,
+    prepare_data_for_kepler
 )
-from src.hotspot_analysis import (
-    detect_hotspots,
-    get_hotspot_statistics,
-    get_hotspot_details,
-    classify_hotspot_severity,
-    analyze_event_types
+from utils.geocoding_utils import (
+    get_location_name_safe,
+    enrich_hotspots_with_locations
 )
-from src.perception_matcher import (
-    match_perception_to_hotspots,
-    get_perception_summary,
-    enrich_hotspot_with_perception
-)
+from utils.constants import STREET_VIEW_URL_TEMPLATE
 from src.sentiment_analyzer import analyze_perception_sentiment
-from src.trend_analysis import (
-    prepare_time_series,
-    detect_anomalies,
-    calculate_trends,
-    find_usage_drops,
-    analyze_seasonal_patterns,
-    get_time_series_summary
-)
-from src.visualizations import (
-    create_hotspot_map,
-    create_severity_distribution_chart,
-    create_time_series_chart,
-    create_metric_cards,
-    create_incident_heatmap
-)
-from utils.constants import (
-    STREET_VIEW_URL_TEMPLATE,
-    MAP_TILES,
-    SEVERITY_COLORS
-)
 
 # Configure page
 st.set_page_config(
@@ -59,668 +32,579 @@ st.set_page_config(
     initial_sidebar_state=DASHBOARD_CONFIG["initial_sidebar_state"]
 )
 
+# Initialize session state
+if 'hotspots_data' not in st.session_state:
+    st.session_state.hotspots_data = None
+if 'selected_hotspot' not in st.session_state:
+    st.session_state.selected_hotspot = None
+if 'use_geocoding' not in st.session_state:
+    st.session_state.use_geocoding = False
+
 # Title and description
 st.title("🚴‍♂️ Spinovate Safety Dashboard")
 st.markdown("### Comprehensive Road Safety Analysis using Sensor Data and Perception Reports")
 
-# Sidebar
-st.sidebar.title("⚙️ Settings")
+
+# ==================== SIDEBAR ====================
+st.sidebar.title("⚙️ Dashboard Settings")
 st.sidebar.markdown("---")
 
-# Data validation
-validation = validate_data()
-if not validation['athena_connection']:
-    st.error("⚠️ Cannot connect to AWS Athena! Please check your credentials.")
-    st.stop()
+# Load data function
+@st.cache_data(ttl=3600)
+def load_perception_data():
+    """Load only perception data from CSV files"""
+    # Load perception data
+    infra_df = pd.read_csv('dublin_infra_reports_dublin2025_upto20250924.csv')
+    ride_df = pd.read_csv('dublin_ride_reports_dublin2025_upto20250924.csv')
+    
+    # Parse dates
+    infra_df['datetime'] = pd.to_datetime(
+        infra_df['date'] + ' ' + infra_df['time'], 
+        format='%d-%m-%Y %H:%M:%S', 
+        dayfirst=True, 
+        errors='coerce'
+    )
+    ride_df['datetime'] = pd.to_datetime(
+        ride_df['date'] + ' ' + ride_df['time'], 
+        format='%d-%m-%Y %H:%M:%S', 
+        dayfirst=True, 
+        errors='coerce'
+    )
+    
+    return infra_df, ride_df
+
+@st.cache_data(ttl=3600)
+def get_sensor_metrics():
+    """Get sensor data metrics from Athena"""
+    from src.data_loader import load_sensor_data_metrics
+    return load_sensor_data_metrics()
+
 
 # Load data
-with st.spinner("Loading data..."):
-    data = load_all_data()
-    sensor_metrics = data['sensor_metrics']
-    infra_df = data['infrastructure']
-    ride_df = data['ride']
+with st.spinner("Loading datasets..."):
+    infra_df, ride_df = load_perception_data()
+    sensor_metrics = get_sensor_metrics()
 
-if sensor_metrics['total_readings'] == 0:
-    st.error("No sensor data available. Please check your data files.")
-    st.stop()
-
-# Sidebar - Data Overview
+# Data overview
 st.sidebar.subheader("📊 Data Overview")
-st.sidebar.write(f"**Sensor Records:** {sensor_metrics['total_readings']:,}")
+st.sidebar.write(f"**Sensor Events (Athena):** {sensor_metrics.get('total_readings', 0):,}")
+st.sidebar.write(f"**Abnormal Events:** {sensor_metrics.get('abnormal_events', 0):,}")
 st.sidebar.write(f"**Infra Reports:** {len(infra_df):,}")
 st.sidebar.write(f"**Ride Reports:** {len(ride_df):,}")
 
-# Display date range from sensor data
-if sensor_metrics['earliest_reading'] and sensor_metrics['latest_reading']:
-    st.sidebar.write(f"**Data Range:** {sensor_metrics['earliest_reading']} to {sensor_metrics['latest_reading']}")
+st.sidebar.markdown("---")
+
+# Date Range Filter
+st.sidebar.subheader("📅 Date Range")
+
+# Get date range from sensor data
+sensor_df['timestamp_dt'] = pd.to_datetime(sensor_df['timestamp'], unit='s', errors='coerce')
+min_date = sensor_df['timestamp_dt'].min().date()
+max_date = sensor_df['timestamp_dt'].max().date()
+
+col1, col2 = st.sidebar.columns(2)
+with col1:
+    start_date = st.date_input(
+        "From",
+        value=min_date,
+        min_value=min_date,
+        max_value=max_date
+    )
+
+with col2:
+    end_date = st.date_input(
+        "To",
+        value=max_date,
+        min_value=min_date,
+        max_value=max_date
+    )
 
 st.sidebar.markdown("---")
 
-# Sidebar - Hotspot Settings (RELAXED DEFAULTS)
-st.sidebar.subheader("🎯 Hotspot Detection")
+# Event Filters
+st.sidebar.subheader("🎯 Event Filters")
+
+# Get available event types
+abnormal_events = sensor_df[sensor_df['is_abnormal_event'] == 'True']
+available_event_types = abnormal_events['primary_event_type'].unique().tolist()
+
+event_types = st.sidebar.multiselect(
+    "Event Types",
+    options=available_event_types,
+    default=available_event_types,
+    help="Filter by specific event types"
+)
 
 severity_threshold = st.sidebar.slider(
     "Minimum Severity",
+    min_value=1,
+    max_value=10,
+    value=5,
+    help="Minimum severity level for sensor events"
+)
+
+show_only_abnormal = st.sidebar.checkbox(
+    "Show only abnormal events",
+    value=True,
+    help="Filter to show only abnormal sensor events"
+)
+
+st.sidebar.markdown("---")
+
+# Perception Filters
+st.sidebar.subheader("📝 Perception Filters")
+
+# Get available incident types
+available_incident_types = ride_df['incidenttype'].unique().tolist()
+
+incident_types = st.sidebar.multiselect(
+    "Incident Types",
+    options=available_incident_types,
+    default=available_incident_types,
+    help="Filter perception reports by incident type"
+)
+
+include_ai_summary = st.sidebar.checkbox(
+    "Include AI Sentiment Analysis",
+    value=True,
+    help="Analyze perception reports using Groq AI"
+)
+
+st.sidebar.markdown("---")
+
+# Clustering Parameters
+st.sidebar.subheader("🔍 Detection Parameters")
+
+sensor_cluster_radius = st.sidebar.slider(
+    "Sensor Cluster Radius (m)",
+    min_value=25,
+    max_value=100,
+    value=50,
+    step=25,
+    help="Radius for grouping sensor events"
+)
+
+perception_cluster_radius = st.sidebar.slider(
+    "Perception Cluster Radius (m)",
+    min_value=25,
+    max_value=100,
+    value=50,
+    step=25,
+    help="Radius for grouping perception reports"
+)
+
+min_sensor_events = st.sidebar.slider(
+    "Min Events per Sensor Hotspot",
     min_value=2,
     max_value=10,
-    value=5,  # RELAXED: Start at mid-range
-    help="Minimum severity level to consider for hotspot detection"
+    value=2,
+    help="Minimum sensor events to form a hotspot"
 )
 
-min_incidents = st.sidebar.slider(
-    "Minimum Incidents",
-    min_value=3,
-    max_value=50,
-    value=10,  # RELAXED: Lower threshold
-    step=1,
-    help="Minimum number of incidents required to form a hotspot"
+min_perception_reports = st.sidebar.slider(
+    "Min Reports per Perception Hotspot",
+    min_value=2,
+    max_value=10,
+    value=3,
+    help="Minimum perception reports to form a hotspot"
 )
 
-top_n_hotspots = st.sidebar.slider(
-    "Max Hotspots to Show",
-    min_value=10,
-    max_value=100,
-    value=20,  # Show top 20
-    step=10,
-    help="Show only the top N most dangerous hotspots"
-)
-
-perception_radius = st.sidebar.slider(
+perception_match_radius = st.sidebar.slider(
     "Perception Match Radius (m)",
     min_value=10,
     max_value=50,
     value=25,
-    help="Radius in meters to match perception reports to hotspots"
+    help="Radius to match perception reports to sensor hotspots"
 )
 
-# Add filtering explanation
-with st.sidebar.expander("ℹ️ How Filtering Works"):
-    st.markdown("""
-    **Hotspots are filtered using:**
-    
-    1. **Minimum Incidents**: At least N high-severity events
-    2. **Statistical Significance**: 1.5+ standard deviations above average
-    3. **Risk Score**: Composite score combining frequency + severity
-    4. **Temporal Consistency**: Must occur on 2+ different days
-    
-    **Result**: Only the 10-20 most critical locations are shown.
-    """)
+max_hotspots = st.sidebar.slider(
+    "Max Total Hotspots",
+    min_value=10,
+    max_value=50,
+    value=20,
+    help="Maximum number of hotspots to display"
+)
 
-# Main content - Tabs
-tab1, tab2 = st.tabs(["📍 Hotspot Analysis", "📈 Trend Analysis"])
+st.sidebar.markdown("---")
 
-# ==================== TAB 1: HOTSPOT ANALYSIS WITH DATE SLICER ====================
+# Display Options
+st.sidebar.subheader("🗺️ Map Display")
+
+show_perception_layer = st.sidebar.checkbox(
+    "Show Perception Reports",
+    value=True,
+    help="Display individual perception reports on map"
+)
+
+show_sensor_layer = st.sidebar.checkbox(
+    "Show Raw Sensor Events",
+    value=False,
+    help="Display individual sensor events (can be slow)"
+)
+
+show_heatmap = st.sidebar.checkbox(
+    "Show Heatmap",
+    value=False,
+    help="Display event density heatmap"
+)
+
+st.sidebar.markdown("---")
+
+# Geocoding toggle
+st.sidebar.subheader("🌍 Location Names")
+use_geocoding = st.sidebar.checkbox(
+    "Enable Reverse Geocoding",
+    value=False,
+    help="Get location names from coordinates (slow, requires internet)"
+)
+st.session_state.use_geocoding = use_geocoding
+
+if use_geocoding:
+    st.sidebar.info("⏳ Geocoding will add ~1 second per hotspot")
+
+st.sidebar.markdown("---")
+
+# Apply Filters Button
+apply_filters = st.sidebar.button("🔄 Apply Filters", use_container_width=True, type="primary")
+
+# Reset button
+if st.sidebar.button("↺ Reset to Defaults", use_container_width=True):
+    st.session_state.clear()
+    st.rerun()
+
+
+# ==================== MAIN CONTENT ====================
+
+# Create tabs
+tab1, tab2 = st.tabs(["📍 Hotspot Insights", "📈 Trend Analysis"])
+
+# ==================== TAB 1: HOTSPOT INSIGHTS ====================
 with tab1:
-    st.header("Perception-Driven Hotspot Analysis")
-    st.markdown("**New Approach:** User reports drive the analysis, sensor data validates")
+    st.header("Hotspot Insights")
+    st.markdown("Combining sensor data and perception reports for comprehensive safety analysis")
     
-    # ========== DATE SLICER ==========
-    st.subheader("📅 Date Range Filter")
+    # Filter data based on date range
+    filtered_sensor = sensor_df[
+        (sensor_df['timestamp_dt'] >= pd.Timestamp(start_date)) &
+        (sensor_df['timestamp_dt'] <= pd.Timestamp(end_date))
+    ].copy()
     
-    try:
-        earliest = pd.to_datetime(sensor_metrics['earliest_reading']).date()
-        latest = pd.to_datetime(sensor_metrics['latest_reading']).date()
-    except:
-        latest = datetime.now().date()
-        earliest = latest - timedelta(days=90)
+    # Filter perception data
+    infra_df['datetime'] = pd.to_datetime(infra_df['date'] + ' ' + infra_df['time'], 
+                                          format='%d-%m-%Y %H:%M:%S', dayfirst=True, errors='coerce')
+    ride_df['datetime'] = pd.to_datetime(ride_df['date'] + ' ' + ride_df['time'], 
+                                         format='%d-%m-%Y %H:%M:%S', dayfirst=True, errors='coerce')
     
-    col1, col2, col3 = st.columns([2, 2, 1])
+    filtered_infra = infra_df[
+        (infra_df['datetime'] >= pd.Timestamp(start_date)) &
+        (infra_df['datetime'] <= pd.Timestamp(end_date))
+    ].copy()
     
-    with col1:
-        start_date = st.date_input(
-            "Start Date",
-            value=earliest,
-            min_value=earliest,
-            max_value=latest,
-            help="Select the start date"
-        )
+    filtered_ride = ride_df[
+        (ride_df['datetime'] >= pd.Timestamp(start_date)) &
+        (ride_df['datetime'] <= pd.Timestamp(end_date))
+    ].copy()
     
-    with col2:
-        end_date = st.date_input(
-            "End Date",
-            value=latest,
-            min_value=earliest,
-            max_value=latest,
-            help="Select the end date"
-        )
+    # Apply event type filters
+    if show_only_abnormal:
+        filtered_sensor = filtered_sensor[filtered_sensor['is_abnormal_event'] == 'True']
     
-    with col3:
-        st.write("")
-        st.write("")
-        if st.button("🔄 Reset", use_container_width=True):
-            st.rerun()
+    if event_types:
+        filtered_sensor = filtered_sensor[filtered_sensor['primary_event_type'].isin(event_types)]
     
-    if start_date > end_date:
-        st.error("⚠️ Start date must be before end date!")
-        st.stop()
+    if incident_types:
+        filtered_ride = filtered_ride[filtered_ride['incidenttype'].isin(incident_types)]
     
-    days_selected = (end_date - start_date).days + 1
-    st.info(f"📊 Analyzing data from **{start_date.strftime('%d %b %Y')}** to **{end_date.strftime('%d %b %Y')}** ({days_selected} days)")
+    # Apply severity filter
+    filtered_sensor['max_severity'] = pd.to_numeric(filtered_sensor['max_severity'], errors='coerce')
+    filtered_sensor = filtered_sensor[filtered_sensor['max_severity'] >= severity_threshold]
     
-    st.markdown("---")
+    # Detect hotspots
+    if apply_filters or st.session_state.hotspots_data is None:
+        with st.spinner("Detecting hotspots..."):
+            detector = SmartHotspotDetector(filtered_sensor, filtered_infra, filtered_ride)
+            
+            hotspots = detector.get_combined_hotspots(
+                sensor_params={
+                    'min_severity': severity_threshold,
+                    'cluster_radius_m': sensor_cluster_radius,
+                    'min_events': min_sensor_events,
+                    'perception_radius_m': perception_match_radius
+                },
+                perception_params={
+                    'cluster_radius_m': perception_cluster_radius,
+                    'min_reports': min_perception_reports,
+                    'sensor_radius_m': sensor_cluster_radius
+                },
+                max_total_hotspots=max_hotspots
+            )
+            
+            # Enrich with location names if geocoding enabled
+            if use_geocoding and not hotspots.empty:
+                with st.spinner("Geocoding locations..."):
+                    hotspots = enrich_hotspots_with_locations(hotspots, use_geocoding=True)
+            elif not hotspots.empty:
+                hotspots['location_name'] = hotspots.apply(
+                    lambda row: f"Lat: {row['center_lat']:.4f}, Lng: {row['center_lng']:.4f}",
+                    axis=1
+                )
+            
+            st.session_state.hotspots_data = hotspots
     
-    # ========== PERCEPTION CLUSTERING SETTINGS ==========
-    st.subheader("⚙️ Clustering Settings")
+    hotspots = st.session_state.hotspots_data
     
-    col1, col2 = st.columns(2)
-    
-    with col1:
-        cluster_radius = st.slider(
-            "Clustering Radius (m)",
-            min_value=25,
-            max_value=100,
-            value=50,
-            step=25,
-            help="Group reports within this radius"
-        )
-    
-    with col2:
-        min_reports_per_cluster = st.slider(
-            "Minimum Reports per Hotspot",
-            min_value=2,
-            max_value=10,
-            value=3,
-            help="Minimum reports needed to form a hotspot"
-        )
-    
-    st.markdown("---")
-    
-    # ========== PERCEPTION ANALYSIS ==========
-    from src.perception_hotspot_analyzer import create_enriched_perception_hotspots
-    
-    # Filter perception reports by date
-    infra_filtered = infra_df.copy()
-    ride_filtered = ride_df.copy()
-    
-    if 'datetime' in infra_filtered.columns:
-        infra_filtered = infra_filtered[
-            (pd.to_datetime(infra_filtered['datetime']).dt.date >= start_date) &
-            (pd.to_datetime(infra_filtered['datetime']).dt.date <= end_date)
-        ]
-    
-    if 'datetime' in ride_filtered.columns:
-        ride_filtered = ride_filtered[
-            (pd.to_datetime(ride_filtered['datetime']).dt.date >= start_date) &
-            (pd.to_datetime(ride_filtered['datetime']).dt.date <= end_date)
-        ]
-    
-    with st.spinner("Analyzing perception reports and finding sensor data..."):
-        perception_hotspots = create_enriched_perception_hotspots(
-            infra_filtered,
-            ride_filtered,
-            eps_meters=cluster_radius,
-            min_reports=min_reports_per_cluster,
-            start_date=start_date.strftime('%Y-%m-%d'),
-            end_date=end_date.strftime('%Y-%m-%d')
-        )
-    
-    if perception_hotspots.empty:
-        st.warning("No perception hotspots found with current settings.")
-        st.info("Try: Reducing minimum reports or increasing clustering radius")
+    if hotspots is None or hotspots.empty:
+        st.warning("⚠️ No hotspots detected with current filters. Try adjusting parameters.")
+        st.info("**Suggestions:**\n- Lower the minimum severity threshold\n- Reduce minimum events/reports\n- Expand the date range\n- Increase cluster radius")
     else:
-        st.success(f"✅ Found **{len(perception_hotspots)}** perception-driven hotspots")
+        st.success(f"✅ Detected **{len(hotspots)}** hotspots")
         
-        # ========== KEY METRICS ==========
+        # ==================== KEY METRICS ====================
         st.subheader("📊 Key Metrics")
         
         col1, col2, col3, col4 = st.columns(4)
         
         with col1:
-            total_reports = perception_hotspots['total_reports'].sum()
-            st.metric("Total Reports", int(total_reports))
+            total_events = hotspots['event_count'].sum() if 'event_count' in hotspots.columns else 0
+            total_reports = hotspots['report_count'].sum() if 'report_count' in hotspots.columns else 0
+            st.metric("Total Issues", int(total_events + total_reports))
         
         with col2:
-            confirmed = len(perception_hotspots[perception_hotspots['validation'].apply(lambda x: x['validation_status'] in ['CONFIRMED', 'STRONGLY_CONFIRMED'])])
-            st.metric("Sensor Confirmed", confirmed)
+            sensor_hotspots = len(hotspots[hotspots['source'] == 'sensor']) if 'source' in hotspots.columns else 0
+            st.metric("Sensor Hotspots", sensor_hotspots)
         
         with col3:
-            avg_urgency = perception_hotspots['urgency_score'].mean()
-            st.metric("Avg Urgency", f"{avg_urgency:.0f}/100")
+            perception_hotspots = len(hotspots[hotspots['source'] == 'perception']) if 'source' in hotspots.columns else 0
+            st.metric("Perception Hotspots", perception_hotspots)
         
         with col4:
-            critical = len(perception_hotspots[perception_hotspots['ai_analysis'].apply(lambda x: x['severity'] == 'critical')])
-            st.metric("Critical Issues", critical)
+            avg_priority = hotspots['priority_score'].mean() if 'priority_score' in hotspots.columns else 0
+            st.metric("Avg Priority", f"{avg_priority:.1f}")
         
         st.markdown("---")
         
-        # ========== INTERACTIVE MAP ==========
-        col1, col2 = st.columns([2, 1])
+        # ==================== KEPLER.GL MAP ====================
+        st.subheader("🗺️ Interactive Safety Map")
         
-        with col1:
-            st.subheader("🗺️ Perception Hotspot Map")
-            
-            # Create map
-            import folium
-            from streamlit_folium import folium_static
-            
-            m = folium.Map(
-                location=[perception_hotspots['center_lat'].mean(), perception_hotspots['center_lng'].mean()],
-                zoom_start=12
+        col_map, col_stats = st.columns([2, 1])
+        
+        with col_map:
+            # Prepare data for Kepler
+            kepler_data = prepare_data_for_kepler(
+                hotspots_df=hotspots,
+                perception_df=filtered_ride if show_perception_layer else None,
+                sensor_df=filtered_sensor if show_sensor_layer else None
             )
             
-            # Add hotspots
-            for idx, hotspot in perception_hotspots.iterrows():
-                # Color by validation status
-                validation_status = hotspot['validation']['validation_status']
-                if validation_status == 'STRONGLY_CONFIRMED':
-                    color = 'red'
-                    icon_color = 'white'
-                elif validation_status == 'CONFIRMED':
-                    color = 'orange'
-                    icon_color = 'white'
-                elif validation_status == 'PARTIALLY_CONFIRMED':
-                    color = 'lightblue'
-                    icon_color = 'black'
+            # Build Kepler config
+            kepler_config = build_kepler_config(
+                include_perception=show_perception_layer,
+                include_sensor=show_sensor_layer,
+                include_heatmap=show_heatmap
+            )
+            
+            # Render Kepler map
+            try:
+                keplergl_static(kepler_data, config=kepler_config, height=600)
+            except Exception as e:
+                st.error(f"Error rendering Kepler map: {e}")
+                st.info("Falling back to data table view")
+                st.dataframe(hotspots.head(10))
+        
+        with col_stats:
+            st.markdown("#### 📈 Hotspot Statistics")
+            
+            # Priority distribution
+            if 'priority_score' in hotspots.columns:
+                fig_priority = px.histogram(
+                    hotspots,
+                    x='priority_score',
+                    nbins=10,
+                    title='Priority Score Distribution',
+                    labels={'priority_score': 'Priority Score', 'count': 'Count'},
+                    color_discrete_sequence=['#DC143C']
+                )
+                fig_priority.update_layout(height=250, showlegend=False)
+                st.plotly_chart(fig_priority, use_container_width=True)
+            
+            # Source breakdown
+            if 'source' in hotspots.columns:
+                source_counts = hotspots['source'].value_counts()
+                fig_source = px.pie(
+                    values=source_counts.values,
+                    names=source_counts.index,
+                    title='Hotspot Sources',
+                    color_discrete_map={'sensor': '#FF4500', 'perception': '#1E90FF'}
+                )
+                fig_source.update_layout(height=250)
+                st.plotly_chart(fig_source, use_container_width=True)
+        
+        st.markdown("---")
+        
+        # ==================== TOP HOTSPOTS ====================
+        st.subheader("🔝 Top 10 Critical Hotspots")
+        
+        top_hotspots = hotspots.head(10)
+        
+        for idx, hotspot in top_hotspots.iterrows():
+            with st.expander(
+                f"🚨 Hotspot #{hotspot.get('final_hotspot_id', idx+1)}: {hotspot.get('location_name', 'Unknown')}",
+                expanded=(idx == 0)  # Expand first one by default
+            ):
+                # Overview metrics
+                col1, col2, col3, col4 = st.columns(4)
+                
+                with col1:
+                    st.metric("Source", hotspot.get('source', 'N/A').title())
+                
+                with col2:
+                    if hotspot.get('source') == 'sensor':
+                        st.metric("Events", int(hotspot.get('event_count', 0)))
+                    else:
+                        st.metric("Reports", int(hotspot.get('report_count', 0)))
+                
+                with col3:
+                    priority = hotspot.get('priority_score', 0)
+                    st.metric("Priority", f"{priority:.1f}")
+                
+                with col4:
+                    if hotspot.get('source') == 'sensor':
+                        severity = hotspot.get('avg_severity', 0)
+                        st.metric("Avg Severity", f"{severity:.1f}")
+                    else:
+                        urgency = hotspot.get('urgency_score', 0)
+                        st.metric("Urgency", f"{urgency}/100")
+                
+                # Details based on source
+                if hotspot.get('source') == 'sensor':
+                    # Sensor hotspot details
+                    st.markdown("##### 📡 Sensor Data")
+                    
+                    col1, col2 = st.columns(2)
+                    
+                    with col1:
+                        st.write(f"**Max Severity:** {hotspot.get('max_severity', 0)}")
+                        st.write(f"**Unique Devices:** {hotspot.get('device_count', 0)}")
+                    
+                    with col2:
+                        event_types_dict = hotspot.get('event_types', {})
+                        if isinstance(event_types_dict, str):
+                            import ast
+                            try:
+                                event_types_dict = ast.literal_eval(event_types_dict)
+                            except:
+                                event_types_dict = {}
+                        
+                        if event_types_dict:
+                            st.write("**Event Types:**")
+                            for etype, count in event_types_dict.items():
+                                st.write(f"- {etype}: {count}")
+                    
+                    # Perception enrichment
+                    if hotspot.get('perception_count', 0) > 0:
+                        st.markdown("##### 📝 Perception Reports")
+                        st.write(f"Found **{hotspot['perception_count']}** nearby reports")
+                        
+                        if hotspot.get('perception_sentiment'):
+                            sentiment = hotspot['perception_sentiment']
+                            if isinstance(sentiment, str):
+                                import ast
+                                try:
+                                    sentiment = ast.literal_eval(sentiment)
+                                except:
+                                    sentiment = {}
+                            
+                            if sentiment:
+                                st.write(f"**Sentiment:** {sentiment.get('sentiment', 'N/A').title()}")
+                                st.write(f"**Severity:** {sentiment.get('severity', 'N/A').title()}")
+                                st.write(f"**Summary:** {sentiment.get('summary', 'N/A')}")
+                
                 else:
-                    color = 'gray'
-                    icon_color = 'white'
+                    # Perception hotspot details
+                    st.markdown("##### 📝 Perception Reports")
+                    
+                    col1, col2 = st.columns(2)
+                    
+                    with col1:
+                        st.write(f"**Primary Theme:** {hotspot.get('primary_theme', 'N/A')}")
+                        
+                        themes_dict = hotspot.get('themes', {})
+                        if isinstance(themes_dict, str):
+                            import ast
+                            try:
+                                themes_dict = ast.literal_eval(themes_dict)
+                            except:
+                                themes_dict = {}
+                        
+                        if themes_dict:
+                            st.write("**All Themes:**")
+                            for theme, count in themes_dict.items():
+                                st.write(f"- {theme}: {count}")
+                    
+                    with col2:
+                        avg_rating = hotspot.get('avg_rating')
+                        if avg_rating and not pd.isna(avg_rating):
+                            st.write(f"**Avg Rating:** {avg_rating:.1f}/5")
+                        
+                        report_types = hotspot.get('report_types', {})
+                        if isinstance(report_types, str):
+                            import ast
+                            try:
+                                report_types = ast.literal_eval(report_types)
+                            except:
+                                report_types = {}
+                        
+                        if report_types:
+                            st.write("**Report Types:**")
+                            for rtype, count in report_types.items():
+                                st.write(f"- {rtype}: {count}")
+                    
+                    # Sensor validation
+                    if hotspot.get('sensor_count', 0) > 0:
+                        st.markdown("##### 📡 Sensor Validation")
+                        st.write(f"Found **{hotspot['sensor_count']}** nearby sensor events")
+                        
+                        validation = hotspot.get('sensor_validation', 'no_sensor_data')
+                        validation_emoji = {
+                            'confirmed': '✅',
+                            'partial': '⚠️',
+                            'conflicted': '❌',
+                            'no_sensor_data': '📭'
+                        }
+                        st.write(f"{validation_emoji.get(validation, '❓')} **Status:** {validation.title()}")
                 
-                # Create popup
-                popup_html = f"""
-                <div style="font-family: Arial; width: 300px;">
-                    <h4>🚨 Hotspot #{hotspot['hotspot_id']}</h4>
-                    <p><b>Primary Issue:</b> {hotspot['primary_theme']}</p>
-                    <p><b>Reports:</b> {hotspot['total_reports']}</p>
-                    <p><b>Urgency:</b> {hotspot['urgency_score']}/100</p>
-                    <p><b>AI Sentiment:</b> {hotspot['ai_analysis']['sentiment'].title()}</p>
-                    <p><b>Validation:</b> {validation_status.replace('_', ' ').title()}</p>
-                    <hr>
-                    <p><b>Sensor Data:</b><br>
-                    {hotspot['sensor_data']['abnormal_events']} abnormal events<br>
-                    {hotspot['sensor_data']['brake_events']} brakes, 
-                    {hotspot['sensor_data']['swerve_events']} swerves</p>
-                </div>
-                """
+                # Location and Street View
+                st.markdown("##### 📍 Location")
+                lat = hotspot['center_lat']
+                lng = hotspot['center_lng']
                 
-                folium.CircleMarker(
-                    location=[hotspot['center_lat'], hotspot['center_lng']],
-                    radius=8 + (hotspot['total_reports'] * 2),
-                    popup=folium.Popup(popup_html, max_width=350),
-                    tooltip=f"Hotspot #{hotspot['hotspot_id']}: {hotspot['primary_theme']}",
-                    color=color,
-                    fill=True,
-                    fillColor=color,
-                    fillOpacity=0.7,
-                    weight=2
-                ).add_to(m)
-            
-            folium_static(m, width=800, height=600)
-        
-        with col2:
-            st.subheader("📊 Hotspot Statistics")
-            
-            # Validation status pie chart
-            validation_counts = perception_hotspots['validation'].apply(lambda x: x['validation_status']).value_counts()
-            
-            fig = px.pie(
-                values=validation_counts.values,
-                names=validation_counts.index,
-                title='Validation Status',
-                color_discrete_map={
-                    'STRONGLY_CONFIRMED': '#DC143C',
-                    'CONFIRMED': '#FF4500',
-                    'PARTIALLY_CONFIRMED': '#FFA500',
-                    'INCONCLUSIVE': '#FFD700',
-                    'NO_SENSOR_DATA': '#808080'
-                }
-            )
-            st.plotly_chart(fig, use_container_width=True)
-            
-            # Top themes
-            st.subheader("🔝 Top Issues")
-            theme_counts = perception_hotspots['primary_theme'].value_counts().head(5)
-            for theme, count in theme_counts.items():
-                st.write(f"**{theme}:** {count} hotspots")
-        
-        st.markdown("---")
-        
-        # ========== DETAILED HOTSPOT ANALYSIS ==========
-        st.subheader("🔍 Detailed Hotspot Analysis")
-        
-        selected_hotspot = st.selectbox(
-            "Select a hotspot to analyze",
-            options=perception_hotspots['hotspot_id'].tolist(),
-            format_func=lambda x: f"Hotspot #{x}"
-        )
-        
-        if selected_hotspot:
-            hotspot_data = perception_hotspots[perception_hotspots['hotspot_id'] == selected_hotspot].iloc[0]
-            
-            # Overview metrics
-            col1, col2, col3, col4 = st.columns(4)
-            
-            with col1:
-                st.metric("Reports", int(hotspot_data['total_reports']))
-            
-            with col2:
-                st.metric("Urgency", f"{hotspot_data['urgency_score']}/100")
-            
-            with col3:
-                st.metric("Validation", hotspot_data['validation']['validation_status'].replace('_', ' ').title())
-            
-            with col4:
-                st.metric("Sensor Events", hotspot_data['sensor_data']['abnormal_events'])
-            
-            # Theme breakdown
-            st.markdown("#### 📋 Report Breakdown")
-            col1, col2 = st.columns(2)
-            
-            with col1:
-                st.write("**Themes:**")
-                for theme, count in hotspot_data['theme_counts'].items():
-                    st.write(f"- {theme}: {count}")
-            
-            with col2:
-                st.write("**Report Types:**")
-                for rtype, count in hotspot_data['report_types'].items():
-                    st.write(f"- {rtype}: {count}")
-            
-            # AI Analysis
-            st.markdown("#### 🤖 AI Analysis")
-            ai_analysis = hotspot_data['ai_analysis']
-            
-            col1, col2 = st.columns(2)
-            with col1:
-                st.write(f"**Sentiment:** {ai_analysis['sentiment'].title()}")
-                st.write(f"**Severity:** {ai_analysis['severity'].title()}")
-            
-            with col2:
-                st.write(f"**Summary:** {ai_analysis['summary']}")
-            
-            if ai_analysis['key_issues']:
-                st.write("**Key Issues:**")
-                for issue in ai_analysis['key_issues']:
-                    st.write(f"- {issue}")
-            
-            # Sensor Data Details
-            st.markdown("#### 📡 Sensor Data Validation")
-            sensor_data = hotspot_data['sensor_data']
-            validation = hotspot_data['validation']
-            
-            col1, col2, col3 = st.columns(3)
-            
-            with col1:
-                st.metric("Hard Brakes", sensor_data['brake_events'])
-                st.metric("Swerves", sensor_data['swerve_events'])
-            
-            with col2:
-                st.metric("Pothole Events", sensor_data['pothole_events'])
-                st.metric("Max Severity", sensor_data['max_severity'])
-            
-            with col3:
-                st.metric("Unique Cyclists", sensor_data['unique_devices'])
-                st.metric("Avg Severity", f"{sensor_data['avg_severity']:.1f}")
-            
-            # Validation details
-            st.markdown(f"**Validation Status:** {validation['validation_status'].replace('_', ' ')} ({validation['confidence']} confidence)")
-            
-            if validation['matches']:
-                st.success("**Evidence Supporting Reports:**")
-                for match in validation['matches']:
-                    st.write(f"✓ {match}")
-            
-            if validation['conflicts']:
-                st.warning("**Conflicting Evidence:**")
-                for conflict in validation['conflicts']:
-                    st.write(f"⚠ {conflict}")
-            
-            # Street View
-            st.markdown("#### 📍 Location")
-            lat = hotspot_data['center_lat']
-            lng = hotspot_data['center_lng']
-            street_view_url = STREET_VIEW_URL_TEMPLATE.format(lat=lat, lng=lng, heading=0)
-            st.markdown(f"[🔍 View in Google Street View]({street_view_url})")
-            
-            # Raw comments
-            with st.expander("💬 View User Comments"):
-                comments = hotspot_data['comments']
-                for i, comment in enumerate(comments[:10], 1):
-                    st.write(f"{i}. {comment}")
+                st.write(f"**Coordinates:** {lat:.5f}, {lng:.5f}")
                 
-                if len(comments) > 10:
-                    st.info(f"... and {len(comments) - 10} more comments")
+                street_view_url = STREET_VIEW_URL_TEMPLATE.format(lat=lat, lng=lng, heading=0)
+                st.markdown(f"[🔍 Open in Google Street View]({street_view_url})")
+                
+                # Sample comments if available
+                comments = hotspot.get('comments', [])
+                if isinstance(comments, str):
+                    import ast
+                    try:
+                        comments = ast.literal_eval(comments)
+                    except:
+                        comments = []
+                
+                if comments and len(comments) > 0:
+                    with st.expander("💬 View User Comments"):
+                        for i, comment in enumerate(comments[:5], 1):
+                            if comment and str(comment).strip():
+                                st.write(f"{i}. {comment}")
+                        
+                        if len(comments) > 5:
+                            st.info(f"... and {len(comments) - 5} more comments")
+
 
 # ==================== TAB 2: TREND ANALYSIS ====================
 with tab2:
     st.header("Trend Analysis")
-    st.markdown("Analyzing road usage patterns and detecting anomalies over time")
+    st.markdown("*Coming soon: Time series analysis and anomaly detection*")
     
-    # Get time series data
-    with st.spinner("Preparing time series data from Athena..."):
-        time_series = prepare_time_series(freq='D')
-    
-    if time_series.empty:
-        st.warning("No time series data available for trend analysis.")
-        st.info("This might be due to:")
-        st.write("- No data in the Athena table")
-        st.write("- AWS connection issues")
-        st.write("- Insufficient data for time series analysis")
-    else:
-        # Date range selector
-        st.subheader("📅 Date Range Selection")
-        col1, col2 = st.columns(2)
-        
-        datetime_col = 'datetime' if 'datetime' in time_series.columns else 'date'
-        min_date = pd.to_datetime(time_series[datetime_col].min()).date()
-        max_date = pd.to_datetime(time_series[datetime_col].max()).date()
-        
-        with col1:
-            start_date_ts = st.date_input(
-                "Start Date",
-                value=min_date,
-                min_value=min_date,
-                max_value=max_date,
-                key="ts_start_date"
-            )
-        
-        with col2:
-            end_date_ts = st.date_input(
-                "End Date",
-                value=max_date,
-                min_value=min_date,
-                max_value=max_date,
-                key="ts_end_date"
-            )
-        
-        # Filter time series
-        filtered_ts = time_series[
-            (pd.to_datetime(time_series[datetime_col]).dt.date >= start_date_ts) &
-            (pd.to_datetime(time_series[datetime_col]).dt.date <= end_date_ts)
-        ]
-        
-        if filtered_ts.empty:
-            st.warning("No data available for selected date range.")
-        else:
-            # Detect anomalies
-            with st.spinner("Detecting anomalies..."):
-                ts_with_anomalies = detect_anomalies(filtered_ts, column='unique_users')
-            
-            # Calculate trends
-            trend_stats = calculate_trends(filtered_ts, column='unique_users')
-            
-            # Display key insights
-            st.subheader("📊 Key Insights")
-            
-            col1, col2, col3, col4 = st.columns(4)
-            
-            with col1:
-                st.metric(
-                    "Trend Direction",
-                    trend_stats.get('trend_direction', 'N/A').title()
-                )
-            
-            with col2:
-                pct_change = trend_stats.get('percent_change', 0)
-                st.metric(
-                    "Overall Change",
-                    f"{pct_change:+.1f}%",
-                    delta=f"{pct_change:.1f}%"
-                )
-            
-            with col3:
-                anomaly_count = len(ts_with_anomalies[ts_with_anomalies.get('is_anomaly', False) == True]) if not ts_with_anomalies.empty else 0
-                st.metric("Anomalies Detected", anomaly_count)
-            
-            with col4:
-                avg_daily = trend_stats.get('mean_value', 0)
-                st.metric("Avg Daily Users", f"{avg_daily:.0f}")
-            
-            st.markdown("---")
-            
-            # Time series chart
-            st.subheader("📈 Usage Trends Over Time")
-            
-            anomalies = ts_with_anomalies[ts_with_anomalies.get('is_anomaly', False) == True] if not ts_with_anomalies.empty else pd.DataFrame()
-            ts_chart = create_time_series_chart(
-                ts_with_anomalies,
-                column='unique_users',
-                anomalies_df=anomalies if not anomalies.empty else None
-            )
-            st.plotly_chart(ts_chart, use_container_width=True)
-            
-            st.markdown("---")
-            
-            # Anomaly Analysis
-            st.subheader("⚠️ Anomaly Analysis")
-            
-            if not anomalies.empty:
-                # Find usage drops
-                drops = find_usage_drops(filtered_ts, column='unique_users', drop_threshold=0.3)
-                
-                if not drops.empty:
-                    st.markdown("#### 📉 Significant Usage Drops")
-                    st.write("These dates show significant drops in road usage and may warrant investigation:")
-                    
-                    # Display top drops
-                    top_drops = drops.nlargest(5, 'deviation_pct', keep='all')[
-                        [datetime_col, 'unique_users', 'baseline', 'deviation_pct']
-                    ].copy()
-                    top_drops['deviation_pct'] = top_drops['deviation_pct'].round(1)
-                    top_drops.columns = ['Date', 'Actual Users', 'Expected (Baseline)', 'Drop %']
-                    
-                    st.dataframe(top_drops, use_container_width=True, hide_index=True)
-                    
-                    # Investigate button
-                    st.markdown("**Possible reasons for drops:**")
-                    st.write("- Weather events (storms, snow)")
-                    st.write("- Road closures or construction")
-                    st.write("- Public holidays or special events")
-                    st.write("- Data collection issues")
-                else:
-                    st.info("No significant usage drops detected in the selected period.")
-                
-                # Spikes
-                spikes = ts_with_anomalies[ts_with_anomalies.get('anomaly_type', '') == 'spike'] if not ts_with_anomalies.empty else pd.DataFrame()
-                if not spikes.empty:
-                    st.markdown("#### 📈 Usage Spikes")
-                    st.write(f"Detected {len(spikes)} dates with unusually high activity")
-                    
-                    with st.expander("View spike details"):
-                        spike_details = spikes[[datetime_col, 'unique_users', 'rolling_mean']].copy()
-                        spike_details.columns = ['Date', 'Count', 'Expected (7-day avg)']
-                        st.dataframe(spike_details, use_container_width=True, hide_index=True)
-            else:
-                st.info("No anomalies detected in the selected period.")
-            
-            st.markdown("---")
-            
-            # Seasonal Patterns
-            st.subheader("📆 Seasonal Patterns")
-            
-            seasonal = analyze_seasonal_patterns(filtered_ts, column='unique_users')
-            
-            if seasonal and 'weekly_pattern' in seasonal:
-                col1, col2 = st.columns(2)
-                
-                with col1:
-                    st.markdown("#### Day of Week Pattern")
-                    weekly_df = pd.DataFrame(
-                        list(seasonal['weekly_pattern'].items()),
-                        columns=['Day', 'Avg Users']
-                    )
-                    weekly_df['Day'] = weekly_df['Day'].map({
-                        0: 'Monday', 1: 'Tuesday', 2: 'Wednesday',
-                        3: 'Thursday', 4: 'Friday', 5: 'Saturday', 6: 'Sunday'
-                    })
-                    
-                    weekly_chart = px.bar(
-                        weekly_df,
-                        x='Day',
-                        y='Avg Users',
-                        title='Average Users by Day of Week',
-                        color='Avg Users',
-                        color_continuous_scale='Blues'
-                    )
-                    st.plotly_chart(weekly_chart, use_container_width=True)
-                
-                with col2:
-                    st.markdown("#### Weekday vs Weekend")
-                    weekday_avg = seasonal.get('weekday_avg', 0)
-                    weekend_avg = seasonal.get('weekend_avg', 0)
-                    
-                    comparison_df = pd.DataFrame({
-                        'Period': ['Weekday', 'Weekend'],
-                        'Avg Users': [weekday_avg, weekend_avg]
-                    })
-                    
-                    comparison_chart = px.bar(
-                        comparison_df,
-                        x='Period',
-                        y='Avg Users',
-                        title='Weekday vs Weekend Comparison',
-                        color='Period',
-                        color_discrete_map={'Weekday': '#1f77b4', 'Weekend': '#ff7f0e'}
-                    )
-                    st.plotly_chart(comparison_chart, use_container_width=True)
-                    
-                    # Calculate difference
-                    if weekend_avg > 0:
-                        diff_pct = ((weekday_avg - weekend_avg) / weekend_avg) * 100
-                        if diff_pct > 10:
-                            st.success(f"Weekdays show {diff_pct:.1f}% more activity than weekends")
-                        elif diff_pct < -10:
-                            st.info(f"Weekends show {abs(diff_pct):.1f}% more activity than weekdays")
-                        else:
-                            st.info("Similar activity levels on weekdays and weekends")
-            
-            st.markdown("---")
-            
-            # Additional Insights
-            st.subheader("💡 Additional Insights")
-            
-            with st.expander("📊 Statistical Summary"):
-                summary = get_time_series_summary(filtered_ts, column='unique_users')
-                
-                col1, col2 = st.columns(2)
-                with col1:
-                    st.write(f"**Total Observations:** {summary.get('total_observations', 0):,}")
-                    st.write(f"**Mean:** {summary.get('mean', 0):.2f}")
-                    st.write(f"**Median:** {summary.get('median', 0):.2f}")
-                    st.write(f"**Std Dev:** {summary.get('std', 0):.2f}")
-                
-                with col2:
-                    st.write(f"**Min:** {summary.get('min', 0):.0f}")
-                    st.write(f"**Max:** {summary.get('max', 0):.0f}")
-                    st.write(f"**Range:** {summary.get('range', 0):.0f}")
-                    st.write(f"**CV:** {summary.get('coefficient_of_variation', 0):.2f}%")
-            
-            with st.expander("🔍 Investigative Questions"):
-                st.markdown("""
-                Based on the trend analysis, here are some questions worth investigating:
-                
-                **For Usage Drops:**
-                - Were there any road closures or construction during these periods?
-                - Did weather conditions impact road usage?
-                - Were there any major events or holidays?
-                - Are there patterns in specific routes or areas?
-                
-                **For Usage Spikes:**
-                - What caused the increased activity?
-                - Were there any special events or diversions?
-                - Is this a recurring pattern?
-                
-                **For Trend Changes:**
-                - What factors might explain the overall trend direction?
-                - Are there infrastructure changes or new routes?
-                - Has population or traffic pattern shifted?
-                """)
+    st.info("This tab will show usage trends, anomalies, and temporal patterns in the data.")
