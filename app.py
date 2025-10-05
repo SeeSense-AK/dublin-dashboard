@@ -97,10 +97,17 @@ st.sidebar.markdown("---")
 # Date Range Filter
 st.sidebar.subheader("📅 Date Range")
 
-# Get date range from sensor data
-sensor_df['timestamp_dt'] = pd.to_datetime(sensor_df['timestamp'], unit='s', errors='coerce')
-min_date = sensor_df['timestamp_dt'].min().date()
-max_date = sensor_df['timestamp_dt'].max().date()
+# Get date range from sensor metrics
+if sensor_metrics.get('earliest_reading') and sensor_metrics.get('latest_reading'):
+    try:
+        min_date = pd.to_datetime(sensor_metrics['earliest_reading']).date()
+        max_date = pd.to_datetime(sensor_metrics['latest_reading']).date()
+    except:
+        max_date = datetime.now().date()
+        min_date = max_date - timedelta(days=90)
+else:
+    max_date = datetime.now().date()
+    min_date = max_date - timedelta(days=90)
 
 col1, col2 = st.sidebar.columns(2)
 with col1:
@@ -124,15 +131,14 @@ st.sidebar.markdown("---")
 # Event Filters
 st.sidebar.subheader("🎯 Event Filters")
 
-# Get available event types
-abnormal_events = sensor_df[sensor_df['is_abnormal_event'] == 'True']
-available_event_types = abnormal_events['primary_event_type'].unique().tolist()
+# Common event types from your Athena data
+available_event_types = ['hard_brake', 'swerve', 'pothole', 'acceleration']
 
 event_types = st.sidebar.multiselect(
     "Event Types",
     options=available_event_types,
     default=available_event_types,
-    help="Filter by specific event types"
+    help="Filter by specific event types (from Athena)"
 )
 
 severity_threshold = st.sidebar.slider(
@@ -146,7 +152,8 @@ severity_threshold = st.sidebar.slider(
 show_only_abnormal = st.sidebar.checkbox(
     "Show only abnormal events",
     value=True,
-    help="Filter to show only abnormal sensor events"
+    disabled=True,
+    help="Always enabled - Athena queries only abnormal events"
 )
 
 st.sidebar.markdown("---")
@@ -236,17 +243,7 @@ show_perception_layer = st.sidebar.checkbox(
     help="Display individual perception reports on map"
 )
 
-show_sensor_layer = st.sidebar.checkbox(
-    "Show Raw Sensor Events",
-    value=False,
-    help="Display individual sensor events (can be slow)"
-)
-
-show_heatmap = st.sidebar.checkbox(
-    "Show Heatmap",
-    value=False,
-    help="Display event density heatmap"
-)
+st.sidebar.info("ℹ️ Raw sensor events not shown (data in Athena)")
 
 st.sidebar.markdown("---")
 
@@ -281,20 +278,9 @@ tab1, tab2 = st.tabs(["📍 Hotspot Insights", "📈 Trend Analysis"])
 # ==================== TAB 1: HOTSPOT INSIGHTS ====================
 with tab1:
     st.header("Hotspot Insights")
-    st.markdown("Combining sensor data and perception reports for comprehensive safety analysis")
+    st.markdown("Combining Athena sensor data and perception reports for comprehensive safety analysis")
     
-    # Filter data based on date range
-    filtered_sensor = sensor_df[
-        (sensor_df['timestamp_dt'] >= pd.Timestamp(start_date)) &
-        (sensor_df['timestamp_dt'] <= pd.Timestamp(end_date))
-    ].copy()
-    
-    # Filter perception data
-    infra_df['datetime'] = pd.to_datetime(infra_df['date'] + ' ' + infra_df['time'], 
-                                          format='%d-%m-%Y %H:%M:%S', dayfirst=True, errors='coerce')
-    ride_df['datetime'] = pd.to_datetime(ride_df['date'] + ' ' + ride_df['time'], 
-                                         format='%d-%m-%Y %H:%M:%S', dayfirst=True, errors='coerce')
-    
+    # Filter perception data by date
     filtered_infra = infra_df[
         (infra_df['datetime'] >= pd.Timestamp(start_date)) &
         (infra_df['datetime'] <= pd.Timestamp(end_date))
@@ -305,36 +291,30 @@ with tab1:
         (ride_df['datetime'] <= pd.Timestamp(end_date))
     ].copy()
     
-    # Apply event type filters
-    if show_only_abnormal:
-        filtered_sensor = filtered_sensor[filtered_sensor['is_abnormal_event'] == 'True']
-    
-    if event_types:
-        filtered_sensor = filtered_sensor[filtered_sensor['primary_event_type'].isin(event_types)]
-    
+    # Apply incident type filter
     if incident_types:
         filtered_ride = filtered_ride[filtered_ride['incidenttype'].isin(incident_types)]
     
-    # Apply severity filter
-    filtered_sensor['max_severity'] = pd.to_numeric(filtered_sensor['max_severity'], errors='coerce')
-    filtered_sensor = filtered_sensor[filtered_sensor['max_severity'] >= severity_threshold]
-    
-    # Detect hotspots
+    # Detect hotspots using Athena
     if apply_filters or st.session_state.hotspots_data is None:
-        with st.spinner("Detecting hotspots..."):
-            detector = SmartHotspotDetector(filtered_sensor, filtered_infra, filtered_ride)
+        with st.spinner("Detecting hotspots from Athena..."):
+            detector = SmartHotspotDetector(filtered_infra, filtered_ride)
             
             hotspots = detector.get_combined_hotspots(
                 sensor_params={
                     'min_severity': severity_threshold,
-                    'cluster_radius_m': sensor_cluster_radius,
                     'min_events': min_sensor_events,
-                    'perception_radius_m': perception_match_radius
+                    'perception_radius_m': perception_match_radius,
+                    'start_date': start_date.strftime('%Y-%m-%d'),
+                    'end_date': end_date.strftime('%Y-%m-%d')
                 },
                 perception_params={
                     'cluster_radius_m': perception_cluster_radius,
                     'min_reports': min_perception_reports,
                     'sensor_radius_m': sensor_cluster_radius
+                },
+                max_total_hotspots=max_hotspots
+            )_m': sensor_cluster_radius
                 },
                 max_total_hotspots=max_hotspots
             )
@@ -390,17 +370,18 @@ with tab1:
         
         with col_map:
             # Prepare data for Kepler
+            # Note: For Athena data, we don't show raw sensor events layer (too large)
             kepler_data = prepare_data_for_kepler(
                 hotspots_df=hotspots,
                 perception_df=filtered_ride if show_perception_layer else None,
-                sensor_df=filtered_sensor if show_sensor_layer else None
+                sensor_df=None  # Don't load all sensor data from Athena
             )
             
             # Build Kepler config
             kepler_config = build_kepler_config(
                 include_perception=show_perception_layer,
-                include_sensor=show_sensor_layer,
-                include_heatmap=show_heatmap
+                include_sensor=False,  # Can't show raw sensor events from Athena
+                include_heatmap=False  # Can't create heatmap without raw data
             )
             
             # Render Kepler map
