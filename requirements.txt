@@ -1,27 +1,25 @@
 # Core
 streamlit==1.31.0
 pandas==2.1.4
-numpy<2,>=1.26.3        # ✅ prevent NumPy 2.x ABI issues
+numpy==1.26.3
 
 # Geospatial
-geopandas<1,>=0.14.2     # ✅ latest working with numpy<2
-shapely<2,>=1.8.5        # ✅ shapely 2.0 breaks with geopandas 0.14.x
-
-# Kepler.gl for interactive maps
-keplergl==0.3.2
-streamlit-keplergl==0.3.0
+geopandas==0.14.2
+folium>=0.14.0,<0.15.0
+streamlit-folium==0.16.0
+shapely==2.0.2
 
 # Visualization
 plotly==5.18.0
-matplotlib<3.9,>=3.8.2   # ✅ pin to pre-NumPy-2 builds
+matplotlib==3.8.2
 seaborn==0.13.1
 
 # Machine Learning & Clustering
-scikit-learn<1.5,>=1.4.2 # ✅ 1.6+ compiled for NumPy 2
-scipy<1.14,>=1.11.4      # ✅ ensure built for NumPy 1.x
+scikit-learn>=1.3.0,<1.4.0
+scipy==1.11.4
 
-# NLP & Sentiment Analysis - GROQ
-groq==0.11.0
+# NLP & Sentiment Analysis - Updated with latest Groq
+groq>=0.12.0
 
 # Data Processing
 pyarrow==14.0.2
@@ -30,13 +28,11 @@ openpyxl==3.1.2
 # Utilities
 python-dotenv==1.0.0
 tqdm==4.66.1
-requests==2.31.0
 
-# Reverse Geocoding (OpenStreetMap)
-geopy==2.4.1
+# Network - IMPORTANT: urllib3 2.x breaks Python 3.9
+urllib3<2.0
+requests>=2.31.0
 
-# AWS (Athena)
-boto3<1.35,>=1.28.0      # ✅ stable with Python 3.9
-botocore<1.35,>=1.28.0   # ✅ ensure match with boto3
-urllib3<1.27,>=1.25.4    # ✅ required by botocore for Python 3.9
+# AWS
+boto3>=1.28.0
 pyathena>=3.0.0
