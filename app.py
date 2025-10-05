@@ -304,24 +304,44 @@ with tab1:
         col_map, col_stats = st.columns([2, 1])
         
         with col_map:
-            kepler_data = prepare_data_for_kepler(
-                hotspots_df=hotspots,
-                perception_df=filtered_ride if show_perception_layer else None,
-                sensor_df=None
-            )
-            
-            kepler_config = build_kepler_config(
-                include_perception=show_perception_layer,
-                include_sensor=False,
-                include_heatmap=False
-            )
-            
             try:
-                # Note: keplergl_static doesn't accept config parameter
-                # Map will use default configuration
-                keplergl_static(kepler_data, height=600)
+                from keplergl import KeplerGl
+                
+                # Create KeplerGl map object
+                map_1 = KeplerGl(height=600)
+                
+                # Prepare data for Kepler (convert timestamps and clean data)
+                if not hotspots.empty:
+                    hotspots_clean = hotspots.copy()
+                    # Convert any datetime columns to strings
+                    for col in hotspots_clean.columns:
+                        if pd.api.types.is_datetime64_any_dtype(hotspots_clean[col]):
+                            hotspots_clean[col] = hotspots_clean[col].astype(str)
+                        # Convert dict/list columns to strings
+                        elif hotspots_clean[col].dtype == 'object':
+                            hotspots_clean[col] = hotspots_clean[col].apply(
+                                lambda x: str(x) if isinstance(x, (dict, list)) else x
+                            )
+                    map_1.add_data(data=hotspots_clean, name='Hotspots')
+                
+                if show_perception_layer and not filtered_ride.empty:
+                    ride_clean = filtered_ride.copy()
+                    # Convert datetime columns to strings
+                    for col in ride_clean.columns:
+                        if pd.api.types.is_datetime64_any_dtype(ride_clean[col]):
+                            ride_clean[col] = ride_clean[col].astype(str)
+                        elif ride_clean[col].dtype == 'object':
+                            ride_clean[col] = ride_clean[col].apply(
+                                lambda x: str(x) if isinstance(x, (dict, list)) else x
+                            )
+                    map_1.add_data(data=ride_clean, name='Perception Reports')
+                
+                # Render map
+                keplergl_static(map_1)
+                
             except Exception as e:
                 st.error(f"Kepler error: {e}")
+                st.info("Showing data table instead")
                 st.dataframe(hotspots.head(10))
         
         with col_stats:
