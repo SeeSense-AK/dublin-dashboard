@@ -1,5 +1,5 @@
 """
-Sentiment analysis module - IMPROVED VERSION WITH BETTER DEBUGGING
+Sentiment analysis module - PRODUCTION VERSION (No debug messages)
 """
 import streamlit as st
 import os
@@ -12,81 +12,41 @@ load_dotenv()
 try:
     from groq import Groq
     GROQ_AVAILABLE = True
-    print("✅ Groq library imported successfully")
 except ImportError as e:
     GROQ_AVAILABLE = False
-    print(f"❌ Groq not available: {e}")
-    print("   Install with: pip install groq")
 
 
 def get_groq_client():
     """
-    Initialize Groq API client with better error handling
+    Initialize Groq API client
+    Returns None if unavailable (will use fallback)
     """
     if not GROQ_AVAILABLE:
-        st.warning("⚠️ Groq library not installed. Using fallback analysis.")
-        st.info("Install Groq with: `pip install groq`")
         return None
     
     try:
         # Get API key from environment
         api_key = os.getenv("GROQ_API_KEY")
         
-        # Debug: Check if key exists
         if not api_key:
-            st.error("❌ GROQ_API_KEY not found in environment variables!")
-            st.info("Make sure your .env file has: GROQ_API_KEY=your_key_here")
-            
-            # Show what keys are available (for debugging)
-            with st.expander("🔍 Debug: Environment Variables"):
-                env_vars = [k for k in os.environ.keys() if 'GROQ' in k or 'API' in k]
-                if env_vars:
-                    st.write("Found these API-related variables:")
-                    for var in env_vars:
-                        st.write(f"- {var}")
-                else:
-                    st.write("No GROQ or API related variables found")
-            
             return None
         
-        # Debug: Show partial key
-        st.success(f"✅ Found GROQ_API_KEY: {api_key[:10]}...{api_key[-4:]}")
-        
-        # Try to initialize client
+        # Initialize client
         client = Groq(api_key=api_key)
         
-        # Test the connection with a simple call
+        # Quick test (silent - only fails if there's an error)
         try:
-            test_response = client.chat.completions.create(
+            client.chat.completions.create(
                 model="llama-3.3-70b-versatile",
-                messages=[
-                    {"role": "user", "content": "test"}
-                ],
+                messages=[{"role": "user", "content": "test"}],
                 max_tokens=5,
                 temperature=0
             )
-            st.success("✅ Groq API connection successful!")
             return client
-            
-        except Exception as api_error:
-            st.error(f"❌ Groq API test failed: {str(api_error)}")
-            
-            # Provide specific guidance based on error
-            error_str = str(api_error).lower()
-            if "401" in error_str or "authentication" in error_str:
-                st.warning("🔑 Authentication error. Check if your API key is valid.")
-                st.info("Get a new key from: https://console.groq.com/keys")
-            elif "rate limit" in error_str:
-                st.warning("⏰ Rate limit reached. Try again in a few moments.")
-            elif "network" in error_str or "connection" in error_str:
-                st.warning("🌐 Network error. Check your internet connection.")
-            
+        except:
             return None
         
-    except Exception as e:
-        st.error(f"❌ Error initializing Groq client: {str(e)}")
-        with st.expander("🔍 Full Error Details"):
-            st.code(str(e))
+    except:
         return None
 
 
@@ -113,23 +73,21 @@ def analyze_perception_sentiment(comments_list, debug=False):
         }
     
     # Try Groq AI analysis first
-    if debug:
-        st.info("🤖 Attempting Groq AI analysis...")
-    
     client = get_groq_client()
     
     if client:
         try:
             result = analyze_with_groq(client, comments_list)
             result['method'] = 'groq_ai'
+            
             if debug:
                 st.success("✅ Using Groq AI analysis")
+            
             return result
             
         except Exception as e:
             if debug:
                 st.warning(f"⚠️ Groq analysis failed: {e}")
-            print(f"Groq analysis error: {e}")
             # Fall through to fallback
     
     # Fallback: Keyword-based analysis
@@ -167,7 +125,7 @@ KEY_ISSUES: [list 3-4 main problems, comma-separated]"""
 
     # Call Groq API with updated model
     response = client.chat.completions.create(
-        model="llama-3.3-70b-versatile",  # Updated model name
+        model="llama-3.3-70b-versatile",
         messages=[
             {"role": "system", "content": "You are a road safety analyst. Be concise and structured."},
             {"role": "user", "content": prompt}

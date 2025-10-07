@@ -194,6 +194,14 @@ with tab1:
             (pd.to_datetime(ride_filtered['datetime']).dt.date <= end_date)
         ]
     
+    # Store date range in session state for sensor validation
+    if 'selected_start_date' not in st.session_state:
+        st.session_state.selected_start_date = start_date
+        st.session_state.selected_end_date = end_date
+    else:
+        st.session_state.selected_start_date = start_date
+        st.session_state.selected_end_date = end_date
+    
     with st.spinner("🤖 Running AI analysis on perception reports..."):
         perception_hotspots = create_enriched_perception_hotspots(
             infra_filtered,
