@@ -51,7 +51,7 @@ class AthenaCyclingSafetyDB:
             AVG(speed_kmh) as avg_speed,
             MAX(timestamp) as latest_reading,
             MIN(timestamp) as earliest_reading
-        FROM spinovate_production.spinovate_production_optimised
+        FROM spinovate_production.spinovate_production_optimised_v2
         """
         
         try:
@@ -96,7 +96,7 @@ class AthenaCyclingSafetyDB:
                 max_severity,
                 primary_event_type,
                 timestamp
-            FROM spinovate_production.spinovate_production_optimised
+            FROM spinovate_production.spinovate_production_optimised_v2
             WHERE is_abnormal_event = true 
                 AND max_severity >= {severity_threshold}
                 AND lat IS NOT NULL 
@@ -148,7 +148,7 @@ class AthenaCyclingSafetyDB:
             COUNT(*) as total_readings,
             COUNT(CASE WHEN is_abnormal_event THEN 1 END) as abnormal_events,
             AVG(speed_kmh) as avg_speed
-        FROM spinovate_production.spinovate_production_optimised
+        FROM spinovate_production.spinovate_production_optimised_v2
         WHERE timestamp >= CURRENT_DATE - INTERVAL '{days}' DAY
         GROUP BY DATE_TRUNC('day', timestamp)
         ORDER BY date
@@ -175,7 +175,7 @@ class AthenaCyclingSafetyDB:
                 DATE_TRUNC('day', timestamp) as date,
                 COUNT(DISTINCT device_id) as daily_users,
                 COUNT(*) as daily_readings
-            FROM spinovate_production.spinovate_production_optimised
+            FROM spinovate_production.spinovate_production_optimised_v2
             WHERE timestamp >= CURRENT_DATE - INTERVAL '90' DAY
             GROUP BY DATE_TRUNC('day', timestamp)
             ORDER BY date
