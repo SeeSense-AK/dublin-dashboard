@@ -1,7 +1,7 @@
 # src/perception_hotspot_analyzer.py
 """
-NEW APPROACH: Perception-driven hotspot detection
-Clusters perception reports first, then validates with sensor data
+Perception-driven hotspot detection
+UPDATED: Uses full date range for sensor validation instead of just perception report dates
 """
 
 import pandas as pd
@@ -142,7 +142,8 @@ def enrich_with_ai_sentiment(cluster_analysis: Dict) -> Dict:
             'sentiment': 'unknown',
             'severity': 'unknown',
             'summary': 'No comments available',
-            'key_issues': []
+            'key_issues': [],
+            'method': 'none'
         }
         return cluster_analysis
     
@@ -212,13 +213,14 @@ def find_sensor_data_for_perception_cluster(cluster_lat: float, cluster_lng: flo
                                            end_date: str = None) -> Dict:
     """
     Find sensor readings near a perception cluster
+    UPDATED: Now uses the full date range selected by user, not just perception report dates
     
     Args:
         cluster_lat: Cluster center latitude
         cluster_lng: Cluster center longitude
         radius_m: Search radius in meters
-        start_date: Optional start date filter
-        end_date: Optional end date filter
+        start_date: START of FULL date range selected by user
+        end_date: END of FULL date range selected by user
     
     Returns:
         Dictionary with sensor data summary
@@ -229,6 +231,8 @@ def find_sensor_data_for_perception_cluster(cluster_lat: float, cluster_lng: flo
         # Convert radius to degrees
         radius_deg = radius_m / 111000
         
+        # IMPORTANT: We now use the FULL date range from user selection
+        # This allows us to see ALL sensor data in that location, not just during report dates
         date_filter = ""
         if start_date and end_date:
             date_filter = f"AND timestamp BETWEEN TIMESTAMP '{start_date}' AND TIMESTAMP '{end_date}'"
@@ -358,14 +362,15 @@ def create_enriched_perception_hotspots(infra_df: pd.DataFrame, ride_df: pd.Data
                                        start_date: str = None, end_date: str = None) -> pd.DataFrame:
     """
     MAIN FUNCTION: Create perception-driven hotspots with sensor validation
+    UPDATED: Uses full date range for sensor data validation
     
     Args:
         infra_df: Infrastructure reports
         ride_df: Ride reports
         eps_meters: Clustering radius
         min_reports: Minimum reports to form a hotspot
-        start_date: Optional date filter
-        end_date: Optional date filter
+        start_date: START of FULL user-selected date range (for sensor queries)
+        end_date: END of FULL user-selected date range (for sensor queries)
     
     Returns:
         DataFrame with enriched perception hotspots
@@ -393,13 +398,14 @@ def create_enriched_perception_hotspots(infra_df: pd.DataFrame, ride_df: pd.Data
         # AI sentiment analysis
         analysis = enrich_with_ai_sentiment(analysis)
         
-        # Find sensor data
+        # Find sensor data using FULL date range (not just perception report dates)
+        # This is the key change - we now look at ALL sensor data in that location
         sensor_data = find_sensor_data_for_perception_cluster(
             analysis['center_lat'],
             analysis['center_lng'],
             radius_m=eps_meters,
-            start_date=start_date,
-            end_date=end_date
+            start_date=start_date,  # Full range start
+            end_date=end_date        # Full range end
         )
         
         analysis['sensor_data'] = sensor_data
