@@ -202,129 +202,177 @@ with tab1:
             folium_static(m, width=1200, height=600)
             
             st.markdown("---")
+
+# Critical Hotspots Section
+st.subheader("🔝 Critical Hotspots - Detailed Analysis")
+
+for idx, hotspot in hotspots.iterrows():
+    with st.expander(
+        f"🚨 Hotspot #{hotspot['hotspot_id']}: {max(hotspot['event_distribution'].items(), key=lambda x: x[1])[0].title()} Issues",
+        expanded=(idx == 0)  # First one expanded
+    ):
+        # Overview Metrics
+        col1, col2, col3, col4 = st.columns(4)
+        
+        with col1:
+            st.metric("Sensor Events", int(hotspot['event_count']))
+        with col2:
+            st.metric("User Reports", int(hotspot['perception_data']['total_reports']))
+        with col3:
+            st.metric("Avg Severity", f"{hotspot['avg_severity']:.1f}/10")
+        with col4:
+            st.metric("Urgency Score", f"{hotspot['urgency_score']}/100")
+        
+        st.markdown("---")
+        
+        # AI Analysis - THE MAIN HIGHLIGHT
+        st.markdown("### 🤖 AI-Powered Analysis")
+        analysis_method = hotspot['groq_analysis']['method']
+        if analysis_method == 'groq_ai':
+            st.success(f"✅ Analysis by: {hotspot['groq_analysis']['model']}")
+        else:
+            st.info(f"ℹ️ Analysis method: {analysis_method}")
+        
+        st.markdown(f"""
+        <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); 
+                    padding: 20px; border-radius: 10px; color: white; 
+                    box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+            <p style="font-size: 16px; line-height: 1.6; margin: 0;">
+                {hotspot['groq_analysis']['analysis']}
+            </p>
+        </div>
+        """, unsafe_allow_html=True)
+        
+        st.markdown("---")
+        
+        # Event Distribution
+        st.markdown("### 📊 Event Type Distribution")
+        
+        col1, col2 = st.columns([1, 1])
+        
+        with col1:
+            # Pie chart
+            event_dist_df = pd.DataFrame([
+                {'Event Type': k, 'Percentage': v}
+                for k, v in hotspot['event_distribution'].items()
+            ])
             
-            # Critical Hotspots Section
-            st.subheader("🔝 Critical Hotspots - Detailed Analysis")
+            fig = px.pie(
+                event_dist_df,
+                values='Percentage',
+                names='Event Type',
+                title='Event Type Breakdown',
+                color_discrete_sequence=px.colors.sequential.Reds
+            )
+            st.plotly_chart(fig, use_container_width=True)
+        
+        with col2:
+            st.markdown("**Event Counts:**")
+            for event_type, pct in sorted(hotspot['event_distribution'].items(), key=lambda x: x[1], reverse=True):
+                count = hotspot['event_types_raw'][event_type]
+                st.write(f"• **{event_type.title()}**: {count} events ({pct:.1f}%)")
+        
+        st.markdown("---")
+        
+        # Sensor Data Details
+        st.markdown("### 📡 Sensor Data Details")
+        
+        col1, col2, col3 = st.columns(3)
+        
+        with col1:
+            st.markdown("**Severity Metrics**")
+            st.write(f"• Avg: {hotspot['avg_severity']:.1f}/10")
+            st.write(f"• Max: {hotspot['max_severity']}/10")
+            st.write(f"• Unique Cyclists: {hotspot['unique_devices']}")
+        
+        with col2:
+            st.markdown("**Accelerometer Data**")
+            st.write(f"• Peak X (lateral): {hotspot['avg_peak_x']:.2f}g")
+            st.write(f"• Peak Y (forward): {hotspot['avg_peak_y']:.2f}g")
+            st.write(f"• Peak Z (vertical): {hotspot['avg_peak_z']:.2f}g")
+        
+        with col3:
+            st.markdown("**Additional Info**")
+            st.write(f"• Avg Speed: {hotspot['avg_speed']:.1f} km/h")
+            st.write(f"• Total Events: {hotspot['event_count']}")
+            st.write(f"• Risk Score: {hotspot['risk_score']:.1f}")
+        
+        st.markdown("---")
+        
+        # User Perception Reports
+        st.markdown("### 💬 User Perception Reports")
+        
+        perception = hotspot['perception_data']
+        
+        if perception['total_reports'] > 0:
+            col1, col2 = st.columns([1, 1])
             
-            for idx, hotspot in hotspots.iterrows():
-                with st.expander(
-                    f"🚨 Hotspot #{hotspot['hotspot_id']}: {max(hotspot['event_distribution'].items(), key=lambda x: x[1])[0].title()} Issues",
-                    expanded=(idx == 0)  # First one expanded
-                ):
-                    # Overview Metrics
-                    col1, col2, col3, col4 = st.columns(4)
-                    
-                    with col1:
-                        st.metric("Sensor Events", int(hotspot['event_count']))
-                    with col2:
-                        st.metric("User Reports", int(hotspot['perception_data']['total_reports']))
-                    with col3:
-                        st.metric("Avg Severity", f"{hotspot['avg_severity']:.1f}/10")
-                    with col4:
-                        st.metric("Urgency Score", f"{hotspot['urgency_score']}/100")
-                    
-                    st.markdown("---")
-                    
-                    # Sensor Data Details
-                    st.markdown("### 📡 Sensor Data Details")
-                    
-                    col1, col2, col3 = st.columns(3)
-                    
-                    with col1:
-                        st.markdown("**Severity Metrics**")
-                        st.write(f"• Avg: {hotspot['avg_severity']:.1f}/10")
-                        st.write(f"• Max: {hotspot['max_severity']}/10")
-                        st.write(f"• Unique Cyclists: {hotspot['unique_devices']}")
-                    
-                    with col2:
-                        st.markdown("**Accelerometer Data**")
-                        st.write(f"• Peak X (lateral): {hotspot['avg_peak_x']:.2f}g")
-                        st.write(f"• Peak Y (forward): {hotspot['avg_peak_y']:.2f}g")
-                        st.write(f"• Peak Z (vertical): {hotspot['avg_peak_z']:.2f}g")
-                    
-                    with col3:
-                        st.markdown("**Additional Info**")
-                        st.write(f"• Avg Speed: {hotspot['avg_speed']:.1f} km/h")
-                        st.write(f"• Total Events: {hotspot['event_count']}")
-                        st.write(f"• Risk Score: {hotspot['risk_score']:.1f}")
-                    
-                    st.markdown("---")
-                    
-                    # User Perception Reports
-                    st.markdown("### 💬 User Perception Reports")
-                    
-                    perception = hotspot['perception_data']
-                    
-                    if perception['total_reports'] > 0:
-                        col1, col2 = st.columns([1, 1])
-                        
-                        with col1:
-                            st.markdown(f"**{perception['total_reports']} reports found (100m radius, all time)**")
-                            st.write(f"• Infrastructure reports: {perception['infra_reports']}")
-                            st.write(f"• Ride reports: {perception['ride_reports']}")
-                            
-                            st.markdown("**Reported Issues:**")
-                            for theme, count in sorted(perception['themes'].items(), key=lambda x: x[1], reverse=True):
-                                st.write(f"• {theme}: {count} reports")
-                        
-                        with col2:
-                            st.markdown("**Sample Comments:**")
-                            for i, comment in enumerate(perception['comments'][:5], 1):
-                                st.markdown(f"""
-                                <div style="background: #f0f0f0; padding: 10px; 
-                                            margin: 5px 0; border-radius: 5px; 
-                                            border-left: 3px solid #DC143C;">
-                                    <i>"{comment}"</i>
-                                </div>
-                                """, unsafe_allow_html=True)
-                            
-                            if len(perception['comments']) > 5:
-                                st.info(f"+ {len(perception['comments']) - 5} more comments")
-                    else:
-                        st.info("ℹ️ No user perception reports found within 100m of this location.")
-                    
-                    st.markdown("---")
-                    
-                    # Location & Actions
-                    st.markdown("### 📍 Location & Actions")
-                    
-                    col1, col2 = st.columns([2, 1])
-                    
-                    with col1:
-                        st.write(f"**Coordinates:** {hotspot['center_lat']:.6f}, {hotspot['center_lng']:.6f}")
-                        st.write(f"**Date Range:** {hotspot['date_range']}")
-                        st.write(f"**First Event:** {hotspot['first_event']}")
-                        st.write(f"**Last Event:** {hotspot['last_event']}")
-                    
-                    with col2:
-                        street_view_url = STREET_VIEW_URL_TEMPLATE.format(
-                            lat=hotspot['center_lat'],
-                            lng=hotspot['center_lng'],
-                            heading=0
-                        )
-                        
-                        st.markdown(f"""
-                        <a href="{street_view_url}" target="_blank" 
-                           style="display: block; text-align: center; 
-                                  background: #4285f4; color: white; 
-                                  padding: 15px; border-radius: 5px; 
-                                  text-decoration: none; font-weight: bold;">
-                            📍 Open in Google Street View
-                        </a>
-                        """, unsafe_allow_html=True)
-                        
-                        st.markdown("<br>", unsafe_allow_html=True)
-                        
-                        maps_url = f"https://www.google.com/maps?q={hotspot['center_lat']},{hotspot['center_lng']}"
-                        st.markdown(f"""
-                        <a href="{maps_url}" target="_blank" 
-                           style="display: block; text-align: center; 
-                                  background: #34A853; color: white; 
-                                  padding: 15px; border-radius: 5px; 
-                                  text-decoration: none; font-weight: bold;">
-                            🗺️ Open in Google Maps
-                        </a>
-                        """, unsafe_allow_html=True)
+            with col1:
+                st.markdown(f"**{perception['total_reports']} reports found (100m radius, all time)**")
+                st.write(f"• Infrastructure reports: {perception['infra_reports']}")
+                st.write(f"• Ride reports: {perception['ride_reports']}")
+                
+                st.markdown("**Reported Issues:**")
+                for theme, count in sorted(perception['themes'].items(), key=lambda x: x[1], reverse=True):
+                    st.write(f"• {theme}: {count} reports")
+            
+            with col2:
+                st.markdown("**Sample Comments:**")
+                for i, comment in enumerate(perception['comments'][:5], 1):
+                    st.markdown(f"""
+                    <div style="background: #f0f0f0; padding: 10px; 
+                                margin: 5px 0; border-radius: 5px; 
+                                border-left: 3px solid #DC143C;">
+                        <i>"{comment}"</i>
+                    </div>
+                    """, unsafe_allow_html=True)
+                
+                if len(perception['comments']) > 5:
+                    st.info(f"+ {len(perception['comments']) - 5} more comments")
+        else:
+            st.info("ℹ️ No user perception reports found within 100m of this location.")
+        
+        st.markdown("---")
+        
+        # Location & Actions
+        st.markdown("### 📍 Location & Actions")
+        
+        col1, col2 = st.columns([2, 1])
+        
+        with col1:
+            st.write(f"**Coordinates:** {hotspot['center_lat']:.6f}, {hotspot['center_lng']:.6f}")
+            st.write(f"**Date Range:** {hotspot['date_range']}")
+            st.write(f"**First Event:** {hotspot['first_event']}")
+            st.write(f"**Last Event:** {hotspot['last_event']}")
+        
+        with col2:
+            street_view_url = STREET_VIEW_URL_TEMPLATE.format(
+                lat=hotspot['center_lat'],
+                lng=hotspot['center_lng'],
+                heading=0
+            )
+            
+            st.markdown(f"""
+            <a href="{street_view_url}" target="_blank" 
+               style="display: block; text-align: center; 
+                      background: #4285f4; color: white; 
+                      padding: 15px; border-radius: 5px; 
+                      text-decoration: none; font-weight: bold; margin-bottom: 10px;">
+                📍 Open in Google Street View
+            </a>
+            """, unsafe_allow_html=True)
+            
+            maps_url = f"https://www.google.com/maps?q={hotspot['center_lat']},{hotspot['center_lng']}"
+            st.markdown(f"""
+            <a href="{maps_url}" target="_blank" 
+               style="display: block; text-align: center; 
+                      background: #34A853; color: white; 
+                      padding: 15px; border-radius: 5px; 
+                      text-decoration: none; font-weight: bold;">
+                🗺️ Open in Google Maps
+            </a>
+            """, unsafe_allow_html=True)
+
 
 # ==================== TAB 2: TREND ANALYSIS ====================
 with tab2:
@@ -521,52 +569,52 @@ with st.expander("ℹ️ How It Works"):
 
 st.caption("🚴‍♂️ Spinovate Safety Dashboard | Powered by Groq AI, AWS Athena & Enhanced DBSCAN")
 
-                    
-                    # AI Analysis - THE MAIN HIGHLIGHT
-                    st.markdown("### 🤖 AI-Powered Analysis")
-                    analysis_method = hotspot['groq_analysis']['method']
-                    if analysis_method == 'groq_ai':
-                        st.success(f"✅ Analysis by: {hotspot['groq_analysis']['model']}")
-                    else:
-                        st.info(f"ℹ️ Analysis method: {analysis_method}")
-                    
-                    st.markdown(f"""
-                    <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); 
-                                padding: 20px; border-radius: 10px; color: white; 
-                                box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
-                        <p style="font-size: 16px; line-height: 1.6; margin: 0;">
-                            {hotspot['groq_analysis']['analysis']}
-                        </p>
-                    </div>
-                    """, unsafe_allow_html=True)
-                    
-                    st.markdown("---")
-                    
-                    # Event Distribution
-                    st.markdown("### 📊 Event Type Distribution")
-                    
-                    col1, col2 = st.columns([1, 1])
-                    
-                    with col1:
-                        # Pie chart
-                        event_dist_df = pd.DataFrame([
-                            {'Event Type': k, 'Percentage': v}
-                            for k, v in hotspot['event_distribution'].items()
-                        ])
-                        
-                        fig = px.pie(
-                            event_dist_df,
-                            values='Percentage',
-                            names='Event Type',
-                            title='Event Type Breakdown',
-                            color_discrete_sequence=px.colors.sequential.Reds
-                        )
-                        st.plotly_chart(fig, use_container_width=True)
-                    
-                    with col2:
-                        st.markdown("**Event Counts:**")
-                        for event_type, pct in sorted(hotspot['event_distribution'].items(), key=lambda x: x[1], reverse=True):
-                            count = hotspot['event_types_raw'][event_type]
-                            st.write(f"• **{event_type.title()}**: {count} events ({pct:.1f}%)")
-                    
-                    st.markdown("---")
+
+# AI Analysis - THE MAIN HIGHLIGHT
+st.markdown("### 🤖 AI-Powered Analysis")
+analysis_method = hotspot['groq_analysis']['method']
+if analysis_method == 'groq_ai':
+    st.success(f"✅ Analysis by: {hotspot['groq_analysis']['model']}")
+else:
+    st.info(f"ℹ️ Analysis method: {analysis_method}")
+
+st.markdown(f"""
+<div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); 
+            padding: 20px; border-radius: 10px; color: white; 
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+    <p style="font-size: 16px; line-height: 1.6; margin: 0;">
+        {hotspot['groq_analysis']['analysis']}
+    </p>
+</div>
+""", unsafe_allow_html=True)
+
+st.markdown("---")
+
+# Event Distribution
+st.markdown("### 📊 Event Type Distribution")
+
+col1, col2 = st.columns([1, 1])
+
+with col1:
+    # Pie chart
+    event_dist_df = pd.DataFrame([
+        {'Event Type': k, 'Percentage': v}
+        for k, v in hotspot['event_distribution'].items()
+    ])
+    
+    fig = px.pie(
+        event_dist_df,
+        values='Percentage',
+        names='Event Type',
+        title='Event Type Breakdown',
+        color_discrete_sequence=px.colors.sequential.Reds
+    )
+    st.plotly_chart(fig, use_container_width=True)
+
+with col2:
+    st.markdown("**Event Counts:**")
+    for event_type, pct in sorted(hotspot['event_distribution'].items(), key=lambda x: x[1], reverse=True):
+        count = hotspot['event_types_raw'][event_type]
+        st.write(f"• **{event_type.title()}**: {count} events ({pct:.1f}%)")
+
+st.markdown("---")
