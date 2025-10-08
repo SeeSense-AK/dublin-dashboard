@@ -46,9 +46,19 @@ def create_hotspot_map(hotspots_df, infra_reports_df=None, ride_reports_df=None,
     # Add hotspots
     for idx, hotspot in hotspots_df.iterrows():
         # Handle both Athena format (latitude/longitude) and original format (lat/lng)
-        lat = hotspot.get('latitude', hotspot.get('lat', 0))
-        lng = hotspot.get('longitude', hotspot.get('lng', 0))
-        
+        lat = (
+            hotspot.get('start_lat')
+            or hotspot.get('latitude')
+            or hotspot.get('lat')
+            or 0
+        )
+        lng = (
+            hotspot.get('start_lng')
+            or hotspot.get('longitude')
+            or hotspot.get('lng')
+            or 0
+        )
+
         # Determine color based on severity
         severity = hotspot.get('avg_severity', hotspot.get('severity_score', 2))
         severity_level = min(4, max(0, int(severity)))

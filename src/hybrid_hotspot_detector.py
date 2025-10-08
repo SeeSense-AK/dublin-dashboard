@@ -192,11 +192,10 @@ class HybridHotspotDetector:
             )
             
             return hotspots
-            
         except Exception as e:
             st.error(f"Error detecting sensor hotspots: {e}")
             return pd.DataFrame()
-    
+
     def _aggregate_sensor_clusters(self, clustered_events: pd.DataFrame,
                                    start_date: str, end_date: str) -> pd.DataFrame:
         """
@@ -226,7 +225,9 @@ class HybridHotspotDetector:
             
             # Calculate statistics
             event_types = cluster_data['primary_event_type'].value_counts()
-            event_distribution = (event_types / len(cluster_data) * 100).to_dict()
+            event_distribution = {}
+            if not event_types.empty:
+                event_distribution = (event_types / len(cluster_data) * 100).to_dict()
             
             # Average severity from parsed values
             avg_severity = cluster_data['parsed_severity'].mean()
@@ -241,8 +242,8 @@ class HybridHotspotDetector:
                 'avg_severity': avg_severity,
                 'max_severity': max_severity,
                 'avg_speed': cluster_data['speed_kmh'].mean(),
-                'event_distribution': event_distribution,
-                'event_types_raw': event_types.to_dict(),
+                'event_distribution': event_distribution,  # Now guaranteed to be dict
+                'event_types_raw': event_types.to_dict() if not event_types.empty else {},
                 'avg_peak_x': cluster_data['peak_x'].mean(),
                 'avg_peak_y': cluster_data['peak_y'].mean(),
                 'avg_peak_z': cluster_data['peak_z'].mean(),
@@ -250,7 +251,15 @@ class HybridHotspotDetector:
                 'last_event': cluster_data['timestamp'].max(),
                 'date_range': f"{start_date} to {end_date}",
                 'medoid_event_id': medoid_event.name,
-                'radius_m': cluster_data_copy['dist_to_center'].max()
+                'radius_m': cluster_data_copy['dist_to_center'].max(),
+                # Add default corridor fields to avoid KeyErrors
+                'start_lat': None,
+                'start_lng': None,
+                'end_lat': None,
+                'end_lng': None,
+                'corridor_length_m': None,
+                'corridor_points': None,
+                'is_corridor': False
             }
             
             hotspots.append(hotspot)
@@ -522,7 +531,10 @@ class HybridHotspotDetector:
                 'sensor_data': sensor_data,
                 'source': 'corridor_sensor',
                 'precedence': 'P2',
-                'is_corridor': True
+                'is_corridor': True,
+                # Ensure event_distribution exists for all hotspots
+                'event_distribution': {},
+                'event_types_raw': {}
             }
             
             # Calculate rank score
@@ -716,7 +728,10 @@ class HybridHotspotDetector:
                 'max_severity': None,
                 'source': 'corridor_perception_only',
                 'precedence': 'P3',
-                'is_corridor': True
+                'is_corridor': True,
+                # Ensure event_distribution exists for all hotspots
+                'event_distribution': {},
+                'event_types_raw': {}
             }
             
             hotspots.append(hotspot)

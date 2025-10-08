@@ -279,9 +279,12 @@ with tab1:
                 </div>
                 """
                 
-                # Draw corridor or point
-                if hotspot.get('is_corridor') and 'corridor_points' in hotspot:
-                    # Draw polyline
+                                # Draw corridor or point
+                if (hotspot.get('is_corridor') and 
+                    'corridor_points' in hotspot and 
+                    hotspot['corridor_points'] is not None and 
+                    len(hotspot['corridor_points']) > 0):
+                    # Draw polyline for corridors
                     points = hotspot['corridor_points']
                     folium.PolyLine(
                         locations=points,
@@ -312,7 +315,7 @@ with tab1:
                         tooltip="Corridor End"
                     ).add_to(m)
                 else:
-                    # Draw circle marker
+                    # Draw circle marker for point locations
                     folium.CircleMarker(
                         location=[hotspot['center_lat'], hotspot['center_lng']],
                         radius=10,
@@ -334,7 +337,8 @@ with tab1:
             
             for idx, hotspot in hotspots.iterrows():
                 # Build expander title
-                if hotspot.get('is_corridor'):
+                                # Build expander title
+                if hotspot.get('is_corridor') and pd.notna(hotspot.get('start_lat')) and pd.notna(hotspot.get('end_lat')):
                     title_suffix = f"Corridor ({hotspot.get('corridor_length_m', 0):.0f}m)"
                 else:
                     title_suffix = "Point Location"
@@ -408,34 +412,32 @@ with tab1:
                     
                     # Event Distribution (if sensor data available)
                     if hotspot.get('event_count', 0) > 0 and 'event_distribution' in hotspot:
-                        st.markdown("### 📊 Event Type Distribution")
-                        
-                        col1, col2 = st.columns([1, 1])
-                        
-                        with col1:
-                            event_dist_df = pd.DataFrame([
-                                {'Event Type': k, 'Percentage': v}
-                                for k, v in hotspot['event_distribution'].items()
-                            ])
-                            
-                            fig = px.pie(
-                                event_dist_df,
-                                values='Percentage',
-                                names='Event Type',
-                                title='Event Type Breakdown',
-                                color_discrete_sequence=px.colors.sequential.Reds
-                            )
-                            st.plotly_chart(fig, use_container_width=True)
-                        
-                        with col2:
-                            st.markdown("**Event Counts:**")
-                            for event_type, pct in sorted(hotspot['event_distribution'].items(), 
-                                                         key=lambda x: x[1], reverse=True):
-                                if 'event_types_raw' in hotspot:
-                                    count = hotspot['event_types_raw'].get(event_type, 0)
-                                    st.write(f"• **{event_type.title()}**: {count} events ({pct:.1f}%)")
-                        
-                        st.markdown("---")
+                        event_dist = hotspot['event_distribution']
+                        if isinstance(event_dist, dict):
+                            st.markdown("### 📊 Event Type Distribution")
+                            col1, col2 = st.columns([1, 1])
+                            with col1:
+                                event_dist_df = pd.DataFrame([
+                                    {'Event Type': k, 'Percentage': v}
+                                    for k, v in event_dist.items()
+                                ])
+                                fig = px.pie(
+                                    event_dist_df,
+                                    values='Percentage',
+                                    names='Event Type',
+                                    title='Event Type Breakdown',
+                                    color_discrete_sequence=px.colors.sequential.Reds
+                                )
+                                st.plotly_chart(fig, use_container_width=True)
+                            with col2:
+                                st.markdown("**Event Counts:**")
+                                for event_type, pct in sorted(event_dist.items(), key=lambda x: x[1], reverse=True):
+                                    if 'event_types_raw' in hotspot:
+                                        count = hotspot['event_types_raw'].get(event_type, 0)
+                                        st.write(f"• **{event_type.title()}**: {count} events ({pct:.1f}%)")
+                            st.markdown("---")
+                        else:
+                            st.info("No event distribution data available.")
                     
                     # Sensor Data Details (if available)
                     if hotspot.get('event_count', 0) > 0:
@@ -506,7 +508,7 @@ with tab1:
                         
                         st.markdown("---")
                     
-                    # Location & Actions
+                                        # Location & Actions
                     st.markdown("### 📍 Location & Actions")
                     
                     col1, col2 = st.columns([2, 1])
@@ -514,17 +516,19 @@ with tab1:
                     with col1:
                         st.write(f"**Coordinates:** {hotspot['center_lat']:.6f}, {hotspot['center_lng']:.6f}")
                         
-                        if hotspot.get('is_corridor'):
+                        if hotspot.get('is_corridor') and pd.notna(hotspot.get('start_lat')) and pd.notna(hotspot.get('end_lat')):
                             st.write(f"**Corridor Length:** {hotspot.get('corridor_length_m', 0):.0f}m")
                             st.write(f"**Start:** {hotspot.get('start_lat', 0):.6f}, {hotspot.get('start_lng', 0):.6f}")
                             st.write(f"**End:** {hotspot.get('end_lat', 0):.6f}, {hotspot.get('end_lng', 0):.6f}")
+                        else:
+                            st.write("**Type:** Point Location")
                         
                         if 'date_range' in hotspot:
                             st.write(f"**Date Range:** {hotspot['date_range']}")
                     
                     with col2:
                         # Street View links
-                        if hotspot.get('is_corridor'):
+                        if hotspot.get('is_corridor') and pd.notna(hotspot.get('start_lat')) and pd.notna(hotspot.get('end_lat')):
                             # Start point
                             start_url = STREET_VIEW_URL_TEMPLATE.format(
                                 lat=hotspot['start_lat'],
@@ -557,6 +561,7 @@ with tab1:
                             </a>
                             """, unsafe_allow_html=True)
                         else:
+                            # For point locations, use center coordinates
                             street_view_url = STREET_VIEW_URL_TEMPLATE.format(
                                 lat=hotspot['center_lat'],
                                 lng=hotspot['center_lng'],
