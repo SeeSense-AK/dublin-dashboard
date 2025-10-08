@@ -635,12 +635,18 @@ with tab2:
             st.metric("Total Abnormal Events", f"{total_events:,}")
         
         with col3:
-            avg_speed = trends_filtered['avg_speed'].mean()
-            st.metric("Avg Speed", f"{avg_speed:.1f} km/h")
+            if 'avg_speed' in trends_filtered.columns:
+                avg_speed = trends_filtered['avg_speed'].mean()
+                st.metric("Avg Speed", f"{avg_speed:.1f} km/h")
+            else:
+                st.metric("Avg Speed", "N/A")
         
         with col4:
-            avg_severity = trends_filtered['avg_severity'].mean()
-            st.metric("Avg Severity", f"{avg_severity:.1f}/10")
+            if 'avg_severity' in trends_filtered.columns:
+                avg_severity = trends_filtered['avg_severity'].mean()
+                st.metric("Avg Severity", f"{avg_severity:.1f}/10")
+            else:
+                st.metric("Avg Severity", "N/A")
         
         st.markdown("---")
         
