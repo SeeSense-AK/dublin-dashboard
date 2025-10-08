@@ -904,62 +904,71 @@ Provide a 2-3 paragraph analysis."""
             st.warning(f"Groq analysis failed: {e}")
             return self._fallback_analysis(hotspot)
     
-    def _build_groq_context(self, hotspot: Dict) -> str:
-        """Build context string for Groq analysis"""
-        context = ""
-        
-        # Hotspot type
-        if hotspot.get('is_corridor'):
-            context += f"**Corridor Issue** ({hotspot.get('corridor_length_m', 0):.0f}m stretch)\n\n"
-        else:
-            context += "**Point Location Issue**\n\n"
-        
-        # Sensor data
-        if hotspot.get('event_count', 0) > 0:
-            context += f"""**Sensor Data:**
-- Total Events: {hotspot['event_count']}
-- Average Severity: {hotspot.get('avg_severity', 0):.1f}/10
-- Max Severity: {hotspot.get('max_severity', 0)}/10
-- Unique Cyclists: {hotspot.get('unique_devices', 0)}
+    def _build_groq_context(self, hotspot: dict) -> str:
+        """
+        Builds a detailed context string for Groq analysis based on the hotspot data.
+        Handles missing or malformed fields safely to avoid runtime errors.
+        """
 
-"""
-            
-            if 'event_distribution' in hotspot:
-                context += "**Event Types:**\n"
-                for event_type, pct in hotspot['event_distribution'].items():
-                    context += f"- {event_type}: {pct:.0f}%\n"
-                context += "\n"
-        
-        # Perception data
-        if hotspot.get('perception_count', 0) > 0:
-            context += f"""**User Reports:** {hotspot['perception_count']} reports
-"""
-            
-            # Extract themes
-            if 'perception_reports' in hotspot:
-                reports = hotspot['perception_reports']
-                themes = {}
-                for report in reports:
-                    theme = report.get('theme', 'Unknown')
-                    themes[theme] = themes.get(theme, 0) + 1
-                
-                if themes:
-                    context += "**Reported Issues:**\n"
-                    for theme, count in themes.items():
-                        context += f"- {theme}: {count} reports\n"
-                    context += "\n"
-                
-                # Sample comments
-                comments = [r.get('comment', '') for r in reports if r.get('comment')]
-                if comments:
-                    context += "**User Comments:**\n"
-                    for i, comment in enumerate(comments[:5], 1):
-                        context += f"{i}. \"{comment}\"\n"
-        
-        # If no sensor data
-        if hotspot.get('event_count', 0) == 0:
-            context += "\n**Note:** No sensor data available for this location.\n"
-        
+        context_lines = []
+
+        # --- Basic metadata ---
+        lat = hotspot.get("lat")
+        lng = hotspot.get("lng")
+        context_lines.append(f"Hotspot location: ({lat}, {lng})")
+
+        primary_event = hotspot.get("primary_event_type", "Unknown")
+        context_lines.append(f"Primary event type: {primary_event}")
+
+        max_severity = hotspot.get("max_severity", "N/A")
+        context_lines.append(f"Maximum severity recorded: {max_severity}")
+
+        # --- Event distribution ---
+        event_dist = hotspot.get("event_distribution")
+        if isinstance(event_dist, str):
+            try:
+                import json
+                event_dist = json.loads(event_dist)
+            except Exception:
+                event_dist = None
+
+        if isinstance(event_dist, dict):
+            context_lines.append("Event distribution breakdown:")
+            for event_type, pct in event_dist.items():
+                context_lines.append(f"- {event_type}: {pct}%")
+        else:
+            context_lines.append("Event distribution data unavailable.")
+
+        # --- Sensor summary ---
+        sensor_summary = hotspot.get("sensor_summary")
+        if isinstance(sensor_summary, str):
+            try:
+                import json
+                sensor_summary = json.loads(sensor_summary)
+            except Exception:
+                sensor_summary = None
+
+        if isinstance(sensor_summary, dict):
+            context_lines.append("Sensor summary:")
+            for sensor_type, count in sensor_summary.items():
+                context_lines.append(f"- {sensor_type}: {count}")
+        else:
+            context_lines.append("Sensor summary unavailable.")
+
+        # --- Abnormal event info ---
+        is_abnormal = hotspot.get("is_abnormal_event", False)
+        context_lines.append(f"Abnormal event detected: {is_abnormal}")
+
+        details = hotspot.get("event_details", "No further details available.")
+        context_lines.append(f"Additional details: {details}")
+
+        # --- Optional user context ---
+        user_comments = hotspot.get("user_comments")
+        if user_comments:
+            context_lines.append(f"User comments summary: {user_comments}")
+
+        # Join all parts
+        context = "\n".join(context_lines)
         return context
     
     def _fallback_analysis(self, hotspot: Dict) -> Dict:
