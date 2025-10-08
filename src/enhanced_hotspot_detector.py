@@ -121,11 +121,33 @@ class EnhancedHotspotDetector:
                            start_date: str, end_date: str) -> pd.DataFrame:
         """
         Aggregate events by cluster to create hotspot summaries
+        Uses MEDOID (most central actual event) instead of centroid to ensure point is on road
         """
         hotspots = []
         
         for cluster_id in clustered_events['cluster_id'].unique():
             cluster_data = clustered_events[clustered_events['cluster_id'] == cluster_id]
+            
+            # Calculate MEDOID instead of centroid
+            # Find the event that's closest to the center of all events
+            center_lat = cluster_data['lat'].mean()
+            center_lng = cluster_data['lng'].mean()
+            
+            # Calculate distance of each event to the center
+            from utils.geo_utils import haversine_distance
+            
+            cluster_data_copy = cluster_data.copy()
+            cluster_data_copy['dist_to_center'] = cluster_data_copy.apply(
+                lambda row: haversine_distance(center_lat, center_lng, row['lat'], row['lng']),
+                axis=1
+            )
+            
+            # Get the event closest to center (medoid)
+            medoid_event = cluster_data_copy.loc[cluster_data_copy['dist_to_center'].idxmin()]
+            
+            # Use medoid's actual coordinates (guaranteed to be on road!)
+            hotspot_lat = medoid_event['lat']
+            hotspot_lng = medoid_event['lng']
             
             # Calculate event type distribution
             event_types = cluster_data['primary_event_type'].value_counts()
@@ -133,8 +155,8 @@ class EnhancedHotspotDetector:
             
             hotspot = {
                 'cluster_id': cluster_id,
-                'center_lat': cluster_data['lat'].mean(),
-                'center_lng': cluster_data['lng'].mean(),
+                'center_lat': hotspot_lat,  # Using medoid coordinates
+                'center_lng': hotspot_lng,  # Using medoid coordinates
                 'event_count': len(cluster_data),
                 'unique_devices': cluster_data['device_id'].nunique(),
                 'avg_severity': cluster_data['max_severity'].mean(),
@@ -147,7 +169,9 @@ class EnhancedHotspotDetector:
                 'avg_peak_z': cluster_data['peak_z'].mean(),
                 'first_event': cluster_data['timestamp'].min(),
                 'last_event': cluster_data['timestamp'].max(),
-                'date_range': f"{start_date} to {end_date}"
+                'date_range': f"{start_date} to {end_date}",
+                'medoid_event_id': medoid_event.name,  # Store which event was chosen as center
+                'radius_m': cluster_data_copy['dist_to_center'].max()  # Cluster radius
             }
             
             hotspots.append(hotspot)
@@ -260,7 +284,7 @@ class EnhancedHotspotDetector:
         
         # Build context for Groq
         event_distribution_text = "\n".join([
-            f"- {event_type}: {count} events ({pct:.1f}%)"
+            f"- {event_type}: {hotspot['event_types_raw'][event_type]} events ({pct:.1f}%)"
             for event_type, pct in hotspot['event_distribution'].items()
         ])
         
