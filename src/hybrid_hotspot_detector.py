@@ -435,15 +435,7 @@ class HybridHotspotDetector:
                                    end_date: str) -> pd.DataFrame:
         """
         Precedence 2: Corridors with sensor validation
-        
-        Criteria:
-        - 3+ reports from SAME user
-        - Consecutive points < 150m apart
-        - Must have 1+ sensor reading with is_abnormal_event=true along corridor
-        - Include other users' reports and sensor data along corridor path
-        
-        Returns:
-            DataFrame with P2 corridor hotspots
+        FIXED: Better corridor detection and polyline creation
         """
         combined_reports = self._combine_perception_reports(infra_df, ride_df)
         
@@ -457,18 +449,25 @@ class HybridHotspotDetector:
             if len(user_reports) < 3:
                 continue
             
-            # Sort by timestamp or index to get sequential order
-            user_reports = user_reports.sort_index()
+            # Sort by timestamp/date to get sequential order
+            if 'datetime' in user_reports.columns:
+                user_reports = user_reports.sort_values('datetime')
+            elif 'date' in user_reports.columns:
+                user_reports = user_reports.sort_values('date')
+            else:
+                user_reports = user_reports.sort_index()
             
             # Check if consecutive points are < 150m apart
             points = user_reports[['lat', 'lng']].values
             
             is_corridor = True
+            distances = []
             for i in range(len(points) - 1):
                 dist = haversine_distance(
                     points[i][0], points[i][1],
                     points[i+1][0], points[i+1][1]
                 )
+                distances.append(dist)
                 if dist > 150:
                     is_corridor = False
                     break
@@ -476,8 +475,18 @@ class HybridHotspotDetector:
             if not is_corridor:
                 continue
             
-            # Create corridor polyline
-            corridor_line = LineString([(row['lng'], row['lat']) for _, row in user_reports.iterrows()])
+            # Calculate total corridor length
+            corridor_length = sum(distances)
+            
+            # Only consider as corridor if length > 100m
+            if corridor_length < 100:
+                continue
+            
+            # Create corridor polyline - CRITICAL: List of [lat, lng] tuples
+            corridor_points_list = [(float(row['lat']), float(row['lng'])) for _, row in user_reports.iterrows()]
+            
+            # Create LineString for buffer
+            corridor_line = LineString([(lng, lat) for lat, lng in corridor_points_list])
             
             # Create 20m buffer polygon
             corridor_polygon = corridor_line.buffer(0.00018)  # ~20m in degrees
@@ -500,15 +509,9 @@ class HybridHotspotDetector:
             # Combine all reports
             all_corridor_reports = pd.concat([user_reports, corridor_reports], ignore_index=True)
             
-            # Calculate corridor length
-            corridor_length = sum([
-                haversine_distance(points[i][0], points[i][1], points[i+1][0], points[i+1][1])
-                for i in range(len(points) - 1)
-            ])
-            
-            # Use medoid or middle point
-            start_point = (user_reports.iloc[0]['lat'], user_reports.iloc[0]['lng'])
-            end_point = (user_reports.iloc[-1]['lat'], user_reports.iloc[-1]['lng'])
+            # Get start and end points
+            start_point = corridor_points_list[0]
+            end_point = corridor_points_list[-1]
             center_lat = (start_point[0] + end_point[0]) / 2
             center_lng = (start_point[1] + end_point[1]) / 2
             
@@ -521,7 +524,7 @@ class HybridHotspotDetector:
                 'end_lat': end_point[0],
                 'end_lng': end_point[1],
                 'corridor_length_m': corridor_length,
-                'corridor_points': [(row['lat'], row['lng']) for _, row in user_reports.iterrows()],
+                'corridor_points': corridor_points_list,  # CRITICAL: Store as list
                 'perception_count': len(all_corridor_reports),
                 'primary_user': userid,
                 'event_count': sensor_data['event_count'],
@@ -531,10 +534,7 @@ class HybridHotspotDetector:
                 'sensor_data': sensor_data,
                 'source': 'corridor_sensor',
                 'precedence': 'P2',
-                'is_corridor': True,
-                # Ensure event_distribution exists for all hotspots
-                'event_distribution': {},
-                'event_types_raw': {}
+                'is_corridor': True
             }
             
             # Calculate rank score
@@ -650,11 +650,7 @@ class HybridHotspotDetector:
     def _detect_p3_corridors(self, combined_reports: pd.DataFrame) -> List[Dict]:
         """
         Detect P3 corridors: 3+ reports from different users forming a corridor
-        
-        Logic:
-        - Need 3+ users total
-        - All points consecutive < 150m apart
-        - Forms a linear pattern
+        FIXED: Better corridor formation logic
         """
         hotspots = []
         
@@ -676,18 +672,21 @@ class HybridHotspotDetector:
             if unique_users < 3:
                 continue
             
-            # Sort by position (try to form a line)
-            cluster_points = cluster_points.sort_values('lat')
+            # Sort by position (create linear order)
+            # Use lat as primary sort, but could also calculate path
+            cluster_points = cluster_points.sort_values('lat').reset_index(drop=True)
             
             # Check if consecutive points < 150m
             points = cluster_points[['lat', 'lng']].values
             
             is_corridor = True
+            distances = []
             for i in range(len(points) - 1):
                 dist = haversine_distance(
                     points[i][0], points[i][1],
                     points[i+1][0], points[i+1][1]
                 )
+                distances.append(dist)
                 if dist > 150:
                     is_corridor = False
                     break
@@ -695,18 +694,19 @@ class HybridHotspotDetector:
             if not is_corridor or len(cluster_points) < 3:
                 continue
             
-            # Calculate corridor metrics
-            corridor_length = sum([
-                haversine_distance(points[i][0], points[i][1], points[i+1][0], points[i+1][1])
-                for i in range(len(points) - 1)
-            ])
+            # Calculate corridor length
+            corridor_length = sum(distances)
             
             # Only consider as corridor if length > 100m
             if corridor_length < 100:
                 continue
             
-            start_point = (cluster_points.iloc[0]['lat'], cluster_points.iloc[0]['lng'])
-            end_point = (cluster_points.iloc[-1]['lat'], cluster_points.iloc[-1]['lng'])
+            # Create corridor points list
+            corridor_points_list = [(float(row['lat']), float(row['lng'])) 
+                                   for _, row in cluster_points.iterrows()]
+            
+            start_point = corridor_points_list[0]
+            end_point = corridor_points_list[-1]
             center_lat = (start_point[0] + end_point[0]) / 2
             center_lng = (start_point[1] + end_point[1]) / 2
             
@@ -719,7 +719,7 @@ class HybridHotspotDetector:
                 'end_lat': end_point[0],
                 'end_lng': end_point[1],
                 'corridor_length_m': corridor_length,
-                'corridor_points': [(row['lat'], row['lng']) for _, row in cluster_points.iterrows()],
+                'corridor_points': corridor_points_list,  # Store as list
                 'perception_count': len(cluster_points),
                 'unique_users': unique_users,
                 'perception_reports': cluster_points.to_dict('records'),
@@ -728,10 +728,7 @@ class HybridHotspotDetector:
                 'max_severity': None,
                 'source': 'corridor_perception_only',
                 'precedence': 'P3',
-                'is_corridor': True,
-                # Ensure event_distribution exists for all hotspots
-                'event_distribution': {},
-                'event_types_raw': {}
+                'is_corridor': True
             }
             
             hotspots.append(hotspot)
