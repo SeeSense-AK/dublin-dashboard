@@ -1,6 +1,9 @@
+# app.py - FIXED VERSION
 """
-Spinovate Safety Dashboard - Hybrid Hotspot Detection
-Main Streamlit application
+Spinovate Safety Dashboard - FIXED
+✅ Corridors now visualize as polylines
+✅ Removed sensor details tab
+✅ Clean Groq context (no leakage)
 """
 import streamlit as st
 import pandas as pd
@@ -10,14 +13,9 @@ from datetime import datetime, timedelta
 import folium
 from streamlit_folium import folium_static
 
-# Import custom modules
 from src.hybrid_hotspot_detector import detect_hybrid_hotspots
 from src.athena_database import get_athena_database
-from src.trend_analysis import (
-    prepare_time_series,
-    detect_anomalies,
-    calculate_trends
-)
+from src.trend_analysis import prepare_time_series, detect_anomalies, calculate_trends
 from utils.constants import STREET_VIEW_URL_TEMPLATE
 
 # Page config
@@ -28,7 +26,6 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-# Title
 st.title("🚴‍♂️ Spinovate Safety Dashboard")
 st.markdown("### AI-Powered Road Safety Analysis for Dublin")
 
@@ -172,7 +169,6 @@ with tab1:
             col1, col2 = st.columns(2)
             
             with col1:
-                # Precedence breakdown
                 precedence_counts = hotspots['precedence'].value_counts()
                 precedence_labels = {
                     'sensor': 'Sensor-Primary (55%)',
@@ -197,7 +193,6 @@ with tab1:
                 st.plotly_chart(fig, use_container_width=True)
             
             with col2:
-                # Color distribution
                 color_counts = hotspots['color'].value_counts()
                 color_labels = {
                     'red': '🔴 Critical (7+)',
@@ -228,7 +223,7 @@ with tab1:
             
             st.markdown("---")
             
-            # ==================== INTERACTIVE MAP ====================
+            # ==================== INTERACTIVE MAP - FIXED ====================
             st.subheader("🗺️ Interactive Hotspot Map")
             
             # Create map
@@ -279,41 +274,59 @@ with tab1:
                 </div>
                 """
                 
-                                # Draw corridor or point
+                # FIXED: Draw corridor or point
                 if (hotspot.get('is_corridor') and 
-                    'corridor_points' in hotspot and 
-                    hotspot['corridor_points'] is not None and 
-                    len(hotspot['corridor_points']) > 0):
+                    hotspot.get('corridor_points') is not None and 
+                    isinstance(hotspot['corridor_points'], list) and
+                    len(hotspot['corridor_points']) > 1):
+                    
                     # Draw polyline for corridors
                     points = hotspot['corridor_points']
-                    folium.PolyLine(
-                        locations=points,
-                        color=color,
-                        weight=6,
-                        opacity=0.8,
-                        popup=folium.Popup(popup_html, max_width=350)
-                    ).add_to(m)
                     
-                    # Add start/end markers
-                    folium.CircleMarker(
-                        location=points[0],
-                        radius=8,
-                        color=color,
-                        fill=True,
-                        fillColor=color,
-                        fillOpacity=0.7,
-                        tooltip="Corridor Start"
-                    ).add_to(m)
-                    
-                    folium.CircleMarker(
-                        location=points[-1],
-                        radius=8,
-                        color=color,
-                        fill=True,
-                        fillColor=color,
-                        fillOpacity=0.7,
-                        tooltip="Corridor End"
-                    ).add_to(m)
+                    # Ensure points are in correct format [[lat, lng], [lat, lng], ...]
+                    if all(isinstance(p, (list, tuple)) and len(p) == 2 for p in points):
+                        folium.PolyLine(
+                            locations=points,
+                            color=color,
+                            weight=6,
+                            opacity=0.8,
+                            popup=folium.Popup(popup_html, max_width=350),
+                            tooltip=f"Corridor #{hotspot['final_hotspot_id']}"
+                        ).add_to(m)
+                        
+                        # Add start/end markers
+                        folium.CircleMarker(
+                            location=points[0],
+                            radius=8,
+                            color=color,
+                            fill=True,
+                            fillColor=color,
+                            fillOpacity=0.7,
+                            tooltip="Corridor Start"
+                        ).add_to(m)
+                        
+                        folium.CircleMarker(
+                            location=points[-1],
+                            radius=8,
+                            color=color,
+                            fill=True,
+                            fillColor=color,
+                            fillOpacity=0.7,
+                            tooltip="Corridor End"
+                        ).add_to(m)
+                    else:
+                        # Fallback to point if format is wrong
+                        folium.CircleMarker(
+                            location=[hotspot['center_lat'], hotspot['center_lng']],
+                            radius=10,
+                            popup=folium.Popup(popup_html, max_width=350),
+                            tooltip=f"Hotspot #{hotspot['final_hotspot_id']}",
+                            color=color,
+                            fill=True,
+                            fillColor=color,
+                            fillOpacity=0.7,
+                            weight=2
+                        ).add_to(m)
                 else:
                     # Draw circle marker for point locations
                     folium.CircleMarker(
@@ -337,8 +350,7 @@ with tab1:
             
             for idx, hotspot in hotspots.iterrows():
                 # Build expander title
-                                # Build expander title
-                if hotspot.get('is_corridor') and pd.notna(hotspot.get('start_lat')) and pd.notna(hotspot.get('end_lat')):
+                if hotspot.get('is_corridor') and pd.notna(hotspot.get('start_lat')):
                     title_suffix = f"Corridor ({hotspot.get('corridor_length_m', 0):.0f}m)"
                 else:
                     title_suffix = "Point Location"
@@ -413,7 +425,7 @@ with tab1:
                     # Event Distribution (if sensor data available)
                     if hotspot.get('event_count', 0) > 0 and 'event_distribution' in hotspot:
                         event_dist = hotspot['event_distribution']
-                        if isinstance(event_dist, dict):
+                        if isinstance(event_dist, dict) and event_dist:
                             st.markdown("### 📊 Event Type Distribution")
                             col1, col2 = st.columns([1, 1])
                             with col1:
@@ -436,37 +448,6 @@ with tab1:
                                         count = hotspot['event_types_raw'].get(event_type, 0)
                                         st.write(f"• **{event_type.title()}**: {count} events ({pct:.1f}%)")
                             st.markdown("---")
-                        else:
-                            st.info("No event distribution data available.")
-                    
-                    # Sensor Data Details (if available)
-                    if hotspot.get('event_count', 0) > 0:
-                        st.markdown("### 📡 Sensor Data Details")
-                        
-                        col1, col2, col3 = st.columns(3)
-                        
-                        with col1:
-                            st.markdown("**Severity Metrics**")
-                            st.write(f"• Avg: {hotspot.get('avg_severity', 0):.1f}/10")
-                            st.write(f"• Max: {hotspot.get('max_severity', 0)}/10")
-                            st.write(f"• Unique Cyclists: {hotspot.get('unique_devices', 0)}")
-                        
-                        with col2:
-                            if 'avg_peak_x' in hotspot:
-                                st.markdown("**Accelerometer Data**")
-                                st.write(f"• Peak X (lateral): {hotspot['avg_peak_x']:.2f}g")
-                                st.write(f"• Peak Y (forward): {hotspot['avg_peak_y']:.2f}g")
-                                st.write(f"• Peak Z (vertical): {hotspot['avg_peak_z']:.2f}g")
-                        
-                        with col3:
-                            st.markdown("**Additional Info**")
-                            if 'avg_speed' in hotspot:
-                                st.write(f"• Avg Speed: {hotspot['avg_speed']:.1f} km/h")
-                            st.write(f"• Total Events: {hotspot['event_count']}")
-                            if 'rank_score' in hotspot:
-                                st.write(f"• Rank Score: {hotspot['rank_score']:.1f}")
-                        
-                        st.markdown("---")
                     
                     # User Perception Reports (if available)
                     if hotspot.get('perception_count', 0) > 0:
@@ -508,7 +489,7 @@ with tab1:
                         
                         st.markdown("---")
                     
-                                        # Location & Actions
+                    # Location & Actions
                     st.markdown("### 📍 Location & Actions")
                     
                     col1, col2 = st.columns([2, 1])
@@ -516,7 +497,7 @@ with tab1:
                     with col1:
                         st.write(f"**Coordinates:** {hotspot['center_lat']:.6f}, {hotspot['center_lng']:.6f}")
                         
-                        if hotspot.get('is_corridor') and pd.notna(hotspot.get('start_lat')) and pd.notna(hotspot.get('end_lat')):
+                        if hotspot.get('is_corridor') and pd.notna(hotspot.get('start_lat')):
                             st.write(f"**Corridor Length:** {hotspot.get('corridor_length_m', 0):.0f}m")
                             st.write(f"**Start:** {hotspot.get('start_lat', 0):.6f}, {hotspot.get('start_lng', 0):.6f}")
                             st.write(f"**End:** {hotspot.get('end_lat', 0):.6f}, {hotspot.get('end_lng', 0):.6f}")
@@ -524,11 +505,11 @@ with tab1:
                             st.write("**Type:** Point Location")
                         
                         if 'date_range' in hotspot:
-                            st.write(f"**Date Range:** {hotspot['date_range']}")
+                            st.write(f"**Date Range:** {hotspot.get('date_range', 'N/A')}")
                     
                     with col2:
                         # Street View links
-                        if hotspot.get('is_corridor') and pd.notna(hotspot.get('start_lat')) and pd.notna(hotspot.get('end_lat')):
+                        if hotspot.get('is_corridor') and pd.notna(hotspot.get('start_lat')):
                             # Start point
                             start_url = STREET_VIEW_URL_TEMPLATE.format(
                                 lat=hotspot['start_lat'],
@@ -561,7 +542,6 @@ with tab1:
                             </a>
                             """, unsafe_allow_html=True)
                         else:
-                            # For point locations, use center coordinates
                             street_view_url = STREET_VIEW_URL_TEMPLATE.format(
                                 lat=hotspot['center_lat'],
                                 lng=hotspot['center_lng'],
@@ -746,18 +726,21 @@ with tab2:
         # Severity trends
         st.subheader("📊 Severity Trends")
         
-        fig_severity = px.line(
-            trends_filtered,
-            x='date',
-            y='avg_severity',
-            title='Average Severity Over Time',
-            labels={'avg_severity': 'Average Severity', 'date': 'Date'}
-        )
-        
-        fig_severity.update_traces(line_color='#EF4444', line_width=3)
-        fig_severity.update_layout(height=400)
-        
-        st.plotly_chart(fig_severity, use_container_width=True)
+        if 'avg_severity' in trends_filtered.columns:
+            fig_severity = px.line(
+                trends_filtered,
+                x='date',
+                y='avg_severity',
+                title='Average Severity Over Time',
+                labels={'avg_severity': 'Average Severity', 'date': 'Date'}
+            )
+            
+            fig_severity.update_traces(line_color='#EF4444', line_width=3)
+            fig_severity.update_layout(height=400)
+            
+            st.plotly_chart(fig_severity, use_container_width=True)
+        else:
+            st.info("Severity trend data not available")
 
 # ==================== FOOTER ====================
 
@@ -772,7 +755,7 @@ with st.expander("ℹ️ How It Works"):
     - Only events with `is_abnormal_event = true`
     - Severity parsed from `event_details` field
     - Ranked by: `avg_severity + log10(event_count)`
-    - Medoid-based centers (actual road locations)
+    - Geographic clustering only (lat/lng)
     
     **Perception-Primary (45%):**
     
@@ -785,7 +768,7 @@ with st.expander("ℹ️ How It Works"):
     - 3+ reports from same user, consecutive < 150m
     - 20m buffer polygon for finding related reports
     - Must have 1+ abnormal sensor event
-    - Visualized as polylines
+    - **Visualized as polylines on map**
     
     **Precedence 3:** Standalone Perception
     - 3+ reports from different users
@@ -813,6 +796,12 @@ with st.expander("ℹ️ How It Works"):
     - **Infrastructure Reports:** {len(infra_df):,} user reports
     - **Ride Reports:** {len(ride_df):,} incident reports
     - **Date Range:** {metrics['earliest_reading']} to {metrics['latest_reading']}
+    
+    ### 🗺️ Map Features
+    
+    - **Red/Orange/Green circles:** Point hotspots (sensor or perception)
+    - **Colored polylines:** Corridor hotspots (stretch of road with issues)
+    - **Click on any hotspot:** See detailed popup with stats and Street View link
     """)
 
 with st.expander("❓ FAQ"):
@@ -827,19 +816,19 @@ with st.expander("❓ FAQ"):
     
     **Q: What does "corridor" mean?**
     
-    A: A corridor is a stretch of road (typically 100m+) where issues persist along the entire length, not just at one point. Examples: vegetation blocking cycle lane for 500m.
+    A: A corridor is a stretch of road (typically 100m+) where issues persist along the entire length, not just at one point. On the map, corridors appear as colored lines instead of circles.
     
     **Q: How is rank score calculated?**
     
-    A: `rank_score = avg_severity + log10(event_count)`. This balances severity (how bad) with frequency (how often). A hotspot with 100 events at severity 7 gets higher priority than 2 events at severity 9.
+    A: `rank_score = avg_severity + log10(event_count)`. This balances severity (how bad) with frequency (how often).
     
     **Q: Can I trust the AI analysis?**
     
-    A: The AI (Groq's llama-3.3-70b) synthesizes sensor data + user comments to paint a complete picture. It's trained on billions of examples. You can always verify by reading the raw data shown below each analysis.
+    A: The AI (Groq's llama-3.3-70b) synthesizes sensor data + user comments to paint a complete picture. You can always verify by reading the raw data shown below each analysis.
     
-    **Q: What should I do with this information?**
+    **Q: Why don't I see corridors on the map?**
     
-    A: Use hotspot rankings to prioritize road maintenance, investigate usage drops for external factors, and validate user complaints with objective sensor data.
+    A: Corridors are drawn as colored polylines (lines) on the map, not circles. Look for longer colored lines connecting multiple points. If you still don't see them, there may not be any corridors detected with the current parameters.
     """)
 
 st.markdown("---")
