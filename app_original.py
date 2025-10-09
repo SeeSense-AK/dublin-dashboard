@@ -1,6 +1,9 @@
+# app.py - FIXED VERSION
 """
-Spinovate Safety Dashboard - Enhanced with Synthetic Data & Rich Insights
-Main Streamlit application
+Spinovate Safety Dashboard - FIXED
+✅ Corridors now visualize as polylines
+✅ Removed sensor details tab
+✅ Clean Groq context (no leakage)
 """
 import streamlit as st
 import pandas as pd
@@ -9,17 +12,10 @@ import plotly.graph_objects as go
 from datetime import datetime, timedelta
 import folium
 from streamlit_folium import folium_static
-from collections import Counter
-import re
 
-# Import custom modules
 from src.hybrid_hotspot_detector import detect_hybrid_hotspots
 from src.athena_database import get_athena_database
-from src.trend_analysis import (
-    prepare_time_series,
-    detect_anomalies,
-    calculate_trends
-)
+from src.trend_analysis import prepare_time_series, detect_anomalies, calculate_trends
 from utils.constants import STREET_VIEW_URL_TEMPLATE
 
 # Page config
@@ -30,11 +26,10 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-# Title
 st.title("🚴‍♂️ Spinovate Safety Dashboard")
 st.markdown("### AI-Powered Road Safety Analysis for Dublin")
 
-# ==================== ENHANCED DATA LOADING ====================
+# ==================== DATA LOADING ====================
 
 @st.cache_resource
 def init_database():
@@ -42,19 +37,8 @@ def init_database():
 
 @st.cache_data(ttl=3600)
 def load_perception_data():
-    """Load SYNTHETIC perception data for richer insights"""
-    try:
-        # Try to load synthetic data first
-        infra_df = pd.read_csv('dublin_infra_reports_SYNTHETIC.csv')
-        ride_df = pd.read_csv('dublin_ride_reports_SYNTHETIC.csv')
-        
-        st.sidebar.success("✨ Using enhanced synthetic dataset")
-        
-    except FileNotFoundError:
-        # Fallback to original data
-        st.sidebar.warning("⚠️ Synthetic data not found, using original")
-        infra_df = pd.read_csv('dublin_infra_reports_dublin2025_upto20250924.csv')
-        ride_df = pd.read_csv('dublin_ride_reports_dublin2025_upto20250924.csv')
+    infra_df = pd.read_csv('dublin_infra_reports_dublin2025_upto20250924.csv')
+    ride_df = pd.read_csv('dublin_ride_reports_dublin2025_upto20250924.csv')
     
     for df in [infra_df, ride_df]:
         if 'date' in df.columns and 'time' in df.columns:
@@ -74,184 +58,6 @@ def load_perception_data():
     
     return infra_df, ride_df
 
-# ==================== ENHANCED INSIGHT GENERATION ====================
-
-def extract_themes_from_reports(reports: list) -> dict:
-    """
-    Extract themes and keywords from perception reports
-    
-    Args:
-        reports: List of report dictionaries
-        
-    Returns:
-        Dict with theme counts and keywords
-    """
-    themes = []
-    all_text = []
-    
-    for report in reports:
-        # Get theme/type
-        theme = report.get('theme', report.get('incidenttype', report.get('infrastructuretype', 'Unknown')))
-        if theme and theme != 'Unknown':
-            themes.append(theme)
-        
-        # Get comment text
-        comment = report.get('comment', report.get('commentfinal', report.get('finalcomment', '')))
-        if comment and isinstance(comment, str):
-            all_text.append(comment.lower())
-    
-    # Count themes
-    theme_counts = Counter(themes)
-    
-    # Extract keywords from all comments
-    combined_text = ' '.join(all_text)
-    
-    # Define keyword patterns
-    keyword_patterns = {
-        '🚗 Close Pass': ['close pass', 'too close', 'nearly hit', 'almost hit', 'inches'],
-        '🕳️ Pothole': ['pothole', 'hole', 'crater', 'damaged', 'surface damage'],
-        '🌳 Obstruction': ['blocked', 'obstruction', 'vegetation', 'overgrown', 'bushes', 'trees'],
-        '🚙 Parked Vehicle': ['parked', 'parking', 'car parked', 'van parked'],
-        '🚦 Junction Issue': ['junction', 'turn', 'corner', 'intersection', 'turning'],
-        '🚌 Heavy Traffic': ['traffic', 'busy', 'congested', 'rush hour', 'heavy traffic'],
-        '⚠️ Poor Visibility': ['blind', 'cant see', "can't see", 'visibility', 'hidden'],
-        '🛣️ Surface Quality': ['rough', 'uneven', 'bumpy', 'cracked', 'broken surface'],
-        '🚲 Cycle Lane': ['cycle lane', 'bike lane', 'cycling path', 'lane blocked'],
-        '⚡ Dangerous': ['dangerous', 'unsafe', 'scary', 'terrifying', 'hazard']
-    }
-    
-    detected_keywords = {}
-    for keyword_label, patterns in keyword_patterns.items():
-        for pattern in patterns:
-            if pattern in combined_text:
-                detected_keywords[keyword_label] = True
-                break
-    
-    return {
-        'theme_counts': dict(theme_counts),
-        'keywords': list(detected_keywords.keys()),
-        'top_theme': theme_counts.most_common(1)[0][0] if theme_counts else 'Unknown'
-    }
-
-
-def generate_enhanced_summary(hotspot: dict) -> str:
-    """
-    Generate enhanced, insightful summary combining sensor + perception data
-    
-    Args:
-        hotspot: Hotspot dictionary with all data
-        
-    Returns:
-        Rich HTML summary string
-    """
-    summary_parts = []
-    
-    # === SENSOR DATA SECTION ===
-    if hotspot.get('event_count', 0) > 0:
-        event_count = int(hotspot['event_count'])
-        avg_severity = hotspot.get('avg_severity', 0)
-        
-        # Make it conversational, not robotic
-        if avg_severity >= 8:
-            intro = f"⚠️ **Critical location** - cyclists experienced **{event_count} severe incidents** here"
-        elif avg_severity >= 6:
-            intro = f"🔴 **High-risk area** - detected **{event_count} significant safety events**"
-        elif avg_severity >= 4:
-            intro = f"🟠 **Caution needed** - recorded **{event_count} notable incidents**"
-        else:
-            intro = f"🟡 **Monitor this spot** - logged **{event_count} safety-related events**"
-        
-        summary_parts.append(intro)
-        
-        # Add severity context
-        if avg_severity >= 7:
-            summary_parts.append(f" with severity averaging **{avg_severity:.1f}/10** - well above normal threshold.")
-        else:
-            summary_parts.append(f" with average severity of **{avg_severity:.1f}/10**.")
-        
-        # Event type breakdown - make it natural
-        if 'event_distribution' in hotspot and isinstance(hotspot['event_distribution'], dict):
-            event_dist = hotspot['event_distribution']
-            
-            if len(event_dist) == 1:
-                # Single dominant event
-                event_type = list(event_dist.keys())[0]
-                summary_parts.append(f" All incidents involved **{event_type}** events.")
-            else:
-                # Multiple event types
-                top_events = sorted(event_dist.items(), key=lambda x: x[1], reverse=True)[:2]
-                if top_events:
-                    event1, pct1 = top_events[0]
-                    if len(top_events) > 1:
-                        event2, pct2 = top_events[1]
-                        summary_parts.append(f" Primary issues: **{event1}** ({pct1:.0f}%) and **{event2}** ({pct2:.0f}%).")
-                    else:
-                        summary_parts.append(f" Dominated by **{event1}** events ({pct1:.0f}%).")
-    
-    # === PERCEPTION DATA SECTION ===
-    if hotspot.get('perception_count', 0) > 0:
-        perception_count = int(hotspot['perception_count'])
-        
-        # Get reports
-        all_reports = []
-        if 'perception_reports' in hotspot:
-            all_reports = hotspot['perception_reports']
-        
-        # Extract themes
-        themes_data = extract_themes_from_reports(all_reports)
-        top_theme = themes_data['top_theme']
-        
-        # Make it conversational
-        if perception_count == 1:
-            summary_parts.append(f"\n\n💬 One cyclist reported issues with **{top_theme}** at this location.")
-        elif perception_count <= 3:
-            summary_parts.append(f"\n\n💬 **{perception_count} cyclists** have flagged this spot, mainly for **{top_theme}**.")
-        else:
-            summary_parts.append(f"\n\n💬 **{perception_count} cyclists** identified this as problematic - most commonly citing **{top_theme}**.")
-        
-        # Sample comments - pick the most descriptive ones
-        comments = [r.get('comment', r.get('commentfinal', r.get('finalcomment', ''))) 
-                   for r in all_reports if r.get('comment') or r.get('commentfinal') or r.get('finalcomment')]
-        comments = [c for c in comments if c and len(str(c).strip()) > 15]
-        
-        if comments:
-            # Sort by length to get more descriptive comments
-            comments_sorted = sorted(comments, key=len, reverse=True)
-            sample_comments = comments_sorted[:2]
-            
-            summary_parts.append("\n\n**Cyclist feedback:**")
-            for comment in sample_comments:
-                # Truncate very long comments
-                if len(comment) > 120:
-                    comment = comment[:117] + "..."
-                summary_parts.append(f'\n> *"{comment}"*')
-    
-    # === VALIDATION SECTION ===
-    if hotspot.get('event_count', 0) > 0 and hotspot.get('perception_count', 0) > 0:
-        summary_parts.append(
-            f"\n\n✅ **Both sensor data and cyclist reports confirm** this location needs attention."
-        )
-    elif hotspot.get('event_count', 0) > 0 and hotspot.get('perception_count', 0) == 0:
-        summary_parts.append(
-            f"\n\n📡 Detected by sensors but not yet reported by users - early warning of emerging issue."
-        )
-    elif hotspot.get('perception_count', 0) > 0 and hotspot.get('event_count', 0) == 0:
-        summary_parts.append(
-            f"\n\n📝 Reported by cyclists but no sensor validation available - community-identified concern."
-        )
-    
-    # === CORRIDOR INFO ===
-    if hotspot.get('is_corridor') and hotspot.get('corridor_length_m', 0) > 0:
-        corridor_len = int(hotspot['corridor_length_m'])
-        summary_parts.append(
-            f"\n\n🛣️ **Extended problem area:** Issues span **{corridor_len}m** of this route - not isolated to one point."
-        )
-    
-    return ''.join(summary_parts)
-
-
-# ==================== LOAD DATA ====================
-
 try:
     db = init_database()
     infra_df, ride_df = load_perception_data()
@@ -268,16 +74,6 @@ st.sidebar.metric("Total Readings", f"{metrics['total_readings']:,}")
 st.sidebar.metric("Unique Cyclists", metrics['unique_devices'])
 st.sidebar.metric("Abnormal Events", f"{metrics['abnormal_events']:,}")
 st.sidebar.metric("Perception Reports", len(infra_df) + len(ride_df))
-
-# Show synthetic data indicator
-synthetic_count = 0
-if 'is_synthetic' in infra_df.columns:
-    synthetic_count += infra_df['is_synthetic'].sum()
-if 'is_synthetic' in ride_df.columns:
-    synthetic_count += ride_df['is_synthetic'].sum()
-
-if synthetic_count > 0:
-    st.sidebar.metric("✨ Synthetic Reports", f"{synthetic_count:,}")
 
 if metrics['earliest_reading'] and metrics['latest_reading']:
     st.sidebar.write(f"**Date Range:** {metrics['earliest_reading']} to {metrics['latest_reading']}")
@@ -427,14 +223,16 @@ with tab1:
             
             st.markdown("---")
             
-            # ==================== INTERACTIVE MAP ====================
+            # ==================== INTERACTIVE MAP - FIXED ====================
             st.subheader("🗺️ Interactive Hotspot Map")
             
+            # Create map
             m = folium.Map(
                 location=[hotspots['center_lat'].mean(), hotspots['center_lng'].mean()],
                 zoom_start=12
             )
             
+            # Color mapping
             color_map = {
                 'red': '#DC143C',
                 'orange': '#FFA500',
@@ -445,6 +243,7 @@ with tab1:
             for idx, hotspot in hotspots.iterrows():
                 color = color_map.get(hotspot['color'], '#808080')
                 
+                # Build popup
                 popup_html = f"""
                 <div style="font-family: Arial; width: 300px;">
                     <h4 style="color: {color};">🚨 Hotspot #{hotspot['final_hotspot_id']}</h4>
@@ -455,11 +254,17 @@ with tab1:
                     popup_html += f"""
                     <p><b>Sensor Events:</b> {hotspot['event_count']}</p>
                     <p><b>Avg Severity:</b> {hotspot.get('avg_severity', 0):.1f}/10</p>
+                    <p><b>Rank Score:</b> {hotspot.get('rank_score', 0):.1f}</p>
                     """
                 
                 if hotspot.get('perception_count', 0) > 0:
                     popup_html += f"""
                     <p><b>User Reports:</b> {hotspot['perception_count']}</p>
+                    """
+                
+                if hotspot.get('is_corridor'):
+                    popup_html += f"""
+                    <p><b>🛣️ Corridor:</b> {hotspot.get('corridor_length_m', 0):.0f}m</p>
                     """
                 
                 popup_html += f"""
@@ -469,39 +274,61 @@ with tab1:
                 </div>
                 """
                 
+                # FIXED: Draw corridor or point
                 if (hotspot.get('is_corridor') and 
-                    'corridor_points' in hotspot and 
-                    hotspot['corridor_points'] is not None and 
-                    len(hotspot['corridor_points']) > 0):
+                    hotspot.get('corridor_points') is not None and 
+                    isinstance(hotspot['corridor_points'], list) and
+                    len(hotspot['corridor_points']) > 1):
+                    
+                    # Draw polyline for corridors
                     points = hotspot['corridor_points']
-                    folium.PolyLine(
-                        locations=points,
-                        color=color,
-                        weight=6,
-                        opacity=0.8,
-                        popup=folium.Popup(popup_html, max_width=350)
-                    ).add_to(m)
                     
-                    folium.CircleMarker(
-                        location=points[0],
-                        radius=8,
-                        color=color,
-                        fill=True,
-                        fillColor=color,
-                        fillOpacity=0.7,
-                        tooltip="Corridor Start"
-                    ).add_to(m)
-                    
-                    folium.CircleMarker(
-                        location=points[-1],
-                        radius=8,
-                        color=color,
-                        fill=True,
-                        fillColor=color,
-                        fillOpacity=0.7,
-                        tooltip="Corridor End"
-                    ).add_to(m)
+                    # Ensure points are in correct format [[lat, lng], [lat, lng], ...]
+                    if all(isinstance(p, (list, tuple)) and len(p) == 2 for p in points):
+                        folium.PolyLine(
+                            locations=points,
+                            color=color,
+                            weight=6,
+                            opacity=0.8,
+                            popup=folium.Popup(popup_html, max_width=350),
+                            tooltip=f"Corridor #{hotspot['final_hotspot_id']}"
+                        ).add_to(m)
+                        
+                        # Add start/end markers
+                        folium.CircleMarker(
+                            location=points[0],
+                            radius=8,
+                            color=color,
+                            fill=True,
+                            fillColor=color,
+                            fillOpacity=0.7,
+                            tooltip="Corridor Start"
+                        ).add_to(m)
+                        
+                        folium.CircleMarker(
+                            location=points[-1],
+                            radius=8,
+                            color=color,
+                            fill=True,
+                            fillColor=color,
+                            fillOpacity=0.7,
+                            tooltip="Corridor End"
+                        ).add_to(m)
+                    else:
+                        # Fallback to point if format is wrong
+                        folium.CircleMarker(
+                            location=[hotspot['center_lat'], hotspot['center_lng']],
+                            radius=10,
+                            popup=folium.Popup(popup_html, max_width=350),
+                            tooltip=f"Hotspot #{hotspot['final_hotspot_id']}",
+                            color=color,
+                            fill=True,
+                            fillColor=color,
+                            fillOpacity=0.7,
+                            weight=2
+                        ).add_to(m)
                 else:
+                    # Draw circle marker for point locations
                     folium.CircleMarker(
                         location=[hotspot['center_lat'], hotspot['center_lng']],
                         radius=10,
@@ -518,10 +345,11 @@ with tab1:
             
             st.markdown("---")
             
-            # ==================== ENHANCED CRITICAL HOTSPOTS ====================
-            st.subheader("🔝 Critical Hotspots - Enhanced Insights")
+            # ==================== CRITICAL HOTSPOTS SECTION ====================
+            st.subheader("🔝 Critical Hotspots - Detailed Analysis")
             
             for idx, hotspot in hotspots.iterrows():
+                # Build expander title
                 if hotspot.get('is_corridor') and pd.notna(hotspot.get('start_lat')):
                     title_suffix = f"Corridor ({hotspot.get('corridor_length_m', 0):.0f}m)"
                 else:
@@ -567,53 +395,37 @@ with tab1:
                     
                     st.markdown("---")
                     
-                    # === ENHANCED SUMMARY ===
-                    st.markdown("### 📋 Smart Summary")
+                    # AI Analysis - THE MAIN HIGHLIGHT
+                    st.markdown("### 🤖 AI-Powered Analysis")
                     
-                    color = color_map.get(hotspot['color'], '#667eea')
-                    
-                    summary_text = generate_enhanced_summary(hotspot.to_dict())
-                    
-                    st.markdown(f"""
-                    <div style="background: linear-gradient(135deg, {color} 0%, #764ba2 100%); 
-                                padding: 20px; border-radius: 10px; color: white; 
-                                box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
-                        {summary_text}
-                    </div>
-                    """, unsafe_allow_html=True)
+                    if 'groq_analysis' in hotspot:
+                        analysis_method = hotspot['groq_analysis']['method']
+                        if analysis_method == 'groq_ai':
+                            st.success(f"✅ Analysis by: {hotspot['groq_analysis']['model']}")
+                        else:
+                            st.info(f"ℹ️ Analysis method: {analysis_method}")
+                        
+                        # Get color for the gradient box
+                        box_color = color_map.get(hotspot['color'], '#667eea')
+                        
+                        st.markdown(f"""
+                        <div style="background: linear-gradient(135deg, {box_color} 0%, #764ba2 100%); 
+                                    padding: 20px; border-radius: 10px; color: white; 
+                                    box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+                            <p style="font-size: 16px; line-height: 1.6; margin: 0;">
+                                {hotspot['groq_analysis']['analysis']}
+                            </p>
+                        </div>
+                        """, unsafe_allow_html=True)
+                    else:
+                        st.warning("No AI analysis available")
                     
                     st.markdown("---")
-                    
-                    # === THEME CARDS ===
-                    if hotspot.get('perception_count', 0) > 0:
-                        st.markdown("### 🏷️ Key Themes & Issues")
-                        
-                        all_reports = []
-                        if 'perception_reports' in hotspot:
-                            all_reports = hotspot['perception_reports']
-                        
-                        themes_data = extract_themes_from_reports(all_reports)
-                        keywords = themes_data['keywords']
-                        
-                        if keywords:
-                            # Display as cards
-                            cols = st.columns(min(4, len(keywords)))
-                            for i, keyword in enumerate(keywords[:8]):  # Max 8 keywords
-                                with cols[i % 4]:
-                                    st.markdown(f"""
-                                    <div style="background: #f0f2f6; padding: 10px; 
-                                                border-radius: 8px; text-align: center;
-                                                border-left: 4px solid {color}; margin: 5px 0;">
-                                        <b>{keyword}</b>
-                                    </div>
-                                    """, unsafe_allow_html=True)
-                        
-                        st.markdown("---")
                     
                     # Event Distribution (if sensor data available)
                     if hotspot.get('event_count', 0) > 0 and 'event_distribution' in hotspot:
                         event_dist = hotspot['event_distribution']
-                        if isinstance(event_dist, dict) and len(event_dist) > 0:
+                        if isinstance(event_dist, dict) and event_dist:
                             st.markdown("### 📊 Event Type Distribution")
                             col1, col2 = st.columns([1, 1])
                             with col1:
@@ -621,28 +433,61 @@ with tab1:
                                     {'Event Type': k, 'Percentage': v}
                                     for k, v in event_dist.items()
                                 ])
-                                
-                                if not event_dist_df.empty:
-                                    fig = px.pie(
-                                        event_dist_df,
-                                        values='Percentage',
-                                        names='Event Type',
-                                        title='Event Type Breakdown',
-                                        color_discrete_sequence=px.colors.sequential.Reds
-                                    )
-                                    st.plotly_chart(fig, use_container_width=True)
-                                else:
-                                    st.info("No event distribution data available")
-                            
+                                fig = px.pie(
+                                    event_dist_df,
+                                    values='Percentage',
+                                    names='Event Type',
+                                    title='Event Type Breakdown',
+                                    color_discrete_sequence=px.colors.sequential.Reds
+                                )
+                                st.plotly_chart(fig, use_container_width=True)
                             with col2:
                                 st.markdown("**Event Counts:**")
                                 for event_type, pct in sorted(event_dist.items(), key=lambda x: x[1], reverse=True):
-                                    if 'event_types_raw' in hotspot and isinstance(hotspot['event_types_raw'], dict):
+                                    if 'event_types_raw' in hotspot:
                                         count = hotspot['event_types_raw'].get(event_type, 0)
                                         st.write(f"• **{event_type.title()}**: {count} events ({pct:.1f}%)")
-                                    else:
-                                        st.write(f"• **{event_type.title()}**: {pct:.1f}%")
                             st.markdown("---")
+                    
+                    # User Perception Reports (if available)
+                    if hotspot.get('perception_count', 0) > 0:
+                        st.markdown("### 💬 User Perception Reports")
+                        
+                        col1, col2 = st.columns([1, 1])
+                        
+                        with col1:
+                            st.markdown(f"**{hotspot['perception_count']} reports found**")
+                            
+                            if 'perception_reports' in hotspot:
+                                reports = hotspot['perception_reports']
+                                themes = {}
+                                for report in reports:
+                                    theme = report.get('theme', 'Unknown')
+                                    themes[theme] = themes.get(theme, 0) + 1
+                                
+                                st.markdown("**Reported Issues:**")
+                                for theme, count in sorted(themes.items(), key=lambda x: x[1], reverse=True):
+                                    st.write(f"• {theme}: {count} reports")
+                        
+                        with col2:
+                            if 'perception_reports' in hotspot:
+                                st.markdown("**Sample Comments:**")
+                                reports = hotspot['perception_reports']
+                                comments = [r.get('comment', '') for r in reports if r.get('comment')]
+                                
+                                for i, comment in enumerate(comments[:5], 1):
+                                    st.markdown(f"""
+                                    <div style="background: #f0f0f0; padding: 10px; 
+                                                margin: 5px 0; border-radius: 5px; 
+                                                border-left: 3px solid {color_map.get(hotspot['color'], '#DC143C')};">
+                                        <i>"{comment}"</i>
+                                    </div>
+                                    """, unsafe_allow_html=True)
+                                
+                                if len(comments) > 5:
+                                    st.info(f"+ {len(comments) - 5} more comments")
+                        
+                        st.markdown("---")
                     
                     # Location & Actions
                     st.markdown("### 📍 Location & Actions")
@@ -658,9 +503,14 @@ with tab1:
                             st.write(f"**End:** {hotspot.get('end_lat', 0):.6f}, {hotspot.get('end_lng', 0):.6f}")
                         else:
                             st.write("**Type:** Point Location")
+                        
+                        if 'date_range' in hotspot:
+                            st.write(f"**Date Range:** {hotspot.get('date_range', 'N/A')}")
                     
                     with col2:
+                        # Street View links
                         if hotspot.get('is_corridor') and pd.notna(hotspot.get('start_lat')):
+                            # Start point
                             start_url = STREET_VIEW_URL_TEMPLATE.format(
                                 lat=hotspot['start_lat'],
                                 lng=hotspot['start_lng'],
@@ -676,6 +526,7 @@ with tab1:
                             </a>
                             """, unsafe_allow_html=True)
                             
+                            # End point
                             end_url = STREET_VIEW_URL_TEMPLATE.format(
                                 lat=hotspot['end_lat'],
                                 lng=hotspot['end_lng'],
@@ -707,6 +558,7 @@ with tab1:
                             </a>
                             """, unsafe_allow_html=True)
                         
+                        # Google Maps link
                         maps_url = f"https://www.google.com/maps?q={hotspot['center_lat']},{hotspot['center_lng']}"
                         st.markdown(f"""
                         <a href="{maps_url}" target="_blank" 
@@ -874,18 +726,21 @@ with tab2:
         # Severity trends
         st.subheader("📊 Severity Trends")
         
-        fig_severity = px.line(
-            trends_filtered,
-            x='date',
-            y='avg_severity',
-            title='Average Severity Over Time',
-            labels={'avg_severity': 'Average Severity', 'date': 'Date'}
-        )
-        
-        fig_severity.update_traces(line_color='#EF4444', line_width=3)
-        fig_severity.update_layout(height=400)
-        
-        st.plotly_chart(fig_severity, use_container_width=True)
+        if 'avg_severity' in trends_filtered.columns:
+            fig_severity = px.line(
+                trends_filtered,
+                x='date',
+                y='avg_severity',
+                title='Average Severity Over Time',
+                labels={'avg_severity': 'Average Severity', 'date': 'Date'}
+            )
+            
+            fig_severity.update_traces(line_color='#EF4444', line_width=3)
+            fig_severity.update_layout(height=400)
+            
+            st.plotly_chart(fig_severity, use_container_width=True)
+        else:
+            st.info("Severity trend data not available")
 
 # ==================== FOOTER ====================
 
@@ -900,7 +755,7 @@ with st.expander("ℹ️ How It Works"):
     - Only events with `is_abnormal_event = true`
     - Severity parsed from `event_details` field
     - Ranked by: `avg_severity + log10(event_count)`
-    - Medoid-based centers (actual road locations)
+    - Geographic clustering only (lat/lng)
     
     **Perception-Primary (45%):**
     
@@ -913,7 +768,7 @@ with st.expander("ℹ️ How It Works"):
     - 3+ reports from same user, consecutive < 150m
     - 20m buffer polygon for finding related reports
     - Must have 1+ abnormal sensor event
-    - Visualized as polylines
+    - **Visualized as polylines on map**
     
     **Precedence 3:** Standalone Perception
     - 3+ reports from different users
@@ -928,28 +783,25 @@ with st.expander("ℹ️ How It Works"):
     - 🟢 **Green (Low):** Rank score < 4
     - 🔵 **Blue (No Sensor):** Perception-only hotspots
     
-    ### ✨ Enhanced Insights
+    ### 🤖 AI Analysis
     
-    - **Smart Summaries:** Combines sensor + perception data into readable narrative
-    - **Theme Extraction:** Automatically identifies key issues (potholes, close passes, etc.)
-    - **Keyword Detection:** Highlights specific problems mentioned by cyclists
-    - **Sample Comments:** Shows actual user feedback for context
-    - **Validation Status:** Shows how sensor and perception data corroborate
+    - All {total_hotspots} hotspots analyzed by Groq AI (llama-3.3-70b)
+    - Combines sensor data + user reports
+    - Paints complete picture of what's happening
+    - No recommendations - only objective analysis
     
     ### 📊 Data Sources
     
     - **Sensor Data:** {metrics['total_readings']:,} readings from AWS Athena
-    - **Perception Reports:** {len(infra_df) + len(ride_df):,} total reports
-    """)
-    
-    if synthetic_count > 0:
-        st.markdown(f"""
-        - **Enhanced Dataset:** {synthetic_count:,} AI-generated reports for richer analysis
-        - Real reports preserved and marked with `is_synthetic = False`
-        """)
-    
-    st.markdown(f"""
+    - **Infrastructure Reports:** {len(infra_df):,} user reports
+    - **Ride Reports:** {len(ride_df):,} incident reports
     - **Date Range:** {metrics['earliest_reading']} to {metrics['latest_reading']}
+    
+    ### 🗺️ Map Features
+    
+    - **Red/Orange/Green circles:** Point hotspots (sensor or perception)
+    - **Colored polylines:** Corridor hotspots (stretch of road with issues)
+    - **Click on any hotspot:** See detailed popup with stats and Street View link
     """)
 
 with st.expander("❓ FAQ"):
@@ -962,29 +814,22 @@ with st.expander("❓ FAQ"):
     
     A: Blue hotspots (Precedence 3) have 3+ user reports but no sensor validation data. They're still important safety concerns reported by cyclists.
     
-    **Q: What are the theme cards?**
-    
-    A: Theme cards automatically extract and highlight the main safety issues at each hotspot (e.g., potholes, close passes, obstructions) by analyzing user comments and report types.
-    
-    **Q: How are the smart summaries generated?**
-    
-    A: Summaries combine sensor event counts, severity levels, perception report themes, and sample user comments into a readable narrative that explains what's happening at each location.
-    
     **Q: What does "corridor" mean?**
     
-    A: A corridor is a stretch of road (typically 100m+) where issues persist along the entire length, not just at one point. Examples: vegetation blocking cycle lane for 500m.
+    A: A corridor is a stretch of road (typically 100m+) where issues persist along the entire length, not just at one point. On the map, corridors appear as colored lines instead of circles.
     
     **Q: How is rank score calculated?**
     
-    A: `rank_score = avg_severity + log10(event_count)`. This balances severity (how bad) with frequency (how often). A hotspot with 100 events at severity 7 gets higher priority than 2 events at severity 9.
-    """)
+    A: `rank_score = avg_severity + log10(event_count)`. This balances severity (how bad) with frequency (how often).
     
-    if synthetic_count > 0:
-        st.markdown("""
-        **Q: What are synthetic reports?**
-        
-        A: Synthetic reports are AI-generated perception reports created to demonstrate the dashboard's full capabilities. They're based on actual sensor hotspots and use realistic language/themes. Real reports are preserved and can be filtered using the `is_synthetic` flag.
-        """)
+    **Q: Can I trust the AI analysis?**
+    
+    A: The AI (Groq's llama-3.3-70b) synthesizes sensor data + user comments to paint a complete picture. You can always verify by reading the raw data shown below each analysis.
+    
+    **Q: Why don't I see corridors on the map?**
+    
+    A: Corridors are drawn as colored polylines (lines) on the map, not circles. Look for longer colored lines connecting multiple points. If you still don't see them, there may not be any corridors detected with the current parameters.
+    """)
 
 st.markdown("---")
-st.caption("🚴‍♂️ Spinovate Safety Dashboard | Enhanced Insights | Powered by Groq AI & AWS Athena")
+st.caption("🚴‍♂️ Spinovate Safety Dashboard | Hybrid Detection System | Powered by Groq AI & AWS Athena")

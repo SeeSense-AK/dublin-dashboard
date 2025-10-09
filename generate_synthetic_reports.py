@@ -33,6 +33,7 @@ except ImportError:
     GROQ_AVAILABLE = False
     print("⚠️ Groq not available - will use template-based comments")
 
+
 class SyntheticPerceptionGenerator:
     """Generate realistic perception reports based on sensor hotspots"""
     
@@ -51,9 +52,14 @@ class SyntheticPerceptionGenerator:
         self.existing_infra = pd.read_csv(existing_infra_path)
         self.existing_ride = pd.read_csv(existing_ride_path)
         
+        print(f"   ✓ Loaded {len(self.sensor_df):,} sensor readings")
+        print(f"   ✓ Loaded {len(self.existing_infra)} infrastructure reports")
+        print(f"   ✓ Loaded {len(self.existing_ride)} ride reports")
+        
         # Theme mappings based on sensor event types
         self.sensor_to_theme = {
             'hard_brake': ['Close pass', 'Dangerous junction', 'Traffic'],
+            'brake': ['Close pass', 'Dangerous junction', 'Traffic'],
             'pothole': ['Pothole', 'Poor surface', 'Damage to road'],
             'swerve': ['Obstruction', 'Parked car', 'Poor surface'],
             'acceleration': ['Traffic light', 'Junction']
@@ -115,12 +121,6 @@ class SyntheticPerceptionGenerator:
         # Vehicle types for realistic comments
         self.vehicles = ['car', 'van', 'bus', 'truck', 'taxi', 'lorry']
         
-        # Dublin street name patterns for realism
-        self.dublin_streets = [
-            'Road', 'Street', 'Avenue', 'Lane', 'Terrace', 'Drive', 
-            'Park', 'Grove', 'Way', 'Place'
-        ]
-        
         # Generate synthetic user IDs
         self.synthetic_users = [f"synth_user_{i:03d}" for i in range(1, 151)]
         
@@ -139,9 +139,7 @@ class SyntheticPerceptionGenerator:
         
         # Batch comment generation for efficiency
         self.comment_cache = {}
-        self.cache_size = 0
-        self.max_cache_size = 500  # Pre-generate 500 comments
-        
+    
     def _generate_groq_comments_batch(self, theme: str, count: int = 20) -> List[str]:
         """
         Generate batch of realistic comments using Groq AI
@@ -181,7 +179,7 @@ Format: Return ONLY the comments, one per line, no numbering or extra text."""
                     {"role": "system", "content": "You are helping generate realistic cycling safety reports. Be authentic and varied."},
                     {"role": "user", "content": prompt}
                 ],
-                temperature=0.9,  # Higher temperature for variety
+                temperature=0.9,
                 max_tokens=2000
             )
             
@@ -189,7 +187,7 @@ Format: Return ONLY the comments, one per line, no numbering or extra text."""
             comments_text = response.choices[0].message.content
             comments = [c.strip() for c in comments_text.split('\n') if c.strip() and len(c.strip()) > 10]
             
-            return comments[:count]  # Ensure we don't exceed requested count
+            return comments[:count]
             
         except Exception as e:
             print(f"⚠️ Groq generation failed for {theme}: {e}")
@@ -212,12 +210,12 @@ Format: Return ONLY the comments, one per line, no numbering or extra text."""
             
             if comments:
                 self.comment_cache[theme] = comments
-                self.cache_size += len(comments)
             else:
                 # Fallback to templates if Groq fails
                 self.comment_cache[theme] = self.comment_templates[theme]
         
-        print(f"   ✅ Pre-generated {self.cache_size} unique comments")
+        total_comments = sum(len(v) for v in self.comment_cache.values())
+        print(f"   ✅ Pre-generated {total_comments} unique comments")
     
     def _get_sophisticated_comment(self, theme: str) -> str:
         """
@@ -242,7 +240,8 @@ Format: Return ONLY the comments, one per line, no numbering or extra text."""
         # Fallback to templates
         template = random.choice(self.comment_templates.get(theme, ["Issue reported at this location"]))
         return template.format(vehicle=random.choice(self.vehicles))
-
+    
+    def detect_sensor_hotspots(self, min_severity: int = 4, top_n: int = 30) -> pd.DataFrame:
         """
         Detect hotspots from sensor data
         
@@ -253,7 +252,7 @@ Format: Return ONLY the comments, one per line, no numbering or extra text."""
         Returns:
             DataFrame with hotspot locations and characteristics
         """
-        print(f"🔍 Detecting top {top_n} sensor hotspots...")
+        print(f"🔍 Detecting top {top_n} sensor hotspots (severity >= {min_severity})...")
         
         # Filter for abnormal events
         abnormal = self.sensor_df[
@@ -262,6 +261,14 @@ Format: Return ONLY the comments, one per line, no numbering or extra text."""
             (self.sensor_df['position_latitude'].notna()) &
             (self.sensor_df['position_longitude'].notna())
         ].copy()
+        
+        if abnormal.empty:
+            print("⚠️ No abnormal events found! Lowering severity threshold...")
+            abnormal = self.sensor_df[
+                (self.sensor_df['is_abnormal_event'] == True) &
+                (self.sensor_df['position_latitude'].notna()) &
+                (self.sensor_df['position_longitude'].notna())
+            ].copy()
         
         # Cluster by rounding coordinates (simple grid clustering)
         precision = 3  # ~111m precision
@@ -296,8 +303,7 @@ Format: Return ONLY the comments, one per line, no numbering or extra text."""
         self, 
         hotspot: pd.Series,
         num_reports: int = None,
-        radius_m: float = 50,
-        target_total: int = 1000
+        radius_m: float = 50
     ) -> List[Dict]:
         """
         Generate perception reports near a specific hotspot
@@ -306,29 +312,27 @@ Format: Return ONLY the comments, one per line, no numbering or extra text."""
             hotspot: Hotspot data (from detect_sensor_hotspots)
             num_reports: Number of reports to generate (calculated if None)
             radius_m: Radius around hotspot to scatter reports
-            target_total: Target total reports across all hotspots
             
         Returns:
             List of perception report dictionaries
         """
         if num_reports is None:
             # Scale reports based on severity - aim for ~1000 total
-            # Higher severity hotspots get proportionally more reports
             if hotspot['avg_severity'] >= 7:
-                num_reports = random.randint(25, 45)  # Critical
+                num_reports = random.randint(25, 45)
             elif hotspot['avg_severity'] >= 6:
-                num_reports = random.randint(20, 35)  # High
+                num_reports = random.randint(20, 35)
             elif hotspot['avg_severity'] >= 5:
-                num_reports = random.randint(15, 28)  # Medium-High
+                num_reports = random.randint(15, 28)
             elif hotspot['avg_severity'] >= 4:
-                num_reports = random.randint(10, 20)  # Medium
+                num_reports = random.randint(10, 20)
             else:
-                num_reports = random.randint(5, 12)   # Lower
+                num_reports = random.randint(5, 12)
         
         reports = []
         
         # Get appropriate themes based on dominant event type
-        dominant_event = hotspot['dominant_event_type'].lower()
+        dominant_event = str(hotspot['dominant_event_type']).lower()
         possible_themes = []
         
         for event_key, themes in self.sensor_to_theme.items():
@@ -345,7 +349,7 @@ Format: Return ONLY the comments, one per line, no numbering or extra text."""
         
         for i in range(num_reports):
             # Scatter around hotspot location
-            lat_offset = np.random.normal(0, radius_m / 111000)  # degrees
+            lat_offset = np.random.normal(0, radius_m / 111000)
             lng_offset = np.random.normal(0, radius_m / 111000)
             
             lat = hotspot['lat'] + lat_offset
@@ -412,17 +416,16 @@ Format: Return ONLY the comments, one per line, no numbering or extra text."""
     def _get_rating_for_severity(self, avg_severity: float) -> int:
         """Map sensor severity to perception rating (1-5, lower is worse)"""
         if avg_severity >= 7:
-            return random.choice([1, 1, 2])  # Critical
+            return random.choice([1, 1, 2])
         elif avg_severity >= 5:
-            return random.choice([2, 2, 3])  # High
+            return random.choice([2, 2, 3])
         else:
-            return random.choice([3, 4])  # Medium
+            return random.choice([3, 4])
     
     def generate_all_synthetic_reports(
         self, 
         num_hotspots: int = 30,
-        target_total_reports: int = 1000,
-        output_dir: str = 'data/raw',
+        output_dir: str = '.',
         use_groq: bool = True
     ) -> Tuple[pd.DataFrame, pd.DataFrame]:
         """
@@ -430,7 +433,6 @@ Format: Return ONLY the comments, one per line, no numbering or extra text."""
         
         Args:
             num_hotspots: Number of hotspots to generate reports for
-            target_total_reports: Target total number of reports (~1000)
             output_dir: Directory to save output files
             use_groq: Whether to use Groq AI for sophisticated comments
             
@@ -439,7 +441,7 @@ Format: Return ONLY the comments, one per line, no numbering or extra text."""
         """
         print("\n" + "="*60)
         print("🚀 SYNTHETIC PERCEPTION REPORT GENERATOR")
-        print(f"   Target: ~{target_total_reports} sophisticated reports")
+        print(f"   Target: ~1000 sophisticated reports")
         print("="*60 + "\n")
         
         # Pre-fill comment cache with Groq if available
@@ -488,10 +490,6 @@ Format: Return ONLY the comments, one per line, no numbering or extra text."""
         # Step 4: Combine with existing reports
         print("\n🔗 Combining with existing reports...")
         
-        # Ensure columns match
-        ride_combined = pd.concat([self.existing_ride, ride_df], ignore_index=True)
-        infra_combined = pd.concat([self.existing_infra, infra_df], ignore_index=True)
-        
         # Add synthetic flags
         self.existing_ride['is_synthetic'] = False
         ride_df['is_synthetic'] = True
@@ -511,7 +509,6 @@ Format: Return ONLY the comments, one per line, no numbering or extra text."""
         # Step 5: Save to CSV
         print(f"\n💾 Saving to {output_dir}...")
         
-        import os
         os.makedirs(output_dir, exist_ok=True)
         
         ride_output = os.path.join(output_dir, 'dublin_ride_reports_SYNTHETIC.csv')
@@ -550,10 +547,9 @@ if __name__ == "__main__":
         'sensor_data_path': '20250831_complete_dataset.csv',
         'existing_infra_path': 'dublin_infra_reports_dublin2025_upto20250924.csv',
         'existing_ride_path': 'dublin_ride_reports_dublin2025_upto20250924.csv',
-        'num_hotspots': 40,  # Detect top 40 hotspots
-        'target_total_reports': 1000,  # Aim for ~1000 total reports
-        'output_dir': '.',  # Save in current directory
-        'use_groq': True  # Use Groq AI for sophisticated comments
+        'num_hotspots': 40,
+        'output_dir': '.',
+        'use_groq': True
     }
     
     print("\n📋 Configuration:")
@@ -562,20 +558,25 @@ if __name__ == "__main__":
     
     print("\n⏳ Starting generation process...\n")
     
-    generator = SyntheticPerceptionGenerator(
-        sensor_data_path=config['sensor_data_path'],
-        existing_infra_path=config['existing_infra_path'],
-        existing_ride_path=config['existing_ride_path']
-    )
-    
-    # Generate synthetic reports
-    infra_df, ride_df = generator.generate_all_synthetic_reports(
-        num_hotspots=config['num_hotspots'],
-        target_total_reports=config['target_total_reports'],
-        output_dir=config['output_dir'],
-        use_groq=config['use_groq']
-    )
-    
-    print("\n✨ You can now use these enhanced datasets in your dashboard!")
-    print("   Just update your data loading paths to point to the SYNTHETIC files")
-    print("\n" + "="*60)
+    try:
+        generator = SyntheticPerceptionGenerator(
+            sensor_data_path=config['sensor_data_path'],
+            existing_infra_path=config['existing_infra_path'],
+            existing_ride_path=config['existing_ride_path']
+        )
+        
+        # Generate synthetic reports
+        infra_df, ride_df = generator.generate_all_synthetic_reports(
+            num_hotspots=config['num_hotspots'],
+            output_dir=config['output_dir'],
+            use_groq=config['use_groq']
+        )
+        
+        print("\n✨ You can now use these enhanced datasets in your dashboard!")
+        print("   Just update your data loading paths to point to the SYNTHETIC files")
+        print("\n" + "="*60)
+        
+    except Exception as e:
+        print(f"\n❌ Error: {e}")
+        import traceback
+        traceback.print_exc()
