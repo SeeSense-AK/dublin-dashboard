@@ -1,5 +1,9 @@
-# src/athena_database.py - UPDATED FOR NEW SCHEMA
+"""
+Optimized AWS Athena Database Connection
+Now using pre-aggregated tables: hotspots_daily_v2 and usage_trends_daily
+"""
 import pandas as pd
+import streamlit as st
 from pyathena import connect
 import warnings
 import os
@@ -8,9 +12,8 @@ from dotenv import load_dotenv
 load_dotenv()
 warnings.filterwarnings('ignore', category=UserWarning, module='pandas')
 
+
 class AthenaCyclingSafetyDB:
-    """AWS Athena backend - UPDATED for spinovate_production_optimised_v2"""
-    
     def __init__(self):
         """Initialize Athena connection"""
         try:
@@ -34,17 +37,17 @@ class AthenaCyclingSafetyDB:
             raise Exception(f"❌ Failed to connect to Athena: {e}")
     
     def get_dashboard_metrics(self) -> dict:
-        """Get key metrics for dashboard overview"""
+        """Get key metrics for dashboard overview - OPTIMIZED using usage_trends_daily"""
         
         query = """
         SELECT 
-            COUNT(*) as total_readings,
-            COUNT(DISTINCT device_id) as unique_devices,
-            COUNT(CASE WHEN is_abnormal_event THEN 1 END) as abnormal_events,
-            AVG(speed_kmh) as avg_speed,
-            MAX(timestamp) as latest_reading,
-            MIN(timestamp) as earliest_reading
-        FROM spinovate_production.spinovate_production_optimised_v2
+            SUM(total_readings) as total_readings,
+            MAX(unique_users) as unique_devices,
+            SUM(abnormal_events) as abnormal_events,
+            AVG(avg_speed) as avg_speed,
+            MAX(date) as latest_reading,
+            MIN(date) as earliest_reading
+        FROM spinovate_production.usage_trends_daily
         """
         
         try:
@@ -52,9 +55,9 @@ class AthenaCyclingSafetyDB:
             result = df.iloc[0]
             
             return {
-                'total_readings': int(result['total_readings']),
-                'unique_devices': int(result['unique_devices']),
-                'abnormal_events': int(result['abnormal_events']),
+                'total_readings': int(result['total_readings']) if result['total_readings'] else 0,
+                'unique_devices': int(result['unique_devices']) if result['unique_devices'] else 0,
+                'abnormal_events': int(result['abnormal_events']) if result['abnormal_events'] else 0,
                 'avg_speed': round(float(result['avg_speed']), 1) if result['avg_speed'] else 0,
                 'latest_reading': result['latest_reading'],
                 'earliest_reading': result['earliest_reading']
@@ -74,71 +77,32 @@ class AthenaCyclingSafetyDB:
                               start_date: str = None, end_date: str = None,
                               radius_m: int = 50) -> pd.DataFrame:
         """
-        Detect hotspots using spatial clustering
+        Detect hotspots using pre-aggregated hotspots_daily_v2 table - OPTIMIZED!
         
         Args:
             min_events: Minimum events to form a hotspot
-            severity_threshold: Minimum severity level
-            start_date: Start date (YYYY-MM-DD)
-            end_date: End date (YYYY-MM-DD)
-            radius_m: Radius for clustering (meters)
+            severity_threshold: Minimum average severity
+            start_date: Filter start date (YYYY-MM-DD) - optional
+            end_date: Filter end date (YYYY-MM-DD) - optional
+            radius_m: Not used (kept for compatibility)
+        
+        Returns:
+            DataFrame with hotspot locations and metrics
         """
         
+        # Build date filter if provided
         date_filter = ""
         if start_date and end_date:
-            date_filter = f"AND timestamp BETWEEN TIMESTAMP '{start_date}' AND TIMESTAMP '{end_date}'"
-        
-        # Calculate clustering precision (degrees per radius)
-        # ~111km per degree at equator, so 50m = 0.00045 degrees
-        cluster_precision = 3  # Round to 3 decimal places (~111m precision)
+            date_filter = f"AND analysis_date BETWEEN DATE '{start_date}' AND DATE '{end_date}'"
+        elif start_date:
+            date_filter = f"AND analysis_date >= DATE '{start_date}'"
+        elif end_date:
+            date_filter = f"AND analysis_date <= DATE '{end_date}'"
         
         query = f"""
-        WITH abnormal_events AS (
-            SELECT 
-                lat,
-                lng,
-                max_severity,
-                primary_event_type,
-                timestamp,
-                device_id,
-                speed_kmh,
-                peak_x,
-                peak_y,
-                peak_z,
-                severity_x,
-                severity_y,
-                severity_z
-            FROM spinovate_production.spinovate_production_optimised_v2
-            WHERE is_abnormal_event = true 
-                AND max_severity >= {severity_threshold}
-                AND lat IS NOT NULL 
-                AND lng IS NOT NULL
-                {date_filter}
-        ),
-        grid_clusters AS (
-            SELECT 
-                ROUND(lat, {cluster_precision}) as lat_cluster,
-                ROUND(lng, {cluster_precision}) as lng_cluster,
-                COUNT(*) as event_count,
-                AVG(max_severity) as avg_severity,
-                MAX(max_severity) as max_severity,
-                AVG(lat) as center_lat,
-                AVG(lng) as center_lng,
-                MIN(timestamp) as first_event,
-                MAX(timestamp) as last_event,
-                COUNT(DISTINCT device_id) as unique_devices,
-                AVG(speed_kmh) as avg_speed,
-                ARRAY_AGG(DISTINCT primary_event_type) as event_types,
-                APPROX_PERCENTILE(peak_x, 0.95) as peak_accel_x,
-                APPROX_PERCENTILE(peak_y, 0.95) as peak_accel_y,
-                APPROX_PERCENTILE(peak_z, 0.95) as peak_accel_z
-            FROM abnormal_events
-            GROUP BY ROUND(lat, {cluster_precision}), ROUND(lng, {cluster_precision})
-            HAVING COUNT(*) >= {min_events}
-        )
         SELECT 
-            center_lat as lat,
-            center_lng as lng,
+            lat,
+            lng,
             event_count,
             avg_severity as severity_score,
             max_severity,
@@ -146,13 +110,17 @@ class AthenaCyclingSafetyDB:
             last_event,
             unique_devices,
             avg_speed,
-            event_types,
+            event_distribution as event_types,
             peak_accel_x,
             peak_accel_y,
             peak_accel_z,
+            risk_score,
             'sensor_based' as hotspot_type
-        FROM grid_clusters
-        ORDER BY event_count DESC, avg_severity DESC
+        FROM spinovate_production.hotspots_daily_v2
+        WHERE event_count >= {min_events}
+            AND avg_severity >= {severity_threshold}
+            {date_filter}
+        ORDER BY risk_score DESC
         LIMIT 100
         """
         
@@ -162,28 +130,24 @@ class AthenaCyclingSafetyDB:
             if df.empty:
                 return pd.DataFrame()
             
-            # Calculate risk score
-            df['risk_score'] = df['severity_score'] * (1 + 0.1 * df['event_count'])
-            
             return df
         except Exception as e:
             print(f"Error detecting hotspots: {e}")
             return pd.DataFrame()
     
     def get_usage_trends(self, days: int = 90) -> pd.DataFrame:
-        """Get daily usage trends"""
+        """Get daily usage trends - OPTIMIZED using usage_trends_daily table!"""
         
         query = f"""
         SELECT 
-            DATE_TRUNC('day', timestamp) as date,
-            COUNT(DISTINCT device_id) as unique_users,
-            COUNT(*) as total_readings,
-            COUNT(CASE WHEN is_abnormal_event THEN 1 END) as abnormal_events,
-            AVG(speed_kmh) as avg_speed,
-            AVG(max_severity) as avg_severity
-        FROM spinovate_production.spinovate_production_optimised_v2
-        WHERE timestamp >= CURRENT_DATE - INTERVAL '{days}' DAY
-        GROUP BY DATE_TRUNC('day', timestamp)
+            date,
+            unique_users,
+            total_readings,
+            abnormal_events,
+            avg_speed,
+            avg_severity
+        FROM spinovate_production.usage_trends_daily
+        WHERE date >= CURRENT_DATE - INTERVAL '{days}' DAY
         ORDER BY date
         """
         
@@ -191,6 +155,7 @@ class AthenaCyclingSafetyDB:
             df = pd.read_sql(query, self.conn)
             
             if not df.empty:
+                # Add calculated columns
                 df['prev_day_users'] = df['unique_users'].shift(1)
                 df['usage_change_pct'] = ((df['unique_users'] - df['prev_day_users']) / df['prev_day_users'] * 100).fillna(0)
             
@@ -200,25 +165,19 @@ class AthenaCyclingSafetyDB:
             return pd.DataFrame()
     
     def detect_usage_anomalies(self, threshold_pct: float = 30) -> pd.DataFrame:
-        """Detect significant drops in usage"""
+        """Detect significant drops in usage - OPTIMIZED using usage_trends_daily!"""
         
         query = f"""
-        WITH daily_usage AS (
+        WITH usage_with_lag AS (
             SELECT 
-                DATE_TRUNC('day', timestamp) as date,
-                COUNT(DISTINCT device_id) as daily_users,
-                COUNT(*) as daily_readings
-            FROM spinovate_production.spinovate_production_optimised_v2
-            WHERE timestamp >= CURRENT_DATE - INTERVAL '90' DAY
-            GROUP BY DATE_TRUNC('day', timestamp)
-            ORDER BY date
-        ),
-        usage_with_lag AS (
-            SELECT *,
-                LAG(daily_users, 1) OVER (ORDER BY date) as prev_day_users,
-                LAG(daily_users, 7) OVER (ORDER BY date) as week_ago_users,
-                AVG(daily_users) OVER (ORDER BY date ROWS BETWEEN 7 PRECEDING AND 1 PRECEDING) as rolling_avg
-            FROM daily_usage
+                date,
+                unique_users as daily_users,
+                total_readings as daily_readings,
+                LAG(unique_users, 1) OVER (ORDER BY date) as prev_day_users,
+                LAG(unique_users, 7) OVER (ORDER BY date) as week_ago_users,
+                AVG(unique_users) OVER (ORDER BY date ROWS BETWEEN 7 PRECEDING AND 1 PRECEDING) as rolling_avg
+            FROM spinovate_production.usage_trends_daily
+            WHERE date >= CURRENT_DATE - INTERVAL '90' DAY
         )
         SELECT 
             date,
@@ -251,109 +210,118 @@ class AthenaCyclingSafetyDB:
             print(f"Error detecting anomalies: {e}")
             return pd.DataFrame()
     
-    def find_sensor_data_near_location(self, lat: float, lng: float, 
-                                       radius_m: int = 50,
-                                       start_date: str = None, 
-                                       end_date: str = None) -> dict:
+    def find_sensor_data_near_location(self, lat: float, lng: float, radius_m: int = 30) -> pd.DataFrame:
         """
         Find sensor readings near a specific location
-        Used for validating perception reports with sensor data
+        Uses main table since we need fine-grained location data
+        
+        Args:
+            lat: Latitude of center point
+            lng: Longitude of center point
+            radius_m: Search radius in meters
+        
+        Returns:
+            DataFrame with nearby sensor readings
         """
         
-        radius_deg = radius_m / 111000
-        
-        date_filter = ""
-        if start_date and end_date:
-            date_filter = f"AND timestamp BETWEEN TIMESTAMP '{start_date}' AND TIMESTAMP '{end_date}'"
+        # Convert radius to approximate degrees (rough approximation)
+        # 1 degree ≈ 111km at equator
+        radius_deg = radius_m / 111000.0
         
         query = f"""
         SELECT 
-            COUNT(*) as total_events,
-            COUNT(CASE WHEN is_abnormal_event THEN 1 END) as abnormal_events,
-            AVG(max_severity) as avg_severity,
-            MAX(max_severity) as max_severity,
-            COUNT(CASE WHEN primary_event_type LIKE '%brake%' THEN 1 END) as brake_events,
-            COUNT(CASE WHEN primary_event_type LIKE '%swerve%' THEN 1 END) as swerve_events,
-            COUNT(CASE WHEN primary_event_type LIKE '%pothole%' OR primary_event_type LIKE '%bump%' THEN 1 END) as pothole_events,
-            COUNT(DISTINCT device_id) as unique_devices,
-            AVG(speed_kmh) as avg_speed,
-            APPROX_PERCENTILE(peak_x, 0.95) as peak_x_95,
-            APPROX_PERCENTILE(peak_y, 0.95) as peak_y_95,
-            APPROX_PERCENTILE(peak_z, 0.95) as peak_z_95
+            lat,
+            lng,
+            timestamp,
+            device_id,
+            max_severity,
+            primary_event_type,
+            speed_kmh,
+            event_details
         FROM spinovate_production.spinovate_production_optimised_v2
-        WHERE ABS(lat - {lat}) <= {radius_deg}
-            AND ABS(lng - {lng}) <= {radius_deg}
-            AND lat IS NOT NULL
-            AND lng IS NOT NULL
-            {date_filter}
+        WHERE lat BETWEEN {lat - radius_deg} AND {lat + radius_deg}
+            AND lng BETWEEN {lng - radius_deg} AND {lng + radius_deg}
+            AND is_abnormal_event = true
+        ORDER BY timestamp DESC
+        LIMIT 100
         """
         
         try:
-            result = pd.read_sql(query, self.conn)
+            df = pd.read_sql(query, self.conn)
             
-            if result.empty:
-                return {'has_sensor_data': False, 'total_events': 0}
+            if df.empty:
+                return pd.DataFrame()
             
-            row = result.iloc[0]
+            # Calculate actual distance using Haversine formula
+            from math import radians, cos, sin, asin, sqrt
             
-            return {
-                'has_sensor_data': row['total_events'] > 0,
-                'total_events': int(row['total_events']),
-                'abnormal_events': int(row['abnormal_events']),
-                'avg_severity': float(row['avg_severity']) if row['avg_severity'] else 0,
-                'max_severity': int(row['max_severity']) if row['max_severity'] else 0,
-                'brake_events': int(row['brake_events']),
-                'swerve_events': int(row['swerve_events']),
-                'pothole_events': int(row['pothole_events']),
-                'unique_devices': int(row['unique_devices']),
-                'avg_speed': float(row['avg_speed']) if row['avg_speed'] else 0,
-                'peak_accelerations': {
-                    'x': float(row['peak_x_95']) if row['peak_x_95'] else 0,
-                    'y': float(row['peak_y_95']) if row['peak_y_95'] else 0,
-                    'z': float(row['peak_z_95']) if row['peak_z_95'] else 0
-                }
-            }
+            def haversine(lat1, lon1, lat2, lon2):
+                """Calculate distance in meters between two points"""
+                R = 6371000  # Earth radius in meters
+                lat1, lon1, lat2, lon2 = map(radians, [lat1, lon1, lat2, lon2])
+                dlat = lat2 - lat1
+                dlon = lon2 - lon1
+                a = sin(dlat/2)**2 + cos(lat1) * cos(lat2) * sin(dlon/2)**2
+                c = 2 * asin(sqrt(a))
+                return R * c
+            
+            df['distance_m'] = df.apply(lambda row: haversine(lat, lng, row['lat'], row['lng']), axis=1)
+            df = df[df['distance_m'] <= radius_m].copy()
+            df = df.sort_values('distance_m')
+            
+            return df
             
         except Exception as e:
-            print(f"Error finding sensor data: {e}")
-            return {'has_sensor_data': False, 'total_events': 0, 'error': str(e)}
+            print(f"Error finding sensor data near location: {e}")
+            return pd.DataFrame()
     
-    def get_event_type_distribution(self, start_date: str = None, end_date: str = None) -> pd.DataFrame:
-        """Get distribution of event types"""
+    def get_hotspot_time_series(self, lat: float, lng: float, grid_precision: int = 3) -> pd.DataFrame:
+        """
+        Get daily time series for a specific hotspot - OPTIMIZED using hotspots_daily_v2!
         
-        date_filter = ""
-        if start_date and end_date:
-            date_filter = f"WHERE timestamp BETWEEN TIMESTAMP '{start_date}' AND TIMESTAMP '{end_date}'"
+        Args:
+            lat: Hotspot latitude
+            lng: Hotspot longitude
+            grid_precision: Decimal places for rounding (3 = ~111m)
+        
+        Returns:
+            DataFrame with daily metrics for the hotspot
+        """
+        
+        # Round to grid
+        grid_lat = round(lat, grid_precision)
+        grid_lng = round(lng, grid_precision)
         
         query = f"""
         SELECT 
-            primary_event_type,
-            COUNT(*) as event_count,
-            AVG(max_severity) as avg_severity,
-            COUNT(DISTINCT device_id) as unique_devices
-        FROM spinovate_production.spinovate_production_optimised_v2
-        {date_filter}
-        GROUP BY primary_event_type
-        ORDER BY event_count DESC
+            date,
+            event_count,
+            avg_severity,
+            max_severity,
+            COUNT(DISTINCT device_id) as unique_devices,
+            avg_speed,
+            primary_event_type
+        FROM spinovate_production.hotspots_daily_v2
+        WHERE grid_lat_3 = {grid_lat}
+            AND grid_lng_3 = {grid_lng}
+        GROUP BY date, event_count, avg_severity, max_severity, avg_speed, primary_event_type
+        ORDER BY date
         """
         
         try:
             return pd.read_sql(query, self.conn)
         except Exception as e:
-            print(f"Error getting event distribution: {e}")
+            print(f"Error getting hotspot time series: {e}")
             return pd.DataFrame()
     
     def close(self):
-        """Close database connection"""
-        if hasattr(self, 'conn') and self.conn:
+        """Close Athena connection"""
+        if hasattr(self, 'conn'):
             self.conn.close()
 
-# Singleton instance
-_db_instance = None
 
+# Singleton pattern for database connection
+@st.cache_resource
 def get_athena_database():
-    """Get or create Athena database instance"""
-    global _db_instance
-    if _db_instance is None:
-        _db_instance = AthenaCyclingSafetyDB()
-    return _db_instance
+    """Get or create Athena database connection"""
+    return AthenaCyclingSafetyDB()
