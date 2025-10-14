@@ -1,17 +1,15 @@
-# src/hybrid_hotspot_detector.py - OPTIMIZED VERSION
 """
-Hybrid Hotspot Detection System - OPTIMIZED
-✅ Batch queries instead of N+1 queries
-✅ Uses pre-aggregated hotspots_daily_v2 table
-✅ 20x faster performance
-✅ Optional Groq analysis to avoid blocking
+Hybrid Hotspot Detection System - REWRITTEN FOR DUCKDB
+Implements 55-45 split strategy:
+- 55% Sensor-Primary hotspots
+- 45% Perception-Primary hotspots (P1, P2, P3)
 """
 import pandas as pd
 import numpy as np
 import math
 import re
 from sklearn.cluster import DBSCAN
-from shapely.geometry import Point, LineString
+from shapely.geometry import Point, LineString, Polygon
 from shapely.ops import nearest_points
 import streamlit as st
 from typing import Dict, List, Tuple
@@ -23,8 +21,7 @@ from src.sentiment_analyzer import get_groq_client
 
 class HybridHotspotDetector:
     """
-    Hybrid hotspot detector implementing 55-45 split strategy
-    OPTIMIZED for performance using batch queries and pre-aggregated tables
+    Hybrid hotspot detector - DuckDB version
     """
     
     def __init__(self):
@@ -50,7 +47,7 @@ class HybridHotspotDetector:
         if event_count == 0:
             return avg_severity
         
-        log_bonus = math.log10(event_count) if event_count > 0 else 0
+        log_bonus = math.log10(event_count)
         rank_score = avg_severity + log_bonus
         
         return round(rank_score, 2)
@@ -68,133 +65,73 @@ class HybridHotspotDetector:
             return 'green'
     
     # ========================================================================
-    # OPTIMIZED BATCH SENSOR LOOKUP
-    # ========================================================================
-    
-    def _batch_find_sensor_data(self, locations: List[Tuple[float, float]], 
-                               radius_m: int, min_severity: int,
-                               start_date: str, end_date: str) -> Dict:
-        """
-        ⚡ OPTIMIZED: Find sensor data for MULTIPLE locations in ONE query
-        Uses hotspots_daily_v2 for maximum speed
-        """
-        if not locations:
-            return {}
-        
-        radius_deg = radius_m / 111000
-        
-        # Build WHERE clause for all locations at once
-        location_conditions = []
-        for lat, lng in locations:
-            condition = f"""(
-                lat BETWEEN {lat - radius_deg} AND {lat + radius_deg}
-                AND lng BETWEEN {lng - radius_deg} AND {lng + radius_deg}
-            )"""
-            location_conditions.append(condition)
-        
-        all_conditions = " OR ".join(location_conditions)
-        
-        # Query hotspots_daily_v2 (pre-aggregated!) instead of raw table
-        query = f"""
-        SELECT 
-            lat,
-            lng,
-            event_count,
-            avg_severity,
-            max_severity,
-            unique_devices
-        FROM spinovate_production.hotspots_daily_v2
-        WHERE ({all_conditions})
-            AND avg_severity >= {min_severity}
-        """
-        
-        try:
-            result = pd.read_sql(query, self.db.conn)
-            
-            # Map results back to each location
-            sensor_map = {}
-            for idx, (query_lat, query_lng) in enumerate(locations):
-                # Find closest hotspots to this location
-                if not result.empty:
-                    result['dist'] = result.apply(
-                        lambda row: haversine_distance(query_lat, query_lng, row['lat'], row['lng']),
-                        axis=1
-                    )
-                    nearby = result[result['dist'] <= radius_m]
-                    
-                    if not nearby.empty:
-                        sensor_map[idx] = {
-                            'has_data': True,
-                            'event_count': int(nearby['event_count'].sum()),
-                            'avg_severity': float(nearby['avg_severity'].mean()),
-                            'max_severity': int(nearby['max_severity'].max()),
-                            'unique_devices': int(nearby['unique_devices'].sum())
-                        }
-                    else:
-                        sensor_map[idx] = {'has_data': False, 'event_count': 0}
-                else:
-                    sensor_map[idx] = {'has_data': False, 'event_count': 0}
-            
-            return sensor_map
-        except Exception as e:
-            print(f"Error in batch sensor lookup: {e}")
-            return {idx: {'has_data': False, 'event_count': 0} for idx in range(len(locations))}
-    
-    # ========================================================================
-    # PART 1: SENSOR-PRIMARY (55%) - OPTIMIZED
+    # PART 1: SENSOR-PRIMARY (55%)
     # ========================================================================
     
     def detect_sensor_primary_hotspots(self, 
-                                   start_date: str,
-                                   end_date: str,
-                                   top_n: int) -> pd.DataFrame:
-        """Detect sensor-primary hotspots (55% of total) - UPDATED FOR DUCKDB"""
-    
+                                       start_date: str,
+                                       end_date: str,
+                                       top_n: int) -> pd.DataFrame:
+        """Detect sensor-primary hotspots using DBSCAN clustering"""
+        
         try:
-            # Use DuckDB method to get raw sensor data
+            # Get raw sensor data from DuckDB
+            print(f"📊 Fetching sensor data from {start_date} to {end_date}...")
             events_df = self.db.get_sensor_data_for_clustering(
                 start_date=start_date,
                 end_date=end_date,
-                min_severity=0  # Get all events, we'll filter later
+                min_severity=0  # Get all events
             )
             
             if events_df.empty:
+                print("⚠️ No sensor events found")
                 return pd.DataFrame()
             
-            # Parse severity from event_details
-            events_df['parsed_severity'] = events_df['event_details'].apply(
-                self.parse_event_severity
-            )
+            print(f"✅ Retrieved {len(events_df):,} sensor events")
+            
+            # Parse severity from event_details if needed
+            if 'event_details' in events_df.columns:
+                events_df['parsed_severity'] = events_df['event_details'].apply(
+                    self.parse_event_severity
+                )
+                
+                # Use parsed severity if max_severity is missing or 0
+                if 'max_severity' not in events_df.columns or events_df['max_severity'].isna().all():
+                    events_df['max_severity'] = events_df['parsed_severity']
+                else:
+                    # Fill nulls with parsed severity
+                    mask = (events_df['max_severity'].isna()) | (events_df['max_severity'] == 0)
+                    events_df.loc[mask, 'max_severity'] = events_df.loc[mask, 'parsed_severity']
             
             # Filter out events without valid severity
-            events_df = events_df[events_df['parsed_severity'].notna()].copy()
+            events_df = events_df[events_df['max_severity'].notna()].copy()
+            events_df = events_df[events_df['max_severity'] > 0].copy()
             
             if events_df.empty:
+                print("⚠️ No events with valid severity found")
                 return pd.DataFrame()
             
-            # Use parsed_severity as max_severity if max_severity is 0 or null
-            if 'max_severity' in events_df.columns:
-                events_df['max_severity'] = events_df.apply(
-                    lambda row: row['parsed_severity'] if pd.isna(row['max_severity']) or row['max_severity'] == 0 
-                    else row['max_severity'],
-                    axis=1
-                )
-            else:
-                events_df['max_severity'] = events_df['parsed_severity']
+            print(f"✅ {len(events_df):,} events with valid severity")
             
-            # CLUSTERING: Geographic only (lat/lng)
+            # CLUSTERING: Geographic clustering with DBSCAN
             coords = events_df[['lat', 'lng']].values
-            eps_degrees = 0.0005  # ~50m for DBSCAN
+            eps_degrees = 0.0005  # ~50m radius
             
+            print(f"🔍 Running DBSCAN clustering (eps={eps_degrees}, min_samples=3)...")
             clustering = DBSCAN(eps=eps_degrees, min_samples=3, metric='euclidean')
             events_df['cluster_id'] = clustering.fit_predict(coords)
             
+            # Filter out noise (cluster_id = -1)
             clustered = events_df[events_df['cluster_id'] >= 0].copy()
             
             if clustered.empty:
+                print("⚠️ No clusters formed")
                 return pd.DataFrame()
             
-            # Aggregate clusters
+            n_clusters = clustered['cluster_id'].nunique()
+            print(f"✅ Found {n_clusters} clusters")
+            
+            # Aggregate clusters into hotspots
             hotspots = self._aggregate_sensor_clusters(clustered, start_date, end_date)
             
             if hotspots.empty:
@@ -207,15 +144,18 @@ class HybridHotspotDetector:
             )
             
             # Take top N
-            hotspots = hotspots.nlargest(top_n, 'rank_score').reset_index(drop=True)
+            hotspots = hotspots.nlargest(min(top_n, len(hotspots)), 'rank_score').reset_index(drop=True)
             
             # Add metadata
             hotspots['source'] = 'sensor_primary'
             hotspots['precedence'] = 'sensor'
+            hotspots['perception_count'] = 0
             hotspots['hotspot_id'] = ['S' + str(i+1) for i in range(len(hotspots))]
             hotspots['color'] = hotspots['rank_score'].apply(
                 lambda x: self.get_color_from_score(x, False)
             )
+            
+            print(f"✅ Created {len(hotspots)} sensor-primary hotspots")
             
             return hotspots
             
@@ -225,102 +165,181 @@ class HybridHotspotDetector:
             traceback.print_exc()
             return pd.DataFrame()
     
+    def _aggregate_sensor_clusters(self, clustered_events: pd.DataFrame,
+                                   start_date: str, end_date: str) -> pd.DataFrame:
+        """Aggregate sensor events by cluster using medoid approach"""
+        
+        hotspots = []
+        
+        for cluster_id in clustered_events['cluster_id'].unique():
+            cluster_data = clustered_events[clustered_events['cluster_id'] == cluster_id].copy()
+            
+            # Find medoid (most central point)
+            center_lat = cluster_data['lat'].mean()
+            center_lng = cluster_data['lng'].mean()
+            
+            cluster_data['dist_to_center'] = cluster_data.apply(
+                lambda row: haversine_distance(center_lat, center_lng, row['lat'], row['lng']),
+                axis=1
+            )
+            
+            medoid_event = cluster_data.loc[cluster_data['dist_to_center'].idxmin()]
+            
+            hotspot_lat = medoid_event['lat']
+            hotspot_lng = medoid_event['lng']
+            
+            # Event type distribution
+            event_distribution = {}
+            if 'primary_event_type' in cluster_data.columns:
+                event_types = cluster_data['primary_event_type'].value_counts()
+                if not event_types.empty:
+                    event_distribution = (event_types / len(cluster_data) * 100).to_dict()
+            
+            # Severity metrics
+            avg_severity = cluster_data['max_severity'].mean()
+            max_severity = cluster_data['max_severity'].max()
+            
+            hotspot = {
+                'cluster_id': int(cluster_id),
+                'center_lat': hotspot_lat,
+                'center_lng': hotspot_lng,
+                'event_count': len(cluster_data),
+                'unique_devices': cluster_data['device_id'].nunique() if 'device_id' in cluster_data.columns else 0,
+                'avg_severity': avg_severity,
+                'max_severity': max_severity,
+                'event_distribution': event_distribution,
+                'first_event': cluster_data['timestamp'].min() if 'timestamp' in cluster_data.columns else None,
+                'last_event': cluster_data['timestamp'].max() if 'timestamp' in cluster_data.columns else None,
+                'date_range': f"{start_date} to {end_date}",
+                'radius_m': cluster_data['dist_to_center'].max(),
+                # Corridor fields (None for sensor hotspots)
+                'start_lat': None,
+                'start_lng': None,
+                'end_lat': None,
+                'end_lng': None,
+                'corridor_length_m': None,
+                'corridor_points': None,
+                'is_corridor': False
+            }
+            
+            hotspots.append(hotspot)
+        
+        return pd.DataFrame(hotspots)
+    
     # ========================================================================
-    # PART 2: PERCEPTION-PRIMARY (45%) - OPTIMIZED
+    # PART 2: PERCEPTION-PRIMARY (45%)
     # ========================================================================
     
-    def _combine_perception_reports(self, infra_df: pd.DataFrame, 
-                                    ride_df: pd.DataFrame) -> pd.DataFrame:
-        """Combine infrastructure and ride reports"""
-        combined = []
+    def detect_perception_primary_hotspots(self,
+                                          infra_df: pd.DataFrame,
+                                          ride_df: pd.DataFrame,
+                                          start_date: str,
+                                          end_date: str,
+                                          quota: int) -> pd.DataFrame:
+        """Detect perception-primary hotspots with 3 precedence levels"""
         
-        if not infra_df.empty:
-            infra_subset = infra_df[['lat', 'lng', 'infrastructuretype', 'finalcomment', 'userid', 'date']].copy()
-            infra_subset['report_type'] = 'infrastructure'
-            infra_subset['theme'] = infra_subset['infrastructuretype']
-            infra_subset['comment'] = infra_subset['finalcomment']
-            infra_subset['rating'] = None
-            combined.append(infra_subset[['lat', 'lng', 'report_type', 'theme', 'comment', 'rating', 'userid', 'date']])
+        all_hotspots = []
+        remaining_quota = quota
         
-        if not ride_df.empty:
-            ride_subset = ride_df[['lat', 'lng', 'incidenttype', 'commentfinal', 'incidentrating', 'userid', 'date']].copy()
-            ride_subset['report_type'] = 'ride'
-            ride_subset['theme'] = ride_subset['incidenttype']
-            ride_subset['comment'] = ride_subset['commentfinal']
-            ride_subset['rating'] = ride_subset['incidentrating']
-            combined.append(ride_subset[['lat', 'lng', 'report_type', 'theme', 'comment', 'rating', 'userid', 'date']])
+        # Precedence 1: Perception + Strong Sensor
+        if remaining_quota > 0:
+            print(f"🔍 P1: Detecting perception + sensor hotspots...")
+            p1_hotspots = self.detect_p1_perception_sensor(
+                infra_df, ride_df, start_date, end_date
+            )
+            
+            if not p1_hotspots.empty:
+                take_count = min(len(p1_hotspots), remaining_quota)
+                all_hotspots.append(p1_hotspots.head(take_count))
+                remaining_quota -= take_count
+                print(f"✅ P1: Found {take_count} hotspots")
         
-        if not combined:
+        # Precedence 2: Corridors with Sensor
+        if remaining_quota > 0:
+            print(f"🔍 P2: Detecting corridor + sensor hotspots...")
+            p2_corridors = self.detect_p2_corridors_sensor(
+                infra_df, ride_df, start_date, end_date
+            )
+            
+            if not p2_corridors.empty:
+                take_count = min(len(p2_corridors), remaining_quota)
+                all_hotspots.append(p2_corridors.head(take_count))
+                remaining_quota -= take_count
+                print(f"✅ P2: Found {take_count} corridor hotspots")
+        
+        # Precedence 3: Standalone Perception
+        if remaining_quota > 0:
+            print(f"🔍 P3: Detecting standalone perception hotspots...")
+            p3_standalone = self.detect_p3_standalone_perception(infra_df, ride_df)
+            
+            if not p3_standalone.empty:
+                take_count = min(len(p3_standalone), remaining_quota)
+                all_hotspots.append(p3_standalone.head(take_count))
+                print(f"✅ P3: Found {take_count} standalone hotspots")
+        
+        if not all_hotspots:
             return pd.DataFrame()
         
-        return pd.concat(combined, ignore_index=True)
+        result = pd.concat(all_hotspots, ignore_index=True)
+        return result
     
-    def detect_p1_hotspots(self, infra_df: pd.DataFrame, ride_df: pd.DataFrame,
-                          start_date: str, end_date: str, top_n: int) -> pd.DataFrame:
-        """
-        ⚡ OPTIMIZED P1 Detection: Batch sensor lookups
-        P1 = Perception reports WITH sensor validation
-        """
+    # ========================================================================
+    # PRECEDENCE 1: Perception + Strong Sensor
+    # ========================================================================
+    
+    def detect_p1_perception_sensor(self,
+                                    infra_df: pd.DataFrame,
+                                    ride_df: pd.DataFrame,
+                                    start_date: str,
+                                    end_date: str) -> pd.DataFrame:
+        """P1: Perception reports with strong sensor validation"""
+        
         combined_reports = self._combine_perception_reports(infra_df, ride_df)
         
         if combined_reports.empty:
             return pd.DataFrame()
         
+        # Cluster perception reports (30m radius)
+        eps_degrees = 0.00027  # ~30m
         coords = combined_reports[['lat', 'lng']].values
-        eps_degrees = 0.0003  # ~30m
         
         clustering = DBSCAN(eps=eps_degrees, min_samples=1, metric='euclidean')
         combined_reports['cluster_id'] = clustering.fit_predict(coords)
         
-        # Get cluster centroids
-        cluster_locations = []
-        cluster_data = []
+        hotspots = []
         
         for cluster_id in combined_reports['cluster_id'].unique():
             if cluster_id == -1:
                 continue
             
             cluster_points = combined_reports[combined_reports['cluster_id'] == cluster_id]
+            
             center_lat = cluster_points['lat'].mean()
             center_lng = cluster_points['lng'].mean()
             
-            cluster_locations.append((center_lat, center_lng))
-            cluster_data.append({
-                'cluster_id': cluster_id,
-                'center_lat': center_lat,
-                'center_lng': center_lng,
-                'perception_count': len(cluster_points),
-                'perception_reports': cluster_points.to_dict('records')
-            })
-        
-        if not cluster_locations:
-            return pd.DataFrame()
-        
-        # ⚡ SINGLE BATCH QUERY instead of N queries!
-        st.info(f"🔍 Checking sensor data for {len(cluster_locations)} perception clusters...")
-        sensor_results = self._batch_find_sensor_data(
-            cluster_locations,
-            radius_m=30,
-            min_severity=2,
-            start_date=start_date,
-            end_date=end_date
-        )
-        
-        # Build hotspots with sensor data
-        hotspots = []
-        for idx, cluster in enumerate(cluster_data):
-            sensor_data = sensor_results.get(idx, {'has_data': False, 'event_count': 0})
+            # Find sensor data within 30m using DuckDB
+            sensor_data = self.db.find_sensor_data_in_radius(
+                center_lat=center_lat,
+                center_lng=center_lng,
+                radius_m=30,
+                min_severity=2,
+                start_date=start_date,
+                end_date=end_date
+            )
             
             if not sensor_data['has_data']:
                 continue  # Skip if no sensor validation
             
             hotspot = {
-                **cluster,
+                'cluster_id': f'P1_{cluster_id}',
+                'center_lat': center_lat,
+                'center_lng': center_lng,
+                'perception_count': len(cluster_points),
                 'event_count': sensor_data['event_count'],
-                'avg_severity': sensor_data.get('avg_severity', 0),
-                'max_severity': sensor_data.get('max_severity', 0),
+                'avg_severity': sensor_data['avg_severity'],
+                'max_severity': sensor_data['max_severity'],
                 'unique_devices': sensor_data.get('unique_devices', 0),
-                'sensor_data': sensor_data,
+                'perception_reports': cluster_points.to_dict('records'),
                 'source': 'perception_sensor',
                 'precedence': 'P1',
                 'is_corridor': False,
@@ -331,59 +350,185 @@ class HybridHotspotDetector:
                 'corridor_length_m': None,
                 'corridor_points': None,
                 'event_distribution': {},
-                'event_types_raw': {}
+                'date_range': f"{start_date} to {end_date}"
             }
             
             hotspot['rank_score'] = self.calculate_rank_score(
-                sensor_data.get('avg_severity', 0),
+                sensor_data['avg_severity'],
                 sensor_data['event_count']
             )
             
             hotspot['color'] = self.get_color_from_score(hotspot['rank_score'], False)
+            
             hotspots.append(hotspot)
         
         if not hotspots:
             return pd.DataFrame()
         
         result = pd.DataFrame(hotspots)
-        result = result.sort_values('rank_score', ascending=False).head(top_n).reset_index(drop=True)
+        result = result.sort_values('rank_score', ascending=False).reset_index(drop=True)
         result['hotspot_id'] = ['P1_' + str(i+1) for i in range(len(result))]
         
         return result
     
-    def detect_p2_hotspots(self, infra_df: pd.DataFrame, ride_df: pd.DataFrame,
-                          start_date: str, end_date: str, top_n: int) -> pd.DataFrame:
-        """
-        P2 = Corridors (linear hotspots) WITH sensor validation
-        Not yet optimized - returning empty for now
-        """
-        # TODO: Implement corridor detection if needed
-        return pd.DataFrame()
+    # ========================================================================
+    # PRECEDENCE 2: Corridors + Sensor
+    # ========================================================================
     
-    def detect_p3_hotspots(self, infra_df: pd.DataFrame, ride_df: pd.DataFrame,
-                          top_n: int) -> pd.DataFrame:
-        """
-        P3 = Perception-only hotspots (no sensor validation required)
-        """
+    def detect_p2_corridors_sensor(self,
+                                   infra_df: pd.DataFrame,
+                                   ride_df: pd.DataFrame,
+                                   start_date: str,
+                                   end_date: str) -> pd.DataFrame:
+        """P2: Corridors with sensor validation"""
+        
         combined_reports = self._combine_perception_reports(infra_df, ride_df)
         
         if combined_reports.empty:
             return pd.DataFrame()
         
+        hotspots = []
+        
+        # Find corridors for each user
+        for userid in combined_reports['userid'].unique():
+            user_reports = combined_reports[combined_reports['userid'] == userid].copy()
+            
+            if len(user_reports) < 3:
+                continue
+            
+            # Sort by time
+            if 'datetime' in user_reports.columns:
+                user_reports = user_reports.sort_values('datetime')
+            
+            # Check consecutive distance
+            coords_list = user_reports[['lat', 'lng']].values.tolist()
+            
+            is_corridor = True
+            for i in range(len(coords_list) - 1):
+                dist = haversine_distance(
+                    coords_list[i][0], coords_list[i][1],
+                    coords_list[i+1][0], coords_list[i+1][1]
+                )
+                if dist > 150:  # More than 150m apart
+                    is_corridor = False
+                    break
+            
+            if not is_corridor:
+                continue
+            
+            # Calculate corridor length and create polygon
+            total_length = 0
+            for i in range(len(coords_list) - 1):
+                total_length += haversine_distance(
+                    coords_list[i][0], coords_list[i][1],
+                    coords_list[i+1][0], coords_list[i+1][1]
+                )
+            
+            # Create bounding box around corridor (20m buffer)
+            corridor_line = LineString([(c[1], c[0]) for c in coords_list])  # lng, lat for shapely
+            corridor_polygon = corridor_line.buffer(0.00018)  # ~20m buffer
+            
+            # Get bounding box coordinates for polygon query
+            bounds = corridor_polygon.bounds  # (minx, miny, maxx, maxy)
+            polygon_coords = [
+                (bounds[1], bounds[0]),  # SW
+                (bounds[3], bounds[0]),  # NW
+                (bounds[3], bounds[2]),  # NE
+                (bounds[1], bounds[2])   # SE
+            ]
+            
+            # Find sensor data in polygon using DuckDB
+            sensor_data = self.db.find_sensor_data_in_polygon(
+                polygon_coords=polygon_coords,
+                start_date=start_date,
+                end_date=end_date,
+                min_severity=0
+            )
+            
+            if not sensor_data['has_data']:
+                continue  # Must have sensor validation for P2
+            
+            # Get start and end points
+            start_point = coords_list[0]
+            end_point = coords_list[-1]
+            center_lat = (start_point[0] + end_point[0]) / 2
+            center_lng = (start_point[1] + end_point[1]) / 2
+            
+            hotspot = {
+                'cluster_id': f'P2_corridor_{userid}',
+                'center_lat': center_lat,
+                'center_lng': center_lng,
+                'start_lat': start_point[0],
+                'start_lng': start_point[1],
+                'end_lat': end_point[0],
+                'end_lng': end_point[1],
+                'corridor_length_m': total_length,
+                'corridor_points': coords_list,  # List of [lat, lng]
+                'perception_count': len(user_reports),
+                'primary_user': userid,
+                'event_count': sensor_data['event_count'],
+                'avg_severity': sensor_data['avg_severity'],
+                'max_severity': sensor_data['max_severity'],
+                'unique_devices': sensor_data.get('unique_devices', 0),
+                'perception_reports': user_reports.to_dict('records'),
+                'source': 'corridor_sensor',
+                'precedence': 'P2',
+                'is_corridor': True,
+                'event_distribution': {},
+                'date_range': f"{start_date} to {end_date}"
+            }
+            
+            hotspot['rank_score'] = self.calculate_rank_score(
+                sensor_data['avg_severity'],
+                sensor_data['event_count']
+            )
+            
+            hotspot['color'] = self.get_color_from_score(hotspot['rank_score'], False)
+            
+            hotspots.append(hotspot)
+        
+        if not hotspots:
+            return pd.DataFrame()
+        
+        result = pd.DataFrame(hotspots)
+        result = result.sort_values('rank_score', ascending=False).reset_index(drop=True)
+        result['hotspot_id'] = ['P2_' + str(i+1) for i in range(len(result))]
+        
+        return result
+    
+    # ========================================================================
+    # PRECEDENCE 3: Standalone Perception (No Sensor)
+    # ========================================================================
+    
+    def detect_p3_standalone_perception(self,
+                                       infra_df: pd.DataFrame,
+                                       ride_df: pd.DataFrame) -> pd.DataFrame:
+        """P3: Standalone perception reports without sensor validation"""
+        
+        combined_reports = self._combine_perception_reports(infra_df, ride_df)
+        
+        if combined_reports.empty:
+            return pd.DataFrame()
+        
+        # Cluster: 3+ reports from different users
+        eps_degrees = 0.00027  # ~30m
         coords = combined_reports[['lat', 'lng']].values
-        eps_degrees = 0.0003
         
         clustering = DBSCAN(eps=eps_degrees, min_samples=3, metric='euclidean')
         combined_reports['cluster_id'] = clustering.fit_predict(coords)
         
-        clustered = combined_reports[combined_reports['cluster_id'] >= 0]
-        
-        if clustered.empty:
-            return pd.DataFrame()
-        
         hotspots = []
-        for cluster_id in clustered['cluster_id'].unique():
-            cluster_points = clustered[clustered['cluster_id'] == cluster_id]
+        
+        for cluster_id in combined_reports['cluster_id'].unique():
+            if cluster_id == -1:
+                continue
+            
+            cluster_points = combined_reports[combined_reports['cluster_id'] == cluster_id]
+            
+            # Must have 3+ different users
+            unique_users = cluster_points['userid'].nunique()
+            if unique_users < 3:
+                continue
             
             center_lat = cluster_points['lat'].mean()
             center_lng = cluster_points['lng'].mean()
@@ -393,12 +538,12 @@ class HybridHotspotDetector:
                 'center_lat': center_lat,
                 'center_lng': center_lng,
                 'perception_count': len(cluster_points),
+                'unique_users': unique_users,
                 'event_count': 0,
-                'avg_severity': 0,
-                'max_severity': 0,
+                'avg_severity': None,
+                'max_severity': None,
                 'unique_devices': 0,
                 'perception_reports': cluster_points.to_dict('records'),
-                'sensor_data': {'has_data': False},
                 'source': 'perception_only',
                 'precedence': 'P3',
                 'is_corridor': False,
@@ -409,9 +554,9 @@ class HybridHotspotDetector:
                 'corridor_length_m': None,
                 'corridor_points': None,
                 'event_distribution': {},
-                'event_types_raw': {},
-                'rank_score': len(cluster_points) * 0.5,  # Simple scoring
-                'color': 'blue'
+                'rank_score': None,
+                'color': 'blue',
+                'date_range': None
             }
             
             hotspots.append(hotspot)
@@ -420,244 +565,189 @@ class HybridHotspotDetector:
             return pd.DataFrame()
         
         result = pd.DataFrame(hotspots)
-        result = result.sort_values('rank_score', ascending=False).head(top_n).reset_index(drop=True)
+        result = result.sort_values('perception_count', ascending=False).reset_index(drop=True)
         result['hotspot_id'] = ['P3_' + str(i+1) for i in range(len(result))]
         
         return result
     
-    def detect_perception_primary_hotspots(self,
-                                          infra_df: pd.DataFrame,
-                                          ride_df: pd.DataFrame,
-                                          start_date: str,
-                                          end_date: str,
-                                          total_perception_quota: int) -> pd.DataFrame:
-        """
-        Detect perception-primary hotspots (45% of total)
-        Split: P1 (70%), P2 (20%), P3 (10%)
-        """
-        p1_quota = int(total_perception_quota * 0.7)
-        p2_quota = int(total_perception_quota * 0.2)
-        p3_quota = total_perception_quota - p1_quota - p2_quota
+    # ========================================================================
+    # HELPER METHODS
+    # ========================================================================
+    
+    def _combine_perception_reports(self, infra_df: pd.DataFrame, 
+                                    ride_df: pd.DataFrame) -> pd.DataFrame:
+        """Combine infrastructure and ride reports into single dataframe"""
         
-        all_perception = []
+        combined = []
         
-        # P1: Perception + Sensor
-        with st.spinner("Detecting P1 hotspots (perception + sensor)..."):
-            p1 = self.detect_p1_hotspots(infra_df, ride_df, start_date, end_date, p1_quota)
-            if not p1.empty:
-                all_perception.append(p1)
-                st.success(f"✅ Found {len(p1)} P1 hotspots")
+        # Process infrastructure reports
+        if not infra_df.empty and 'lat' in infra_df.columns and 'lng' in infra_df.columns:
+            infra_subset = infra_df[['lat', 'lng', 'userid']].copy()
+            if 'datetime' in infra_df.columns:
+                infra_subset['datetime'] = infra_df['datetime']
+            if 'infrastructuretype' in infra_df.columns:
+                infra_subset['report_type'] = infra_df['infrastructuretype']
+            else:
+                infra_subset['report_type'] = 'infrastructure'
+            combined.append(infra_subset)
         
-        # P2: Corridors (skipped for performance)
-        # p2 = self.detect_p2_hotspots(infra_df, ride_df, start_date, end_date, p2_quota)
+        # Process ride reports
+        if not ride_df.empty and 'lat' in ride_df.columns and 'lng' in ride_df.columns:
+            ride_subset = ride_df[['lat', 'lng', 'userid']].copy()
+            if 'datetime' in ride_df.columns:
+                ride_subset['datetime'] = ride_df['datetime']
+            if 'incidenttype' in ride_df.columns:
+                ride_subset['report_type'] = ride_df['incidenttype']
+            else:
+                ride_subset['report_type'] = 'incident'
+            combined.append(ride_subset)
         
-        # P3: Perception-only
-        with st.spinner("Detecting P3 hotspots (perception only)..."):
-            p3 = self.detect_p3_hotspots(infra_df, ride_df, p3_quota)
-            if not p3.empty:
-                all_perception.append(p3)
-                st.success(f"✅ Found {len(p3)} P3 hotspots")
-        
-        if not all_perception:
+        if not combined:
             return pd.DataFrame()
         
-        return pd.concat(all_perception, ignore_index=True)
-    
-    # ========================================================================
-    # GROQ ANALYSIS (OPTIONAL)
-    # ========================================================================
-    
-    def analyze_hotspot_with_groq(self, hotspot: Dict) -> Dict:
-        """
-        Analyze hotspot using Groq API (optional)
-        Falls back to rule-based if Groq fails
-        """
-        try:
-            client = get_groq_client()
-            if not client:
-                return self._fallback_analysis(hotspot)
-            
-            # Build context
-            context = f"""Location: ({hotspot.get('center_lat'):.6f}, {hotspot.get('center_lng'):.6f})
-Sensor Events: {hotspot.get('event_count', 0)}
-Avg Severity: {hotspot.get('avg_severity', 0):.1f}/10
-User Reports: {hotspot.get('perception_count', 0)}"""
-            
-            # Add perception comments if available
-            reports = hotspot.get('perception_reports', [])
-            if reports:
-                comments = [r.get('comment', '') for r in reports[:5] if r.get('comment')]
-                if comments:
-                    context += f"\n\nUser Comments:\n" + "\n".join(f"- {c}" for c in comments)
-            
-            prompt = f"""Analyze this road safety hotspot and provide a brief 2-3 sentence summary:
-
-{context}
-
-Focus on: What safety issues exist and why this location needs attention."""
-            
-            response = client.chat.completions.create(
-                model="llama-3.3-70b-versatile",
-                messages=[{"role": "user", "content": prompt}],
-                temperature=0.3,
-                max_tokens=200
-            )
-            
-            return {
-                'analysis': response.choices[0].message.content.strip(),
-                'method': 'groq',
-                'model': 'llama-3.3-70b-versatile'
-            }
-        except Exception as e:
-            print(f"Groq analysis failed: {e}")
-            return self._fallback_analysis(hotspot)
-    
-    def _fallback_analysis(self, hotspot: Dict) -> Dict:
-        """Simple rule-based analysis when Groq unavailable"""
-        analysis = f"This location has {hotspot.get('event_count', 0)} sensor-detected safety events "
-        analysis += f"with an average severity of {hotspot.get('avg_severity', 0):.1f}/10. "
+        result = pd.concat(combined, ignore_index=True)
+        result = result.dropna(subset=['lat', 'lng', 'userid'])
         
-        if hotspot.get('perception_count', 0) > 0:
-            analysis += f"{hotspot.get('perception_count')} users have also reported concerns here."
-        
-        return {
-            'analysis': analysis,
-            'method': 'fallback',
-            'model': 'rule_based'
-        }
-    
-    def _analyze_all_hotspots(self, hotspots_df: pd.DataFrame, 
-                             enable_groq: bool = False) -> pd.DataFrame:
-        """
-        Analyze all hotspots with optional Groq analysis
-        Set enable_groq=False to skip AI analysis and improve performance
-        """
-        if not enable_groq:
-            st.info("⚡ Skipping AI analysis for faster performance")
-            hotspots_df['groq_analysis'] = [self._fallback_analysis(row) for _, row in hotspots_df.iterrows()]
-            return hotspots_df
-        
-        progress_bar = st.progress(0)
-        status_text = st.empty()
-        
-        analyses = []
-        
-        for idx, hotspot in hotspots_df.iterrows():
-            status_text.text(f"Analyzing hotspot {idx + 1}/{len(hotspots_df)}...")
-            
-            analysis = self.analyze_hotspot_with_groq(hotspot.to_dict())
-            analyses.append(analysis)
-            
-            progress_bar.progress((idx + 1) / len(hotspots_df))
-        
-        progress_bar.empty()
-        status_text.empty()
-        
-        hotspots_df['groq_analysis'] = analyses
-        
-        st.success(f"✅ AI analysis complete for all {len(hotspots_df)} hotspots")
-        
-        return hotspots_df
-    
-    # ========================================================================
-    # MAIN ORCHESTRATION
-    # ========================================================================
-    
-    def detect_all_hotspots(self,
-                           start_date: str,
-                           end_date: str,
-                           infra_df: pd.DataFrame,
-                           ride_df: pd.DataFrame,
-                           total_hotspots: int = 30,
-                           enable_groq: bool = False) -> pd.DataFrame:
-        """
-        Main function: Detect all hotspots using 55-45 split
-        
-        Args:
-            start_date: Start date for sensor data
-            end_date: End date for sensor data
-            infra_df: Infrastructure reports DataFrame
-            ride_df: Ride reports DataFrame
-            total_hotspots: Total number of hotspots to detect
-            enable_groq: Enable Groq AI analysis (slower but more detailed)
-        """
-        sensor_quota = int(total_hotspots * 0.55)
-        perception_quota = total_hotspots - sensor_quota
-        
-        st.info(f"🔬 Detecting {sensor_quota} sensor-primary and {perception_quota} perception-primary hotspots...")
-        
-        all_hotspots = []
-        
-        # PART 1: Sensor-Primary (55%)
-        with st.spinner("Detecting sensor-primary hotspots..."):
-            sensor_hotspots = self.detect_sensor_primary_hotspots(
-                start_date, end_date, sensor_quota
-            )
-            
-            if not sensor_hotspots.empty:
-                st.success(f"✅ Found {len(sensor_hotspots)} sensor-primary hotspots")
-                all_hotspots.append(sensor_hotspots)
-            else:
-                st.warning("⚠️ No sensor-primary hotspots found")
-        
-        # PART 2: Perception-Primary (45%)
-        with st.spinner("Detecting perception-primary hotspots..."):
-            perception_hotspots = self.detect_perception_primary_hotspots(
-                infra_df, ride_df, start_date, end_date, perception_quota
-            )
-            
-            if not perception_hotspots.empty:
-                st.success(f"✅ Found {len(perception_hotspots)} perception-primary hotspots")
-                all_hotspots.append(perception_hotspots)
-            else:
-                st.warning("⚠️ No perception-primary hotspots found")
-        
-        if not all_hotspots:
-            return pd.DataFrame()
-        
-        # Combine all hotspots
-        combined = pd.concat(all_hotspots, ignore_index=True)
-        
-        # Assign final hotspot IDs
-        combined['final_hotspot_id'] = range(1, len(combined) + 1)
-        
-        # Run Groq analysis if enabled
-        if enable_groq:
-            st.info("🤖 Running AI analysis on all hotspots...")
-            combined = self._analyze_all_hotspots(combined, enable_groq=True)
-        else:
-            combined = self._analyze_all_hotspots(combined, enable_groq=False)
-        
-        return combined
+        return result
 
 
 # ========================================================================
-# MAIN FUNCTION FOR EXTERNAL USE
+# MAIN DETECTION FUNCTION
 # ========================================================================
 
 def detect_hybrid_hotspots(start_date: str,
                           end_date: str,
                           infra_df: pd.DataFrame,
                           ride_df: pd.DataFrame,
-                          total_hotspots: int = 30,
-                          enable_groq: bool = False) -> pd.DataFrame:
+                          total_hotspots: int = 10,
+                          enable_groq: bool = True) -> pd.DataFrame:
     """
-    Main entry point for hybrid hotspot detection
+    Main function to detect hybrid hotspots (55-45 split)
     
-    Usage:
-        hotspots = detect_hybrid_hotspots(
-            start_date='2025-07-01',
-            end_date='2025-09-01',
-            infra_df=infra_df,
-            ride_df=ride_df,
-            total_hotspots=30,
-            enable_groq=True  # Set True for AI analysis (slower)
-        )
+    Args:
+        start_date: Start date (YYYY-MM-DD)
+        end_date: End date (YYYY-MM-DD)
+        infra_df: Infrastructure perception reports
+        ride_df: Ride perception reports
+        total_hotspots: Total number of hotspots to return
+        enable_groq: Enable Groq AI analysis (optional)
     
     Returns:
-        DataFrame with all hotspots including analysis
+        DataFrame with all hotspots (sensor + perception)
     """
+    
+    print("=" * 70)
+    print("🚀 HYBRID HOTSPOT DETECTION (55-45 Split)")
+    print("=" * 70)
+    
     detector = HybridHotspotDetector()
-    return detector.detect_all_hotspots(
-        start_date, end_date, infra_df, ride_df, total_hotspots, enable_groq
+    
+    # Calculate quotas
+    sensor_quota = round(total_hotspots * 0.55)
+    perception_quota = total_hotspots - sensor_quota
+    
+    print(f"\n📊 Quotas: {sensor_quota} sensor + {perception_quota} perception = {total_hotspots} total")
+    
+    all_hotspots = []
+    
+    # Part 1: Sensor-Primary (55%)
+    print(f"\n{'='*70}")
+    print(f"PART 1: SENSOR-PRIMARY HOTSPOTS (55%)")
+    print(f"{'='*70}")
+    
+    sensor_hotspots = detector.detect_sensor_primary_hotspots(
+        start_date=start_date,
+        end_date=end_date,
+        top_n=sensor_quota
     )
+    
+    if not sensor_hotspots.empty:
+        all_hotspots.append(sensor_hotspots)
+        print(f"✅ Added {len(sensor_hotspots)} sensor-primary hotspots")
+    else:
+        print("⚠️ No sensor-primary hotspots found")
+    
+    # Part 2: Perception-Primary (45%)
+    print(f"\n{'='*70}")
+    print(f"PART 2: PERCEPTION-PRIMARY HOTSPOTS (45%)")
+    print(f"{'='*70}")
+    
+    perception_hotspots = detector.detect_perception_primary_hotspots(
+        infra_df=infra_df,
+        ride_df=ride_df,
+        start_date=start_date,
+        end_date=end_date,
+        quota=perception_quota
+    )
+    
+    if not perception_hotspots.empty:
+        all_hotspots.append(perception_hotspots)
+        print(f"✅ Added {len(perception_hotspots)} perception-primary hotspots")
+    else:
+        print("⚠️ No perception-primary hotspots found")
+    
+    # Combine all hotspots
+    if not all_hotspots:
+        print("\n❌ No hotspots detected!")
+        return pd.DataFrame()
+    
+    result = pd.concat(all_hotspots, ignore_index=True)
+    
+    # Add final hotspot IDs
+    result['final_hotspot_id'] = range(1, len(result) + 1)
+    
+    # Optional: Run Groq AI analysis
+    if enable_groq:
+        print(f"\n🤖 Running Groq AI analysis on {len(result)} hotspots...")
+        try:
+            result = _run_groq_analysis(result)
+            print("✅ Groq analysis complete")
+        except Exception as e:
+            print(f"⚠️ Groq analysis failed: {e}")
+            print("   Continuing without AI analysis")
+    
+    print(f"\n{'='*70}")
+    print(f"✅ DETECTION COMPLETE: {len(result)} total hotspots")
+    print(f"{'='*70}")
+    print(f"\nBreakdown:")
+    if 'precedence' in result.columns:
+        print(result['precedence'].value_counts())
+    
+    return result
+
+
+def _run_groq_analysis(hotspots_df: pd.DataFrame) -> pd.DataFrame:
+    """
+    Run Groq AI analysis on hotspots (optional enhancement)
+    Adds AI-generated summaries to perception reports
+    """
+    from src.sentiment_analyzer import analyze_perception_sentiment
+    
+    for idx, hotspot in hotspots_df.iterrows():
+        # Only analyze if there are perception reports
+        if hotspot.get('perception_count', 0) > 0 and 'perception_reports' in hotspot:
+            try:
+                reports = hotspot['perception_reports']
+                
+                # Extract comments from reports
+                comments = []
+                for report in reports:
+                    if isinstance(report, dict):
+                        comment = report.get('comment') or report.get('commentfinal') or report.get('finalcomment')
+                        if comment and str(comment).strip():
+                            comments.append(str(comment))
+                
+                if comments:
+                    # Run sentiment analysis
+                    analysis = analyze_perception_sentiment(comments, debug=False)
+                    
+                    # Add analysis to hotspot
+                    hotspots_df.at[idx, 'ai_summary'] = analysis.get('summary', '')
+                    hotspots_df.at[idx, 'ai_sentiment'] = analysis.get('sentiment', 'neutral')
+                    hotspots_df.at[idx, 'ai_severity'] = analysis.get('severity', 'medium')
+                    hotspots_df.at[idx, 'ai_key_issues'] = ', '.join(analysis.get('key_issues', []))
+            except Exception as e:
+                print(f"   Warning: Failed to analyze hotspot {idx}: {e}")
+                continue
+    
+    return hotspots_df
