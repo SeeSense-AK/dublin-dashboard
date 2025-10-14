@@ -16,7 +16,7 @@ from shapely.ops import nearest_points
 import streamlit as st
 from typing import Dict, List, Tuple
 
-from src.athena_database import get_athena_database
+from src.duckdb_database import get_duckdb_database
 from utils.geo_utils import haversine_distance
 from src.sentiment_analyzer import get_groq_client
 
@@ -28,7 +28,7 @@ class HybridHotspotDetector:
     """
     
     def __init__(self):
-        self.db = get_athena_database()
+        self.db = get_duckdb_database()
     
     # ========================================================================
     # UTILITY METHODS
@@ -145,79 +145,82 @@ class HybridHotspotDetector:
     # ========================================================================
     
     def detect_sensor_primary_hotspots(self, 
-                                       start_date: str,
-                                       end_date: str,
-                                       top_n: int) -> pd.DataFrame:
-        """
-        ⚡ OPTIMIZED: Query hotspots_daily_v2 directly instead of raw table
-        For static data: ignore analysis_date, filter by first_event/last_event
-        """
-        
-        # Build date filter based on when events actually happened
-        date_filter = ""
-        if start_date and end_date:
-            date_filter = f"""WHERE (
-                (first_event >= TIMESTAMP '{start_date}' AND first_event <= TIMESTAMP '{end_date}')
-                OR (last_event >= TIMESTAMP '{start_date}' AND last_event <= TIMESTAMP '{end_date}')
-                OR (first_event <= TIMESTAMP '{start_date}' AND last_event >= TIMESTAMP '{end_date}')
-            )"""
-        
-        query = f"""
-        SELECT 
-            lat,
-            lng,
-            event_count,
-            avg_severity,
-            max_severity,
-            unique_devices,
-            event_distribution,
-            peak_accel_x,
-            peak_accel_y,
-            peak_accel_z,
-            risk_score,
-            first_event,
-            last_event
-        FROM spinovate_production.hotspots_daily_v2
-        {date_filter}
-        ORDER BY risk_score DESC
-        LIMIT {top_n * 2}
-        """
-        
+                                   start_date: str,
+                                   end_date: str,
+                                   top_n: int) -> pd.DataFrame:
+        """Detect sensor-primary hotspots (55% of total) - UPDATED FOR DUCKDB"""
+    
         try:
-            hotspots_df = pd.read_sql(query, self.db.conn)
+            # Use DuckDB method to get raw sensor data
+            events_df = self.db.get_sensor_data_for_clustering(
+                start_date=start_date,
+                end_date=end_date,
+                min_severity=0  # Get all events, we'll filter later
+            )
             
-            if hotspots_df.empty:
+            if events_df.empty:
                 return pd.DataFrame()
             
-            # Rename to match expected format
-            hotspots_df = hotspots_df.rename(columns={
-                'lat': 'center_lat',
-                'lng': 'center_lng'
-            })
+            # Parse severity from event_details
+            events_df['parsed_severity'] = events_df['event_details'].apply(
+                self.parse_event_severity
+            )
             
-            # Add required fields
-            hotspots_df['source'] = 'sensor_primary'
-            hotspots_df['precedence'] = 'sensor'
-            hotspots_df['is_corridor'] = False
-            hotspots_df['start_lat'] = None
-            hotspots_df['start_lng'] = None
-            hotspots_df['end_lat'] = None
-            hotspots_df['end_lng'] = None
-            hotspots_df['corridor_length_m'] = None
-            hotspots_df['corridor_points'] = None
-            hotspots_df['perception_reports'] = [[] for _ in range(len(hotspots_df))]
-            hotspots_df['perception_count'] = 0
-            hotspots_df['color'] = hotspots_df['risk_score'].apply(
-                lambda x: self.get_color_from_score(x, False)
+            # Filter out events without valid severity
+            events_df = events_df[events_df['parsed_severity'].notna()].copy()
+            
+            if events_df.empty:
+                return pd.DataFrame()
+            
+            # Use parsed_severity as max_severity if max_severity is 0 or null
+            if 'max_severity' in events_df.columns:
+                events_df['max_severity'] = events_df.apply(
+                    lambda row: row['parsed_severity'] if pd.isna(row['max_severity']) or row['max_severity'] == 0 
+                    else row['max_severity'],
+                    axis=1
+                )
+            else:
+                events_df['max_severity'] = events_df['parsed_severity']
+            
+            # CLUSTERING: Geographic only (lat/lng)
+            coords = events_df[['lat', 'lng']].values
+            eps_degrees = 0.0005  # ~50m for DBSCAN
+            
+            clustering = DBSCAN(eps=eps_degrees, min_samples=3, metric='euclidean')
+            events_df['cluster_id'] = clustering.fit_predict(coords)
+            
+            clustered = events_df[events_df['cluster_id'] >= 0].copy()
+            
+            if clustered.empty:
+                return pd.DataFrame()
+            
+            # Aggregate clusters
+            hotspots = self._aggregate_sensor_clusters(clustered, start_date, end_date)
+            
+            if hotspots.empty:
+                return pd.DataFrame()
+            
+            # Calculate rank scores
+            hotspots['rank_score'] = hotspots.apply(
+                lambda row: self.calculate_rank_score(row['avg_severity'], row['event_count']),
+                axis=1
             )
             
             # Take top N
-            hotspots_df = hotspots_df.head(top_n).reset_index(drop=True)
-            hotspots_df['hotspot_id'] = ['S' + str(i+1) for i in range(len(hotspots_df))]
+            hotspots = hotspots.nlargest(top_n, 'rank_score').reset_index(drop=True)
             
-            return hotspots_df
+            # Add metadata
+            hotspots['source'] = 'sensor_primary'
+            hotspots['precedence'] = 'sensor'
+            hotspots['hotspot_id'] = ['S' + str(i+1) for i in range(len(hotspots))]
+            hotspots['color'] = hotspots['rank_score'].apply(
+                lambda x: self.get_color_from_score(x, False)
+            )
+            
+            return hotspots
+            
         except Exception as e:
-            st.error(f"Error detecting sensor hotspots: {e}")
+            print(f"❌ Error detecting sensor hotspots: {e}")
             import traceback
             traceback.print_exc()
             return pd.DataFrame()

@@ -1,14 +1,13 @@
 """
-DuckDB Database - Drop-in replacement for AthenaDatabase
-Implements the SAME interface so HybridHotspotDetector works without changes
+DuckDB Database - Minimal Version (Tab 1 Only)
+Drop-in replacement for AthenaDatabase for hotspot detection
 """
 import duckdb
 import pandas as pd
 from pathlib import Path
-import re
 
 class DuckDBCyclingSafetyDB:
-    """DuckDB implementation matching AthenaCyclingSafetyDB interface"""
+    """DuckDB implementation for hotspot detection"""
     
     def __init__(self):
         """Initialize DuckDB connection with local CSV files"""
@@ -170,122 +169,13 @@ class DuckDBCyclingSafetyDB:
                 'latest_reading': None
             }
     
-    def detect_sensor_hotspots(self, min_events=3, severity_threshold=2, 
-                              start_date=None, end_date=None, radius_m=50):
-        """
-        Detect hotspots using grid-based clustering
-        This is NOT used by HybridHotspotDetector but kept for compatibility
-        
-        Args:
-            min_events: Minimum events to form a hotspot
-            severity_threshold: Minimum severity to consider
-            start_date: Start date filter (YYYY-MM-DD)
-            end_date: End date filter (YYYY-MM-DD)
-            radius_m: Clustering radius (converted to grid size)
-        
-        Returns:
-            DataFrame with hotspot clusters
-        """
-        
-        # Build date filter
-        date_filter = ""
-        if start_date and end_date:
-            date_filter = f"AND TRY_CAST({self.timestamp_col} AS DATE) BETWEEN '{start_date}' AND '{end_date}'"
-        
-        # Build severity filter
-        severity_filter = ""
-        if self.severity_col:
-            severity_filter = f"AND TRY_CAST(\"{self.severity_col}\" AS INTEGER) >= {severity_threshold}"
-        
-        # Build query dynamically based on available columns
-        event_type_select = f'"{self.event_type_col}"' if self.event_type_col else "'unknown' as primary_event_type"
-        device_select = f'"{self.device_col}"' if self.device_col else "'unknown' as device_id"
-        speed_select = f'TRY_CAST("{self.speed_col}" AS DOUBLE)' if self.speed_col else '0.0'
-        severity_select = f'TRY_CAST("{self.severity_col}" AS INTEGER)' if self.severity_col else '0'
-        event_details_select = f'"{self.event_details_col}"' if self.event_details_col else "'no details' as event_details"
-        
-        query = f"""
-        WITH gridded AS (
-            SELECT 
-                ROUND(TRY_CAST("{self.lat_col}" AS DOUBLE), 3) as grid_lat,
-                ROUND(TRY_CAST("{self.lng_col}" AS DOUBLE), 3) as grid_lng,
-                TRY_CAST("{self.lat_col}" AS DOUBLE) as lat,
-                TRY_CAST("{self.lng_col}" AS DOUBLE) as lng,
-                {severity_select} as max_severity,
-                {event_type_select} as primary_event_type,
-                {device_select} as device_id,
-                {self.timestamp_col} as timestamp,
-                {speed_select} as speed_kmh,
-                {event_details_select} as event_details
-            FROM sensor_events
-            WHERE TRY_CAST("{self.lat_col}" AS DOUBLE) IS NOT NULL
-                AND TRY_CAST("{self.lng_col}" AS DOUBLE) IS NOT NULL
-                {severity_filter}
-                {date_filter}
-        ),
-        clusters AS (
-            SELECT 
-                grid_lat,
-                grid_lng,
-                COUNT(*) as event_count,
-                AVG(max_severity) as avg_severity,
-                COUNT(DISTINCT device_id) as unique_cyclists,
-                AVG(speed_kmh) as avg_speed,
-                MIN(timestamp) as first_event,
-                MAX(timestamp) as last_event,
-                -- Get medoid (most central point in cluster)
-                FIRST(lat ORDER BY (
-                    POW(lat - grid_lat, 2) + POW(lng - grid_lng, 2)
-                )) as center_lat,
-                FIRST(lng ORDER BY (
-                    POW(lat - grid_lat, 2) + POW(lng - grid_lng, 2)
-                )) as center_lng,
-                -- Get event type distribution
-                LIST(primary_event_type) as event_types,
-                LIST(event_details) as event_details_list
-            FROM gridded
-            GROUP BY grid_lat, grid_lng
-            HAVING COUNT(*) >= {min_events}
-        )
-        SELECT 
-            *,
-            -- Calculate rank score: severity + log of event count
-            avg_severity + LOG10(event_count) as rank_score
-        FROM clusters
-        ORDER BY rank_score DESC
-        """
-        
-        try:
-            result = self.conn.execute(query).df()
-            print(f"✅ Found {len(result)} hotspots")
-            return result
-        except Exception as e:
-            print(f"❌ Error detecting hotspots: {e}")
-            import traceback
-            traceback.print_exc()
-            return pd.DataFrame()
-    
     def get_sensor_data_for_clustering(self, start_date, end_date, min_severity=0):
-        """
-        Get raw sensor data for DBSCAN clustering (used by HybridHotspotDetector)
-        This is the KEY method that HybridHotspotDetector uses
+        """Get raw sensor data for DBSCAN clustering (used by HybridHotspotDetector)"""
         
-        Args:
-            start_date: Start date (YYYY-MM-DD)
-            end_date: End date (YYYY-MM-DD)
-            min_severity: Minimum severity threshold
-        
-        Returns:
-            DataFrame with columns: lat, lng, max_severity, primary_event_type, 
-                                   device_id, timestamp, event_details
-        """
-        
-        # Build severity filter
         severity_filter = ""
         if self.severity_col and min_severity > 0:
-            severity_filter = f"AND TRY_CAST(\"{self.severity_col}\" AS INTEGER) >= {min_severity}"
+            severity_filter = f'AND TRY_CAST("{self.severity_col}" AS INTEGER) >= {min_severity}'
         
-        # Build date filter
         date_filter = ""
         if start_date and end_date:
             date_filter = f"AND TRY_CAST({self.timestamp_col} AS DATE) BETWEEN '{start_date}' AND '{end_date}'"
@@ -323,25 +213,10 @@ class DuckDBCyclingSafetyDB:
     
     def find_sensor_data_in_radius(self, center_lat, center_lng, radius_m=30, 
                                    min_severity=0, start_date=None, end_date=None):
-        """
-        Find sensor events within radius of a point (used by HybridHotspotDetector)
+        """Find sensor events within radius of a point (used by P1 precedence)"""
         
-        Args:
-            center_lat: Center latitude
-            center_lng: Center longitude
-            radius_m: Search radius in meters
-            min_severity: Minimum severity filter
-            start_date: Start date filter
-            end_date: End date filter
-        
-        Returns:
-            Dict with sensor data summary
-        """
-        
-        # Convert radius to approximate degrees for initial filter
         radius_deg = radius_m / 111000.0
         
-        # Build filters
         severity_filter = ""
         if self.severity_col and min_severity > 0:
             severity_filter = f'AND TRY_CAST("{self.severity_col}" AS INTEGER) >= {min_severity}'
@@ -362,7 +237,6 @@ class DuckDBCyclingSafetyDB:
                 {severity_select} as severity,
                 {event_type_select} as event_type,
                 {device_select} as device_id,
-                -- Haversine distance calculation (in meters)
                 6371000 * 2 * ASIN(SQRT(
                     POW(SIN(RADIANS((TRY_CAST("{self.lat_col}" AS DOUBLE) - {center_lat})) / 2), 2) +
                     COS(RADIANS({center_lat})) * COS(RADIANS(TRY_CAST("{self.lat_col}" AS DOUBLE))) *
@@ -387,7 +261,7 @@ class DuckDBCyclingSafetyDB:
         try:
             result = self.conn.execute(query).fetchone()
             
-            if result[0] == 0:  # No events found
+            if result[0] == 0:
                 return {
                     'has_data': False,
                     'event_count': 0,
@@ -418,21 +292,7 @@ class DuckDBCyclingSafetyDB:
             }
     
     def find_sensor_data_in_polygon(self, polygon_coords, start_date=None, end_date=None, min_severity=0):
-        """
-        Find sensor events within a polygon (used for corridor detection)
-        
-        Args:
-            polygon_coords: List of (lat, lng) tuples defining polygon
-            start_date: Start date filter
-            end_date: End date filter
-            min_severity: Minimum severity filter
-        
-        Returns:
-            Dict with sensor data summary
-        """
-        
-        # For simplicity, use bounding box approach
-        # (Proper point-in-polygon would require PostGIS or shapely integration)
+        """Find sensor events within a polygon (used by P2 corridor detection)"""
         
         lats = [coord[0] for coord in polygon_coords]
         lngs = [coord[1] for coord in polygon_coords]
@@ -440,7 +300,6 @@ class DuckDBCyclingSafetyDB:
         min_lat, max_lat = min(lats), max(lats)
         min_lng, max_lng = min(lngs), max(lngs)
         
-        # Build filters
         severity_filter = ""
         if self.severity_col and min_severity > 0:
             severity_filter = f'AND TRY_CAST("{self.severity_col}" AS INTEGER) >= {min_severity}'
