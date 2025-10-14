@@ -341,7 +341,8 @@ with tab1:
                 end_date=end_date.strftime('%Y-%m-%d'),
                 infra_df=infra_df,
                 ride_df=ride_df,
-                total_hotspots=total_hotspots
+                total_hotspots=total_hotspots,
+                enable_groq=True
             )
         
         if hotspots.empty:

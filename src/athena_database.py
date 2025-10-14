@@ -37,9 +37,10 @@ class AthenaCyclingSafetyDB:
             raise Exception(f"❌ Failed to connect to Athena: {e}")
     
     def get_dashboard_metrics(self) -> dict:
-        """Get key metrics for dashboard overview - OPTIMIZED using usage_trends_daily"""
+        """Get key metrics for dashboard overview - OPTIMIZED with fallback"""
         
-        query = """
+        # Try optimized table first
+        query_optimized = """
         SELECT 
             SUM(total_readings) as total_readings,
             MAX(unique_users) as unique_devices,
@@ -50,9 +51,27 @@ class AthenaCyclingSafetyDB:
         FROM spinovate_production.usage_trends_daily
         """
         
+        # Fallback to raw table
+        query_fallback = """
+        SELECT 
+            COUNT(*) as total_readings,
+            COUNT(DISTINCT device_id) as unique_devices,
+            COUNT(CASE WHEN is_abnormal_event THEN 1 END) as abnormal_events,
+            AVG(speed_kmh) as avg_speed,
+            MAX(timestamp) as latest_reading,
+            MIN(timestamp) as earliest_reading
+        FROM spinovate_production.spinovate_production_optimised_v2
+        """
+        
         try:
-            df = pd.read_sql(query, self.conn)
+            df = pd.read_sql(query_optimized, self.conn)
             result = df.iloc[0]
+            
+            # Check if optimized table has data
+            if pd.isna(result['total_readings']) or result['total_readings'] == 0:
+                print("⚠️ Optimized table empty, using fallback...")
+                df = pd.read_sql(query_fallback, self.conn)
+                result = df.iloc[0]
             
             return {
                 'total_readings': int(result['total_readings']) if result['total_readings'] else 0,
@@ -63,43 +82,58 @@ class AthenaCyclingSafetyDB:
                 'earliest_reading': result['earliest_reading']
             }
         except Exception as e:
-            print(f"Error getting metrics: {e}")
-            return {
-                'total_readings': 0,
-                'unique_devices': 0,
-                'abnormal_events': 0,
-                'avg_speed': 0,
-                'latest_reading': None,
-                'earliest_reading': None
-            }
+            print(f"⚠️ Error with optimized query, trying fallback: {e}")
+            # Try fallback
+            try:
+                df = pd.read_sql(query_fallback, self.conn)
+                result = df.iloc[0]
+                return {
+                    'total_readings': int(result['total_readings']),
+                    'unique_devices': int(result['unique_devices']),
+                    'abnormal_events': int(result['abnormal_events']),
+                    'avg_speed': round(float(result['avg_speed']), 1) if result['avg_speed'] else 0,
+                    'latest_reading': result['latest_reading'],
+                    'earliest_reading': result['earliest_reading']
+                }
+            except Exception as e2:
+                print(f"❌ Both queries failed: {e2}")
+                return {
+                    'total_readings': 0,
+                    'unique_devices': 0,
+                    'abnormal_events': 0,
+                    'avg_speed': 0,
+                    'latest_reading': None,
+                    'earliest_reading': None
+                }
     
     def detect_sensor_hotspots(self, min_events: int = 3, severity_threshold: int = 2, 
                               start_date: str = None, end_date: str = None,
                               radius_m: int = 50) -> pd.DataFrame:
         """
-        Detect hotspots using pre-aggregated hotspots_daily_v2 table - OPTIMIZED!
-        
-        Args:
-            min_events: Minimum events to form a hotspot
-            severity_threshold: Minimum average severity
-            start_date: Filter start date (YYYY-MM-DD) - optional
-            end_date: Filter end date (YYYY-MM-DD) - optional
-            radius_m: Not used (kept for compatibility)
-        
-        Returns:
-            DataFrame with hotspot locations and metrics
+        Detect hotspots - OPTIMIZED with fallback to raw table
+        Filters by actual event dates (first_event/last_event), not analysis_date
         """
         
-        # Build date filter if provided
-        date_filter = ""
+        # Build date filter for ACTUAL EVENT DATES
+        date_filter_opt = ""
+        date_filter_raw = ""
         if start_date and end_date:
-            date_filter = f"AND analysis_date BETWEEN DATE '{start_date}' AND DATE '{end_date}'"
+            # Filter hotspots where events happened in this date range
+            date_filter_opt = f"""AND (
+                (first_event >= TIMESTAMP '{start_date}' AND first_event <= TIMESTAMP '{end_date}')
+                OR (last_event >= TIMESTAMP '{start_date}' AND last_event <= TIMESTAMP '{end_date}')
+                OR (first_event <= TIMESTAMP '{start_date}' AND last_event >= TIMESTAMP '{end_date}')
+            )"""
+            date_filter_raw = f"AND timestamp BETWEEN TIMESTAMP '{start_date}' AND TIMESTAMP '{end_date}'"
         elif start_date:
-            date_filter = f"AND analysis_date >= DATE '{start_date}'"
+            date_filter_opt = f"AND last_event >= TIMESTAMP '{start_date}'"
+            date_filter_raw = f"AND timestamp >= TIMESTAMP '{start_date}'"
         elif end_date:
-            date_filter = f"AND analysis_date <= DATE '{end_date}'"
+            date_filter_opt = f"AND first_event <= TIMESTAMP '{end_date}'"
+            date_filter_raw = f"AND timestamp <= TIMESTAMP '{end_date}'"
         
-        query = f"""
+        # Try optimized table first
+        query_optimized = f"""
         SELECT 
             lat,
             lng,
@@ -119,26 +153,91 @@ class AthenaCyclingSafetyDB:
         FROM spinovate_production.hotspots_daily_v2
         WHERE event_count >= {min_events}
             AND avg_severity >= {severity_threshold}
-            {date_filter}
+            {date_filter_opt}
         ORDER BY risk_score DESC
         LIMIT 100
         """
         
+        # Fallback to raw table with clustering
+        query_fallback = f"""
+        WITH abnormal_events AS (
+            SELECT 
+                lat,
+                lng,
+                max_severity,
+                primary_event_type,
+                timestamp,
+                device_id,
+                speed_kmh
+            FROM spinovate_production.spinovate_production_optimised_v2
+            WHERE is_abnormal_event = true 
+                AND max_severity >= {severity_threshold}
+                AND lat IS NOT NULL 
+                AND lng IS NOT NULL
+                {date_filter_raw}
+        ),
+        grid_clusters AS (
+            SELECT 
+                ROUND(lat, 3) as center_lat,
+                ROUND(lng, 3) as center_lng,
+                COUNT(*) as event_count,
+                AVG(max_severity) as severity_score,
+                MAX(max_severity) as max_severity,
+                MIN(timestamp) as first_event,
+                MAX(timestamp) as last_event,
+                COUNT(DISTINCT device_id) as unique_devices,
+                AVG(speed_kmh) as avg_speed,
+                'mixed' as event_types
+            FROM abnormal_events
+            GROUP BY ROUND(lat, 3), ROUND(lng, 3)
+            HAVING COUNT(*) >= {min_events}
+        )
+        SELECT 
+            center_lat as lat,
+            center_lng as lng,
+            event_count,
+            severity_score,
+            max_severity,
+            first_event,
+            last_event,
+            unique_devices,
+            avg_speed,
+            event_types,
+            0 as peak_accel_x,
+            0 as peak_accel_y,
+            0 as peak_accel_z,
+            'sensor_based' as hotspot_type
+        FROM grid_clusters
+        ORDER BY event_count DESC, severity_score DESC
+        LIMIT 100
+        """
+        
         try:
-            df = pd.read_sql(query, self.conn)
+            df = pd.read_sql(query_optimized, self.conn)
             
             if df.empty:
-                return pd.DataFrame()
+                print("⚠️ Optimized hotspots table empty, using raw table...")
+                df = pd.read_sql(query_fallback, self.conn)
+            
+            if not df.empty and 'risk_score' not in df.columns:
+                df['risk_score'] = df['severity_score'] * (1 + 0.1 * df['event_count'])
             
             return df
         except Exception as e:
-            print(f"Error detecting hotspots: {e}")
-            return pd.DataFrame()
+            print(f"⚠️ Error with optimized query, trying fallback: {e}")
+            try:
+                df = pd.read_sql(query_fallback, self.conn)
+                if not df.empty:
+                    df['risk_score'] = df['severity_score'] * (1 + 0.1 * df['event_count'])
+                return df
+            except Exception as e2:
+                print(f"❌ Both queries failed: {e2}")
+                return pd.DataFrame()
     
     def get_usage_trends(self, days: int = 90) -> pd.DataFrame:
-        """Get daily usage trends - OPTIMIZED using usage_trends_daily table!"""
+        """Get daily usage trends - OPTIMIZED with fallback"""
         
-        query = f"""
+        query_optimized = f"""
         SELECT 
             date,
             unique_users,
@@ -151,18 +250,44 @@ class AthenaCyclingSafetyDB:
         ORDER BY date
         """
         
+        query_fallback = f"""
+        SELECT 
+            DATE_TRUNC('day', timestamp) as date,
+            COUNT(DISTINCT device_id) as unique_users,
+            COUNT(*) as total_readings,
+            COUNT(CASE WHEN is_abnormal_event THEN 1 END) as abnormal_events,
+            AVG(speed_kmh) as avg_speed,
+            AVG(max_severity) as avg_severity
+        FROM spinovate_production.spinovate_production_optimised_v2
+        WHERE timestamp >= CURRENT_DATE - INTERVAL '{days}' DAY
+        GROUP BY DATE_TRUNC('day', timestamp)
+        ORDER BY date
+        """
+        
         try:
-            df = pd.read_sql(query, self.conn)
+            df = pd.read_sql(query_optimized, self.conn)
+            
+            # If empty, try fallback
+            if df.empty:
+                print("⚠️ Optimized table empty, using fallback...")
+                df = pd.read_sql(query_fallback, self.conn)
             
             if not df.empty:
-                # Add calculated columns
                 df['prev_day_users'] = df['unique_users'].shift(1)
                 df['usage_change_pct'] = ((df['unique_users'] - df['prev_day_users']) / df['prev_day_users'] * 100).fillna(0)
             
             return df
         except Exception as e:
-            print(f"Error getting usage trends: {e}")
-            return pd.DataFrame()
+            print(f"⚠️ Error with optimized query, trying fallback: {e}")
+            try:
+                df = pd.read_sql(query_fallback, self.conn)
+                if not df.empty:
+                    df['prev_day_users'] = df['unique_users'].shift(1)
+                    df['usage_change_pct'] = ((df['unique_users'] - df['prev_day_users']) / df['prev_day_users'] * 100).fillna(0)
+                return df
+            except Exception as e2:
+                print(f"❌ Both queries failed: {e2}")
+                return pd.DataFrame()
     
     def detect_usage_anomalies(self, threshold_pct: float = 30) -> pd.DataFrame:
         """Detect significant drops in usage - OPTIMIZED using usage_trends_daily!"""
