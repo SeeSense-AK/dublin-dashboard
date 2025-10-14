@@ -14,7 +14,7 @@ import re
 
 # Import custom modules
 from src.hybrid_hotspot_detector import detect_hybrid_hotspots
-from src.athena_database import get_athena_database
+from src.duckdb_database import get_duckdb_database
 from src.trend_analysis import (
     prepare_time_series,
     detect_anomalies,
@@ -38,7 +38,7 @@ st.markdown("### AI-Powered Road Safety Analysis for Dublin")
 
 @st.cache_resource
 def init_database():
-    return get_athena_database()
+    return get_duckdb_database()
 
 @st.cache_data(ttl=3600)
 def load_perception_data():
@@ -721,172 +721,172 @@ with tab1:
 
 # ==================== TAB 2: TREND ANALYSIS ====================
 
-with tab2:
-    st.header("📈 Trend Analysis")
-    st.markdown("Analyzing road usage patterns and detecting anomalies")
+# with tab2:
+#     st.header("📈 Trend Analysis")
+#     st.markdown("Analyzing road usage patterns and detecting anomalies")
     
-    # Date range for trends
-    st.subheader("📅 Select Date Range")
+#     # Date range for trends
+#     st.subheader("📅 Select Date Range")
     
-    col1, col2 = st.columns(2)
-    with col1:
-        trend_start = st.date_input("Start Date", value=min_date, min_value=min_date, 
-                                    max_value=max_date, key="trend_start")
-    with col2:
-        trend_end = st.date_input("End Date", value=max_date, min_value=min_date, 
-                                  max_value=max_date, key="trend_end")
+#     col1, col2 = st.columns(2)
+#     with col1:
+#         trend_start = st.date_input("Start Date", value=min_date, min_value=min_date, 
+#                                     max_value=max_date, key="trend_start")
+#     with col2:
+#         trend_end = st.date_input("End Date", value=max_date, min_value=min_date, 
+#                                   max_value=max_date, key="trend_end")
     
-    if trend_start > trend_end:
-        st.error("⚠️ Start date must be before end date!")
-        st.stop()
+#     if trend_start > trend_end:
+#         st.error("⚠️ Start date must be before end date!")
+#         st.stop()
     
-    days_range = (trend_end - trend_start).days + 1
+#     days_range = (trend_end - trend_start).days + 1
     
-    with st.spinner("Loading trend data..."):
-        trends_df = db.get_usage_trends(days=days_range)
+#     with st.spinner("Loading trend data..."):
+#         trends_df = db.get_usage_trends(days=days_range)
     
-    if trends_df.empty:
-        st.warning("⚠️ No trend data available for selected date range.")
-    else:
-        # Filter by date range
-        trends_df['date'] = pd.to_datetime(trends_df['date'])
-        trends_filtered = trends_df[
-            (trends_df['date'].dt.date >= trend_start) &
-            (trends_df['date'].dt.date <= trend_end)
-        ]
+#     if trends_df.empty:
+#         st.warning("⚠️ No trend data available for selected date range.")
+#     else:
+#         # Filter by date range
+#         trends_df['date'] = pd.to_datetime(trends_df['date'])
+#         trends_filtered = trends_df[
+#             (trends_df['date'].dt.date >= trend_start) &
+#             (trends_df['date'].dt.date <= trend_end)
+#         ]
         
-        # Key metrics
-        st.subheader("📊 Key Insights")
+#         # Key metrics
+#         st.subheader("📊 Key Insights")
         
-        col1, col2, col3, col4 = st.columns(4)
+#         col1, col2, col3, col4 = st.columns(4)
         
-        with col1:
-            avg_users = trends_filtered['unique_users'].mean()
-            st.metric("Avg Daily Users", f"{avg_users:.0f}")
+#         with col1:
+#             avg_users = trends_filtered['unique_users'].mean()
+#             st.metric("Avg Daily Users", f"{avg_users:.0f}")
         
-        with col2:
-            total_events = trends_filtered['abnormal_events'].sum()
-            st.metric("Total Abnormal Events", f"{total_events:,}")
+#         with col2:
+#             total_events = trends_filtered['abnormal_events'].sum()
+#             st.metric("Total Abnormal Events", f"{total_events:,}")
         
-        with col3:
-            if 'avg_speed' in trends_filtered.columns:
-                avg_speed = trends_filtered['avg_speed'].mean()
-                st.metric("Avg Speed", f"{avg_speed:.1f} km/h")
-            else:
-                st.metric("Avg Speed", "N/A")
+#         with col3:
+#             if 'avg_speed' in trends_filtered.columns:
+#                 avg_speed = trends_filtered['avg_speed'].mean()
+#                 st.metric("Avg Speed", f"{avg_speed:.1f} km/h")
+#             else:
+#                 st.metric("Avg Speed", "N/A")
         
-        with col4:
-            if 'avg_severity' in trends_filtered.columns:
-                avg_severity = trends_filtered['avg_severity'].mean()
-                st.metric("Avg Severity", f"{avg_severity:.1f}/10")
-            else:
-                st.metric("Avg Severity", "N/A")
+#         with col4:
+#             if 'avg_severity' in trends_filtered.columns:
+#                 avg_severity = trends_filtered['avg_severity'].mean()
+#                 st.metric("Avg Severity", f"{avg_severity:.1f}/10")
+#             else:
+#                 st.metric("Avg Severity", "N/A")
         
-        st.markdown("---")
+#         st.markdown("---")
         
-        # Usage trends chart
-        st.subheader("📈 Daily Usage Trends")
+#         # Usage trends chart
+#         st.subheader("📈 Daily Usage Trends")
         
-        fig = go.Figure()
+#         fig = go.Figure()
         
-        fig.add_trace(go.Scatter(
-            x=trends_filtered['date'],
-            y=trends_filtered['unique_users'],
-            mode='lines+markers',
-            name='Unique Users',
-            line=dict(color='#3B82F6', width=2),
-            yaxis='y1'
-        ))
+#         fig.add_trace(go.Scatter(
+#             x=trends_filtered['date'],
+#             y=trends_filtered['unique_users'],
+#             mode='lines+markers',
+#             name='Unique Users',
+#             line=dict(color='#3B82F6', width=2),
+#             yaxis='y1'
+#         ))
         
-        fig.add_trace(go.Scatter(
-            x=trends_filtered['date'],
-            y=trends_filtered['abnormal_events'],
-            mode='lines+markers',
-            name='Abnormal Events',
-            line=dict(color='#EF4444', width=2),
-            yaxis='y2'
-        ))
+#         fig.add_trace(go.Scatter(
+#             x=trends_filtered['date'],
+#             y=trends_filtered['abnormal_events'],
+#             mode='lines+markers',
+#             name='Abnormal Events',
+#             line=dict(color='#EF4444', width=2),
+#             yaxis='y2'
+#         ))
         
-        fig.update_layout(
-            title='Usage and Safety Events Over Time',
-            xaxis=dict(title='Date'),
-            yaxis=dict(title='Unique Users', side='left', color='#3B82F6'),
-            yaxis2=dict(title='Abnormal Events', overlaying='y', side='right', color='#EF4444'),
-            hovermode='x unified',
-            height=500
-        )
+#         fig.update_layout(
+#             title='Usage and Safety Events Over Time',
+#             xaxis=dict(title='Date'),
+#             yaxis=dict(title='Unique Users', side='left', color='#3B82F6'),
+#             yaxis2=dict(title='Abnormal Events', overlaying='y', side='right', color='#EF4444'),
+#             hovermode='x unified',
+#             height=500
+#         )
         
-        st.plotly_chart(fig, use_container_width=True)
+#         st.plotly_chart(fig, use_container_width=True)
         
-        st.markdown("---")
+#         st.markdown("---")
         
-        # Anomaly detection
-        st.subheader("⚠️ Usage Anomalies")
+#         # Anomaly detection
+#         st.subheader("⚠️ Usage Anomalies")
         
-        anomalies_df = db.detect_usage_anomalies(threshold_pct=30)
+#         anomalies_df = db.detect_usage_anomalies(threshold_pct=30)
         
-        if not anomalies_df.empty:
-            anomalies_df['date'] = pd.to_datetime(anomalies_df['date'])
-            anomalies_filtered = anomalies_df[
-                (anomalies_df['date'].dt.date >= trend_start) &
-                (anomalies_df['date'].dt.date <= trend_end)
-            ]
+#         if not anomalies_df.empty:
+#             anomalies_df['date'] = pd.to_datetime(anomalies_df['date'])
+#             anomalies_filtered = anomalies_df[
+#                 (anomalies_df['date'].dt.date >= trend_start) &
+#                 (anomalies_df['date'].dt.date <= trend_end)
+#             ]
             
-            if not anomalies_filtered.empty:
-                st.warning(f"⚠️ **{len(anomalies_filtered)} significant usage drops detected!**")
+#             if not anomalies_filtered.empty:
+#                 st.warning(f"⚠️ **{len(anomalies_filtered)} significant usage drops detected!**")
                 
-                for idx, anomaly in anomalies_filtered.iterrows():
-                    with st.expander(f"📉 Drop on {anomaly['date'].strftime('%Y-%m-%d')}"):
-                        col1, col2, col3 = st.columns(3)
+#                 for idx, anomaly in anomalies_filtered.iterrows():
+#                     with st.expander(f"📉 Drop on {anomaly['date'].strftime('%Y-%m-%d')}"):
+#                         col1, col2, col3 = st.columns(3)
                         
-                        with col1:
-                            st.metric(
-                                "Daily Users",
-                                f"{anomaly['daily_users']:.0f}",
-                                f"{anomaly['day_over_day_change']:.1f}% vs prev day"
-                            )
+#                         with col1:
+#                             st.metric(
+#                                 "Daily Users",
+#                                 f"{anomaly['daily_users']:.0f}",
+#                                 f"{anomaly['day_over_day_change']:.1f}% vs prev day"
+#                             )
                         
-                        with col2:
-                            st.metric(
-                                "Week over Week",
-                                f"{anomaly['week_over_week_change']:.1f}%",
-                                help="Change compared to same day last week"
-                            )
+#                         with col2:
+#                             st.metric(
+#                                 "Week over Week",
+#                                 f"{anomaly['week_over_week_change']:.1f}%",
+#                                 help="Change compared to same day last week"
+#                             )
                         
-                        with col3:
-                            st.metric(
-                                "vs 7-day Average",
-                                f"{anomaly['rolling_avg_deviation']:.1f}%",
-                                help="Deviation from 7-day rolling average"
-                            )
+#                         with col3:
+#                             st.metric(
+#                                 "vs 7-day Average",
+#                                 f"{anomaly['rolling_avg_deviation']:.1f}%",
+#                                 help="Deviation from 7-day rolling average"
+#                             )
                         
-                        st.markdown("**Possible causes to investigate:**")
-                        st.write("• Weather events (storms, heavy rain)")
-                        st.write("• Road closures or construction")
-                        st.write("• Special events or holidays")
-                        st.write("• Route diversions")
-            else:
-                st.success("✅ No significant usage drops detected in selected period")
-        else:
-            st.success("✅ No significant usage drops detected")
+#                         st.markdown("**Possible causes to investigate:**")
+#                         st.write("• Weather events (storms, heavy rain)")
+#                         st.write("• Road closures or construction")
+#                         st.write("• Special events or holidays")
+#                         st.write("• Route diversions")
+#             else:
+#                 st.success("✅ No significant usage drops detected in selected period")
+#         else:
+#             st.success("✅ No significant usage drops detected")
         
-        st.markdown("---")
+#         st.markdown("---")
         
-        # Severity trends
-        st.subheader("📊 Severity Trends")
+#         # Severity trends
+#         st.subheader("📊 Severity Trends")
         
-        fig_severity = px.line(
-            trends_filtered,
-            x='date',
-            y='avg_severity',
-            title='Average Severity Over Time',
-            labels={'avg_severity': 'Average Severity', 'date': 'Date'}
-        )
+#         fig_severity = px.line(
+#             trends_filtered,
+#             x='date',
+#             y='avg_severity',
+#             title='Average Severity Over Time',
+#             labels={'avg_severity': 'Average Severity', 'date': 'Date'}
+#         )
         
-        fig_severity.update_traces(line_color='#EF4444', line_width=3)
-        fig_severity.update_layout(height=400)
+#         fig_severity.update_traces(line_color='#EF4444', line_width=3)
+#         fig_severity.update_layout(height=400)
         
-        st.plotly_chart(fig_severity, use_container_width=True)
+#         st.plotly_chart(fig_severity, use_container_width=True)
 
 # ==================== FOOTER ====================
 
@@ -939,7 +939,7 @@ with st.expander("ℹ️ How It Works"):
     
     ### 📊 Data Sources
     
-    - **Sensor Data:** {metrics['total_readings']:,} readings from AWS Athena
+    - **Sensor Data:** {metrics['total_readings']:,} readings from AWS duckdb
     - **Perception Reports:** {len(infra_df) + len(ride_df):,} total reports
     """)
     
@@ -988,4 +988,4 @@ with st.expander("❓ FAQ"):
         """)
 
 st.markdown("---")
-st.caption("🚴‍♂️ Spinovate Safety Dashboard | Enhanced Insights | Powered by Groq AI & AWS Athena")
+st.caption("🚴‍♂️ Spinovate Safety Dashboard | Enhanced Insights | Powered by Groq AI & DuckDB")

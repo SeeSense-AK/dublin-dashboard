@@ -1,25 +1,25 @@
 """
 Data loading module - Hybrid approach
-Uses AWS Athena for sensor data and local CSV for perception reports
+Uses  duckdb for sensor data and local CSV for perception reports
 """
 import pandas as pd
 import streamlit as st
 from pathlib import Path
-from src.athena_database import get_athena_database
+from src.duckdb_database import get_duckdb_database
 from config import INFRA_REPORTS_FILE, RIDE_REPORTS_FILE, CACHE_CONFIG
 
 
-# Initialize Athena connection
+# Initialize duckdb connection
 @st.cache_resource
 def get_data_connection():
-    """Get Athena database connection"""
-    return get_athena_database()
+    """Get DuckDB database connection"""
+    return get_duckdb_database()
 
 
 @st.cache_data(ttl=CACHE_CONFIG["ttl"])
 def load_sensor_data_metrics():
     """
-    Load sensor data metrics from Athena (not full data, just metrics)
+    Load sensor data metrics from duckdb (not full data, just metrics)
     Returns: dict with metrics
     """
     try:
@@ -157,7 +157,7 @@ def get_data_summary():
     
     return {
         'sensor': {
-            'source': 'AWS Athena (Parquet)',
+            'source': 'duckdb (Parquet)',
             'total_readings': data['sensor_metrics']['total_readings'],
             'unique_devices': data['sensor_metrics']['unique_devices'],
             'abnormal_events': data['sensor_metrics']['abnormal_events'],
@@ -184,19 +184,19 @@ def validate_data():
     Returns: dict with validation results
     """
     validation = {
-        'athena_connection': False,
+        'duckdb_connection': False,
         'infrastructure_reports': INFRA_REPORTS_FILE.exists(),
         'ride_reports': RIDE_REPORTS_FILE.exists(),
     }
     
-    # Test Athena connection
+    # Test duckdb connection
     try:
         db = get_data_connection()
         metrics = db.get_dashboard_metrics()
-        validation['athena_connection'] = metrics['total_readings'] > 0
+        validation['duckdb_connection'] = metrics['total_readings'] > 0
     except Exception as e:
-        st.error(f"Athena connection failed: {e}")
-        validation['athena_connection'] = False
+        st.error(f"duckdb connection failed: {e}")
+        validation['duckdb_connection'] = False
     
     return validation
 
@@ -204,7 +204,7 @@ def validate_data():
 # Helper functions for data access
 def get_sensor_hotspots(min_events=3, severity_threshold=2, start_date=None, end_date=None):
     """
-    Get sensor hotspots from Athena
+    Get sensor hotspots from duckdb
     """
     try:
         db = get_data_connection()
@@ -216,7 +216,7 @@ def get_sensor_hotspots(min_events=3, severity_threshold=2, start_date=None, end
 
 def get_usage_trends(days=30):
     """
-    Get usage trends from Athena
+    Get usage trends from duckdb
     """
     try:
         db = get_data_connection()
@@ -228,7 +228,7 @@ def get_usage_trends(days=30):
 
 def get_usage_anomalies():
     """
-    Get usage anomalies from Athena
+    Get usage anomalies from duckdb
     """
     try:
         db = get_data_connection()

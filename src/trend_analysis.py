@@ -1,31 +1,31 @@
 """
 Time series and trend analysis module
-Detects anomalies, usage patterns, and temporal trends using AWS Athena
+Detects anomalies, usage patterns, and temporal trends using Duck DB
 """
 import pandas as pd
 import numpy as np
 import streamlit as st
 from scipy import stats
 from config import TIMESERIES_CONFIG
-from src.athena_database import get_athena_database
+from src.duckdb_database import get_duckdb_database
 
 
 @st.cache_data(ttl=3600)
 def prepare_time_series(sensor_df=None, freq='D'):
     """
-    Prepare time series data from Athena sensor readings
+    Prepare time series data from duckdb sensor readings
     
     Args:
-        sensor_df: Ignored - we use Athena now
+        sensor_df: Ignored - we use duckdb now
         freq: Frequency for aggregation ('D'=daily, 'W'=weekly, 'M'=monthly)
     
     Returns:
         DataFrame with time series aggregated by frequency
     """
     try:
-        db = get_athena_database()
+        db = get_duckdb_database()
         
-        # Map frequency to days for Athena query
+        # Map frequency to days for duckdb query
         if freq == 'D':
             days = 90  # Default to 90 days for daily analysis
         elif freq == 'W':
@@ -35,7 +35,7 @@ def prepare_time_series(sensor_df=None, freq='D'):
         else:
             days = 90
         
-        # Get usage trends from Athena
+        # Get usage trends from duckdb
         time_series_df = db.get_usage_trends(days)
         
         if time_series_df.empty:
@@ -56,7 +56,7 @@ def prepare_time_series(sensor_df=None, freq='D'):
         return time_series_df
         
     except Exception as e:
-        st.error(f"Error preparing time series from Athena: {e}")
+        st.error(f"Error preparing time series from duckdb: {e}")
         return pd.DataFrame()
 
 
@@ -244,10 +244,10 @@ def analyze_seasonal_patterns(time_series_df, column='reading_count'):
 def compare_time_periods(sensor_df, period1_start, period1_end, period2_start, period2_end):
     """
     Compare two time periods to identify changes
-    Note: This function needs Athena implementation for period comparison
+    Note: This function needs duckdb implementation for period comparison
     
     Args:
-        sensor_df: Ignored - we use Athena now
+        sensor_df: Ignored - we use duckdb now
         period1_start: Start date of first period
         period1_end: End date of first period
         period2_start: Start date of second period
@@ -257,7 +257,7 @@ def compare_time_periods(sensor_df, period1_start, period1_end, period2_start, p
         dict with comparison metrics
     """
     try:
-        db = get_athena_database()
+        db = get_duckdb_database()
         
         # Get data for period 1
         period1_df = db.get_usage_trends(90)  # Get recent data
