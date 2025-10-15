@@ -27,6 +27,16 @@ def load_preprocessed_data():
     with open(data_dir / "perception_corridors_polys.geojson", 'r') as f:
         corridors_geojson = json.load(f)
     
+    # Load abnormal events for heatmap
+    abnormal_events_df = pd.read_csv(data_dir / "spinovate_abnormal_events.csv")
+    
+    # Parse timestamps
+    abnormal_events_df['timestamp'] = pd.to_datetime(abnormal_events_df['timestamp'])
+    sensor_df['first_seen'] = pd.to_datetime(sensor_df['first_seen'])
+    sensor_df['last_seen'] = pd.to_datetime(sensor_df['last_seen'])
+    perception_df['first_seen'] = pd.to_datetime(perception_df['first_seen'], errors='coerce')
+    perception_df['last_seen'] = pd.to_datetime(perception_df['last_seen'], errors='coerce')
+    
     # Convert corridors to DataFrame
     corridors_data = []
     for feature in corridors_geojson['features']:
@@ -46,7 +56,7 @@ def load_preprocessed_data():
             'center_lng': center_lng,
             'report_count': props.get('report_count', 0),
             'weighted_score': props.get('weighted_score', 0),
-            'priority_rank': props.get('priority_rank', 999),  # Added priority_rank
+            'priority_rank': props.get('priority_rank', 999),
             'priority_category': props.get('priority_category', 'MEDIUM'),
             'dominant_category': props.get('dominant_category', 'Unknown'),
             'all_comments': props.get('all_comments', ''),
@@ -57,7 +67,7 @@ def load_preprocessed_data():
     
     corridor_df = pd.DataFrame(corridors_data)
     
-    return sensor_df, perception_df, corridor_df
+    return sensor_df, perception_df, corridor_df, abnormal_events_df
 
 
 def filter_by_date_range(sensor_df, perception_df, corridor_df, start_date, end_date):
@@ -83,6 +93,9 @@ def filter_by_date_range(sensor_df, perception_df, corridor_df, start_date, end_
     corridor_filtered = corridor_df.copy()
     
     return sensor_filtered, perception_filtered, corridor_filtered
+
+
+def select_top_hotspots(sensor_df, perception_df, corridor_df, total_count=10):
     """
     Select top hotspots based on weighted distribution:
     - 50% from sensor data (ranked by per_type_score desc)
@@ -442,7 +455,8 @@ def render_tab1():
         st.dataframe(
             corridor_top[[
                 'road_name', 'report_count', 'weighted_score',
-                'priority_rank', 'priority_category', 'dominant_category'
+                'priority_rank', 'priority_category', 'dominant_category',
+                'maxspeed', 'lanes'
             ]],
             use_container_width=True
         )
