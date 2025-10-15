@@ -336,59 +336,60 @@ def display_hotspot_card(row, source):
         user_reports = row.get('total_perception_count', 0) if source == 'perception' else 0
         lat, lng = row.get('medoid_lat'), row.get('medoid_lng')
     
-    # Create card HTML
-    card_html = f"""
-    <div style="
-        border: 1px solid #e5e7eb;
-        border-radius: 8px;
-        padding: 20px;
-        margin-bottom: 16px;
-        background: white;
-        box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
-    ">
-        <h3 style="margin-top: 0; color: #1e40af;">{hotspot_name}</h3>
+    # Capitalize event type properly
+    if event_type and event_type != 'N/A':
+        event_type = event_type.replace('_', ' ').title()
+    
+    # Color based on urgency
+    urgency_value = float(urgency_score.replace('%', ''))
+    if urgency_value >= 70:
+        urgency_color = '#dc2626'  # Red
+    elif urgency_value >= 50:
+        urgency_color = '#f59e0b'  # Orange
+    else:
+        urgency_color = '#10b981'  # Green
+    
+    # Use columns for better layout
+    with st.container():
+        st.markdown(f"### {hotspot_name}")
         
-        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 16px;">
-            <div>
-                <p style="margin: 4px 0; color: #6b7280; font-size: 14px;">Location</p>
-                <p style="margin: 0; font-weight: 600;">{location}</p>
-            </div>
-            <div>
-                <p style="margin: 4px 0; color: #6b7280; font-size: 14px;">Event</p>
-                <p style="margin: 0; font-weight: 600;">{event_type}</p>
-            </div>
-            <div>
-                <p style="margin: 4px 0; color: #6b7280; font-size: 14px;">Unique Devices</p>
-                <p style="margin: 0; font-weight: 600;">{device_count}</p>
-            </div>
-            <div>
-                <p style="margin: 4px 0; color: #6b7280; font-size: 14px;">User Reports</p>
-                <p style="margin: 0; font-weight: 600;">{user_reports}</p>
-            </div>
-        </div>
+        # Info grid
+        col1, col2, col3, col4 = st.columns(4)
         
-        <div style="margin-bottom: 16px;">
-            <p style="margin: 4px 0; color: #6b7280; font-size: 14px;">Urgency Score</p>
-            <p style="margin: 0; font-size: 24px; font-weight: 700; color: #dc2626;">{urgency_score}</p>
-        </div>
-    </div>
-    """
-    
-    st.markdown(card_html, unsafe_allow_html=True)
-    
-    # Buttons
-    col1, col2 = st.columns(2)
-    
-    with col1:
-        view_details = st.button("View Details", key=f"details_{hotspot_name}", use_container_width=True)
-    
-    with col2:
-        street_view_url = STREET_VIEW_URL_TEMPLATE.format(lat=lat, lng=lng, heading=0)
-        st.link_button("Open Street View", street_view_url, use_container_width=True)
-    
-    # Show details if button clicked
-    if view_details:
-        display_hotspot_details(row, source)
+        with col1:
+            st.markdown("**Location**")
+            st.text(location)
+        
+        with col2:
+            st.markdown("**Event**")
+            st.text(event_type)
+        
+        with col3:
+            st.markdown("**Unique Devices**")
+            st.text(str(device_count))
+        
+        with col4:
+            st.markdown("**User Reports**")
+            st.text(str(user_reports))
+        
+        # Urgency score
+        st.markdown(f"**Urgency Score:** <span style='font-size: 24px; font-weight: 700; color: {urgency_color};'>{urgency_score}</span>", unsafe_allow_html=True)
+        
+        # Buttons
+        col1, col2 = st.columns(2)
+        
+        with col1:
+            view_details = st.button("View Details", key=f"details_{hotspot_name}", use_container_width=True)
+        
+        with col2:
+            street_view_url = STREET_VIEW_URL_TEMPLATE.format(lat=lat, lng=lng, heading=0)
+            st.link_button("Open Street View", street_view_url, use_container_width=True)
+        
+        # Show details if button clicked
+        if view_details:
+            display_hotspot_details(row, source)
+        
+        st.markdown("---")
 
 
 def display_hotspot_details(row, source):
@@ -406,26 +407,22 @@ def display_hotspot_details(row, source):
         insights = generate_hotspot_insights(hotspot_data, user_comments)
         
         # Display summary
-        st.markdown("### AI Analysis")
+        st.markdown("#### AI Analysis")
         st.info(insights['summary'])
         
-        # Display themes as pills
+        # Display themes as pills using columns
         if insights['themes']:
             st.markdown("#### Safety Themes")
-            theme_html = '<div style="display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 16px;">'
-            for theme in insights['themes']:
-                theme_html += f'''
-                <span style="
-                    background: #dbeafe;
-                    color: #1e40af;
-                    padding: 6px 12px;
-                    border-radius: 16px;
-                    font-size: 14px;
-                    font-weight: 500;
-                ">{theme}</span>
-                '''
-            theme_html += '</div>'
-            st.markdown(theme_html, unsafe_allow_html=True)
+            # Create columns based on number of themes
+            theme_cols = st.columns(len(insights['themes']))
+            for idx, theme in enumerate(insights['themes']):
+                with theme_cols[idx]:
+                    st.markdown(
+                        f"<div style='background: #dbeafe; color: #1e40af; padding: 8px 12px; "
+                        f"border-radius: 16px; text-align: center; font-weight: 500;'>{theme}</div>",
+                        unsafe_allow_html=True
+                    )
+            st.markdown("<br>", unsafe_allow_html=True)
         
         # Display recommendations
         if insights['recommendations']:
@@ -436,18 +433,14 @@ def display_hotspot_details(row, source):
         # Display user comments
         if user_comments and len(user_comments) > 0:
             st.markdown("#### User Comments")
-            for i, comment in enumerate(user_comments[:2], 1):  # Show max 2 comments
-                st.markdown(f"""
-                <div style="
-                    background: #f9fafb;
-                    border-left: 3px solid #3b82f6;
-                    padding: 12px;
-                    margin-bottom: 8px;
-                    border-radius: 4px;
-                ">
-                    <p style="margin: 0; color: #374151;">{comment}</p>
-                </div>
-                """, unsafe_allow_html=True)
+            # Show top 3 meaningful comments
+            for i, comment in enumerate(user_comments[:3], 1):
+                st.markdown(
+                    f"<div style='background: #f9fafb; border-left: 4px solid #3b82f6; "
+                    f"padding: 12px; margin-bottom: 12px; border-radius: 4px;'>"
+                    f"<p style='margin: 0; color: #374151;'><strong>Comment {i}:</strong> {comment}</p></div>",
+                    unsafe_allow_html=True
+                )
         
         st.markdown("---")
 

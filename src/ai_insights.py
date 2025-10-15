@@ -64,41 +64,88 @@ def build_analysis_prompt(hotspot_data: dict, user_comments: list = None) -> str
     prompt = f"""You are a road safety analyst. Analyze this hotspot and provide concise, actionable insights.
 
 **Hotspot Data:**
-- Location: {hotspot_data.get('street_name', 'Unknown')}
+- Location: {hotspot_data.get('street_name', hotspot_data.get('road_name', 'Unknown'))}
 - Source: {source}
-- Event Type: {hotspot_data.get('event_type', 'N/A')}
+- Event Type: {hotspot_data.get('event_type', hotspot_data.get('dominant_category', 'N/A'))}
 - Event Count: {hotspot_data.get('event_count', 0)}
 - Device Count: {hotspot_data.get('device_count', 0)}
-- Concern Score: {hotspot_data.get('concern_score', 0):.2f}
 """
     
+    # Add severity metrics if available
+    if 'median_severity' in hotspot_data or 'max_severity' in hotspot_data:
+        prompt += "\n**Severity Metrics:**\n"
+        if 'median_severity' in hotspot_data and hotspot_data.get('median_severity'):
+            prompt += f"- Median Severity: {hotspot_data.get('median_severity'):.1f}/10\n"
+        if 'p90_severity' in hotspot_data and hotspot_data.get('p90_severity'):
+            prompt += f"- 90th Percentile Severity: {hotspot_data.get('p90_severity'):.1f}/10\n"
+        if 'max_severity' in hotspot_data and hotspot_data.get('max_severity'):
+            prompt += f"- Maximum Severity: {hotspot_data.get('max_severity')}/10\n"
+    
+    # Add temporal context if available
+    if 'first_seen' in hotspot_data or 'last_seen' in hotspot_data:
+        prompt += "\n**Temporal Context:**\n"
+        if 'first_seen' in hotspot_data and hotspot_data.get('first_seen'):
+            prompt += f"- First Reported: {hotspot_data.get('first_seen')}\n"
+        if 'last_seen' in hotspot_data and hotspot_data.get('last_seen'):
+            prompt += f"- Last Reported: {hotspot_data.get('last_seen')}\n"
+        
+        # Calculate duration if both dates available
+        if 'first_seen' in hotspot_data and 'last_seen' in hotspot_data:
+            try:
+                from datetime import datetime
+                first = hotspot_data.get('first_seen')
+                last = hotspot_data.get('last_seen')
+                if isinstance(first, str):
+                    first = datetime.fromisoformat(first.replace('Z', '+00:00'))
+                if isinstance(last, str):
+                    last = datetime.fromisoformat(last.replace('Z', '+00:00'))
+                duration_days = (last - first).days
+                if duration_days > 0:
+                    prompt += f"- Duration: {duration_days} days (persistent issue)\n"
+            except:
+                pass
+    
+    # Add road characteristics for corridors
     if source == 'corridor':
-        prompt += f"""- Priority: {hotspot_data.get('priority_category', 'N/A')}
-- Issue Type: {hotspot_data.get('dominant_category', 'N/A')}
-- Speed Limit: {hotspot_data.get('maxspeed', 'N/A')}
-- Lanes: {hotspot_data.get('lanes', 'N/A')}
-"""
+        prompt += f"\n**Road Characteristics:**\n"
+        prompt += f"- Priority Level: {hotspot_data.get('priority_category', 'N/A')}\n"
+        prompt += f"- Speed Limit: {hotspot_data.get('maxspeed', 'N/A')}\n"
+        prompt += f"- Number of Lanes: {hotspot_data.get('lanes', 'N/A')}\n"
     
-    # Add user comments if available
+    # Add user comments with emphasis
     if user_comments and len(user_comments) > 0:
-        prompt += f"\n**User Reports ({len(user_comments)}):**\n"
-        for i, comment in enumerate(user_comments[:5], 1):  # Limit to 5 comments
-            prompt += f"{i}. {comment}\n"
+        prompt += f"\n**CRITICAL - User Reports ({len(user_comments)} reports):**\n"
+        prompt += "These are REAL experiences from cyclists/road users. Analyze these carefully for patterns, specific hazards, and recurring themes:\n\n"
+        for i, comment in enumerate(user_comments[:10], 1):  # Include up to 10 comments
+            prompt += f"{i}. \"{comment}\"\n"
+        prompt += "\nPay special attention to:\n"
+        prompt += "- Specific hazards mentioned (potholes, obstructions, close passes, etc.)\n"
+        prompt += "- Time of day patterns if mentioned\n"
+        prompt += "- Severity indicators (lost control, nearly fell, puncture, etc.)\n"
+        prompt += "- Infrastructure issues (road surface, visibility, signage)\n"
+        prompt += "- Behavioral issues (taxi drivers, traffic, etc.)\n"
     
     prompt += """
 **Task:**
-Provide your response in EXACTLY this format:
+Based on ALL the information above, especially the user reports, provide your response in EXACTLY this format:
 
 SUMMARY:
-[2-3 sentences describing what's happening at this location and why it's concerning]
+[5-6 sentences providing a comprehensive analysis. Focus on what the user comments reveal about this location. If multiple users report similar issues, emphasize this pattern. Mention severity levels and temporal aspects if available. Be specific about the actual hazards present.]
 
 THEMES:
-[Comma-separated list of 2-4 specific safety themes, e.g., "Poor road surface", "Visibility issues", "Heavy traffic"]
+[Comma-separated list of 2-4 specific safety themes based primarily on user comments, e.g., "Severe pothole damage", "Poor road surface quality", "Cyclist-vehicle conflicts", "Visibility issues"]
 
 RECOMMENDATIONS:
-[2-3 bullet points with specific, actionable recommendations]
+[2-3 bullet points with specific, actionable recommendations. If user comments mention specific problems, address those directly. Prioritize based on severity metrics if available.]
 
-Keep it concise, factual, and focused on safety. Use the user reports to understand real-world experiences."""
+IMPORTANT:
+- Start IMMEDIATELY with "SUMMARY:" - do not include any preamble, acknowledgments, or meta-commentary
+- Do not say things like "I will analyze" or "Here is my analysis" - just provide the analysis 
+- Use the actual details from user comments - don't be generic
+- If users mention specific hazards (potholes, close passes, etc.), name them explicitly
+- If temporal data shows this is a long-standing issue, mention it
+- If severity metrics are high, emphasize the urgency
+- Make recommendations specific to the actual problems reported"""
     
     return prompt
 
@@ -151,18 +198,27 @@ def extract_user_comments(hotspot_data: dict) -> list:
     source = hotspot_data.get('source', 'unknown')
     
     if source == 'corridor':
-        # Corridor has all_comments field
+        # Corridor has all_comments field with pipe delimiter
         all_comments = hotspot_data.get('all_comments', '')
         if all_comments and all_comments != '':
-            # Split by common delimiters
+            # Split by pipe (|)
             comment_list = all_comments.split('|')
-            comments = [c.strip() for c in comment_list if c.strip()]
+            comments = [
+                c.strip() 
+                for c in comment_list 
+                if c.strip() and c.strip().lower() != 'issue reported at this location'
+            ]
     
     elif source == 'perception':
-        # Perception hotspots might have combined_text
+        # Perception hotspots have combined_text with semicolon delimiter
         combined_text = hotspot_data.get('combined_text', '')
         if combined_text and combined_text != '':
-            comment_list = combined_text.split('|')
-            comments = [c.strip() for c in comment_list if c.strip()]
+            # Split by semicolon (;)
+            comment_list = combined_text.split(';')
+            comments = [
+                c.strip() 
+                for c in comment_list 
+                if c.strip() and c.strip().lower() != 'issue reported at this location'
+            ]
     
     return comments
