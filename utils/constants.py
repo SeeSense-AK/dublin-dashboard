@@ -9,7 +9,7 @@ EARTH_RADIUS_M = 6371000
 COORDINATE_PRECISION = 6
 
 # Google Street View URL template
-STREET_VIEW_URL_TEMPLATE = "https://www.google.com/maps/@?api=1&map_action=pano&viewpoint={lat},{lng}&heading={heading}&pitch=0&fov=90"
+STREET_VIEW_URL_TEMPLATE = "https://www.google.com/maps/@?api=1&map_action=pano&viewpoint={lat},{lng}&heading={heading}&pitch=0&fov=80"
 
 # Map tiles
 MAP_TILES = {
@@ -18,24 +18,17 @@ MAP_TILES = {
     "CartoDB Dark Matter": "https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png",
 }
 
-# Color schemes
+# Color schemes for severity/priority
 SEVERITY_COLORS = {
-    0: "#90EE90",  # Light Green
-    1: "#FFD700",  # Gold
-    2: "#FFA500",  # Orange
-    3: "#FF4500",  # Orange Red
-    4: "#DC143C",  # Crimson
+    'CRITICAL': '#DC2626',  # Red
+    'HIGH': '#F59E0B',      # Orange
+    'MEDIUM': '#10B981',    # Green
+    'LOW': '#6B7280'        # Gray
 }
 
-# Data columns that must exist
-REQUIRED_SENSOR_COLUMNS = [
-    "position_latitude",
-    "position_longitude",
-    "max_severity",
-    "timestamp",
-]
-
-REQUIRED_PERCEPTION_COLUMNS = {
-    "infra": ["lat", "lng", "infrastructuretype", "finalcomment"],
-    "ride": ["lat", "lng", "incidenttype", "commentfinal", "incidentrating"],
+# Hotspot distribution weights
+HOTSPOT_WEIGHTS = {
+    'sensor': 0.5,      # 50% from sensor data
+    'perception': 0.3,  # 30% from perception + sensor
+    'corridor': 0.2     # 20% from corridor reports
 }
