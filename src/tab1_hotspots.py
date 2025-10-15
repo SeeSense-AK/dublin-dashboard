@@ -6,8 +6,10 @@ import streamlit as st
 import pandas as pd
 import json
 import folium
+from folium.plugins import HeatMap
 from streamlit_folium import folium_static
 from pathlib import Path
+from datetime import datetime, timedelta
 from utils.constants import STREET_VIEW_URL_TEMPLATE
 
 
@@ -19,7 +21,7 @@ def load_preprocessed_data():
     sensor_df = pd.read_csv(data_dir / "hotspots_master_with_streets.csv")
     
     # Load perception hotspots (P1)
-    perception_df = pd.read_csv(data_dir / "hotspots-perception_with_streets.csv")
+    perception_df = pd.read_csv(data_dir / "hotspotsperception_with_streets.csv")
     
     # Load corridor hotspots (P2)
     with open(data_dir / "perception_corridors_polys.geojson", 'r') as f:
@@ -44,6 +46,7 @@ def load_preprocessed_data():
             'center_lng': center_lng,
             'report_count': props.get('report_count', 0),
             'weighted_score': props.get('weighted_score', 0),
+            'priority_rank': props.get('priority_rank', 999),  # Added priority_rank
             'priority_category': props.get('priority_category', 'MEDIUM'),
             'dominant_category': props.get('dominant_category', 'Unknown'),
             'all_comments': props.get('all_comments', ''),
@@ -57,12 +60,34 @@ def load_preprocessed_data():
     return sensor_df, perception_df, corridor_df
 
 
-def select_top_hotspots(sensor_df, perception_df, corridor_df, total_count=10):
+def filter_by_date_range(sensor_df, perception_df, corridor_df, start_date, end_date):
+    """Filter hotspots by date range"""
+    
+    # Convert to datetime for comparison
+    start_dt = pd.to_datetime(start_date)
+    end_dt = pd.to_datetime(end_date)
+    
+    # Filter sensor hotspots (those that have any activity in date range)
+    sensor_filtered = sensor_df[
+        (sensor_df['last_seen'] >= start_dt) & 
+        (sensor_df['first_seen'] <= end_dt)
+    ].copy()
+    
+    # Filter perception hotspots
+    perception_filtered = perception_df[
+        (perception_df['last_seen'] >= start_dt) & 
+        (perception_df['first_seen'] <= end_dt)
+    ].copy()
+    
+    # Corridors don't have date info, so keep all
+    corridor_filtered = corridor_df.copy()
+    
+    return sensor_filtered, perception_filtered, corridor_filtered
     """
     Select top hotspots based on weighted distribution:
-    - 50% from sensor data
-    - 30% from perception (P1)
-    - 20% from corridors (P2)
+    - 50% from sensor data (ranked by per_type_score desc)
+    - 30% from perception (ranked by total_perception_count desc)
+    - 20% from corridors (ranked by priority_rank asc)
     """
     # Calculate counts for each source
     sensor_count = round(total_count * 0.5)
@@ -70,15 +95,15 @@ def select_top_hotspots(sensor_df, perception_df, corridor_df, total_count=10):
     corridor_count = total_count - sensor_count - perception_count
     
     # Sort and select top from each source
-    sensor_top = sensor_df.nlargest(sensor_count, 'concern_score').copy()
+    sensor_top = sensor_df.nlargest(sensor_count, 'per_type_score').copy()
     sensor_top['source'] = 'sensor'
     sensor_top['source_label'] = 'Core Sensor Data'
     
-    perception_top = perception_df.nlargest(perception_count, 'concern_score').copy()
+    perception_top = perception_df.nlargest(perception_count, 'total_perception_count').copy()
     perception_top['source'] = 'perception'
     perception_top['source_label'] = 'Perception + Sensor'
     
-    corridor_top = corridor_df.nlargest(corridor_count, 'weighted_score').copy()
+    corridor_top = corridor_df.nsmallest(corridor_count, 'priority_rank').copy()
     corridor_top['source'] = 'corridor'
     corridor_top['source_label'] = 'Corridor Reports'
     
@@ -153,8 +178,10 @@ def create_popup_html(row, source):
     return popup_html
 
 
-def create_hotspot_map(sensor_hotspots, perception_hotspots, corridor_hotspots):
-    """Create Folium map with all hotspots"""
+def create_hotspot_map(sensor_hotspots, perception_hotspots, corridor_hotspots, 
+                       abnormal_events_df=None, show_heatmap=False, 
+                       start_date=None, end_date=None):
+    """Create Folium map with all hotspots and optional heatmap"""
     
     # Initialize map centered on Dublin
     m = folium.Map(
@@ -162,6 +189,34 @@ def create_hotspot_map(sensor_hotspots, perception_hotspots, corridor_hotspots):
         zoom_start=12,
         tiles='CartoDB positron'
     )
+    
+    # Add heatmap layer if enabled
+    if show_heatmap and abnormal_events_df is not None:
+        # Filter events by date range
+        if start_date and end_date:
+            start_dt = pd.to_datetime(start_date)
+            end_dt = pd.to_datetime(end_date)
+            events_filtered = abnormal_events_df[
+                (abnormal_events_df['timestamp'] >= start_dt) & 
+                (abnormal_events_df['timestamp'] <= end_dt)
+            ]
+        else:
+            events_filtered = abnormal_events_df
+        
+        # Prepare heatmap data
+        heat_data = [[row['lat'], row['lng'], row['max_severity']] 
+                     for idx, row in events_filtered.iterrows() 
+                     if pd.notna(row['lat']) and pd.notna(row['lng'])]
+        
+        # Add heatmap
+        HeatMap(
+            heat_data,
+            min_opacity=0.3,
+            max_zoom=13,
+            radius=15,
+            blur=20,
+            gradient={0.4: 'blue', 0.6: 'yellow', 0.8: 'orange', 1: 'red'}
+        ).add_to(m)
     
     # Add sensor hotspots
     for idx, row in sensor_hotspots.iterrows():
@@ -244,19 +299,59 @@ def render_tab1():
     
     # Load data
     try:
-        sensor_df, perception_df, corridor_df = load_preprocessed_data()
+        sensor_df, perception_df, corridor_df, abnormal_events_df = load_preprocessed_data()
     except Exception as e:
         st.error(f"Error loading data: {str(e)}")
         return
     
+    # Get date range from data
+    min_date = sensor_df['first_seen'].min().date()
+    max_date = sensor_df['last_seen'].max().date()
+    
     # Sidebar controls
     st.sidebar.subheader("Display Settings")
     
+    # Date range filter
+    st.sidebar.markdown("**Date Range Filter**")
+    col_start, col_end = st.sidebar.columns(2)
+    
+    with col_start:
+        start_date = st.date_input(
+            "Start Date",
+            value=min_date,
+            min_value=min_date,
+            max_value=max_date,
+            key="start_date"
+        )
+    
+    with col_end:
+        end_date = st.date_input(
+            "End Date",
+            value=max_date,
+            min_value=min_date,
+            max_value=max_date,
+            key="end_date"
+        )
+    
+    # Validate date range
+    if start_date > end_date:
+        st.sidebar.error("Start date must be before end date")
+        return
+    
+    # Filter data by date range
+    sensor_filtered, perception_filtered, corridor_filtered = filter_by_date_range(
+        sensor_df, perception_df, corridor_df, start_date, end_date
+    )
+    
+    # Hotspot count selector
     total_hotspots = st.sidebar.selectbox(
         "Number of hotspots to display",
         options=[10, 20, 30],
         index=0
     )
+    
+    # Heatmap toggle
+    show_heatmap = st.sidebar.checkbox("Show Heatmap Layer", value=False)
     
     # Display data distribution info
     sensor_count = round(total_hotspots * 0.5)
@@ -270,31 +365,46 @@ def render_tab1():
         f"Corridor Reports: {corridor_count}"
     )
     
-    # Select top hotspots
+    # Show filtered data stats
+    days_selected = (end_date - start_date).days + 1
+    st.sidebar.metric("Days Selected", days_selected)
+    st.sidebar.metric("Total Events", len(abnormal_events_df[
+        (abnormal_events_df['timestamp'] >= pd.to_datetime(start_date)) &
+        (abnormal_events_df['timestamp'] <= pd.to_datetime(end_date))
+    ]))
+    
+    # Select top hotspots from filtered data
     sensor_top, perception_top, corridor_top = select_top_hotspots(
-        sensor_df, perception_df, corridor_df, total_hotspots
+        sensor_filtered, perception_filtered, corridor_filtered, total_hotspots
     )
     
     # Display summary metrics
     col1, col2, col3 = st.columns(3)
     
     with col1:
-        st.metric("Total Sensor Hotspots", len(sensor_df))
+        st.metric("Total Sensor Hotspots", len(sensor_filtered))
         st.metric("Displaying", len(sensor_top))
     
     with col2:
-        st.metric("Total Perception Hotspots", len(perception_df))
+        st.metric("Total Perception Hotspots", len(perception_filtered))
         st.metric("Displaying", len(perception_top))
     
     with col3:
-        st.metric("Total Corridor Hotspots", len(corridor_df))
+        st.metric("Total Corridor Hotspots", len(corridor_filtered))
         st.metric("Displaying", len(corridor_top))
     
     # Create and display map
     st.subheader("Interactive Map")
     
+    if show_heatmap:
+        st.info("Heatmap shows density and severity of all abnormal events in the selected date range")
+    
     with st.spinner("Loading map..."):
-        m = create_hotspot_map(sensor_top, perception_top, corridor_top)
+        m = create_hotspot_map(
+            sensor_top, perception_top, corridor_top,
+            abnormal_events_df, show_heatmap,
+            start_date, end_date
+        )
         folium_static(m, width=1200, height=600)
     
     # Display hotspot details
@@ -312,7 +422,8 @@ def render_tab1():
         st.dataframe(
             sensor_top[[
                 'cluster_id', 'street_name', 'event_type', 
-                'event_count', 'device_count', 'concern_score'
+                'event_count', 'device_count', 'concern_score',
+                'first_seen', 'last_seen'
             ]],
             use_container_width=True
         )
@@ -322,7 +433,7 @@ def render_tab1():
             perception_top[[
                 'cluster_id', 'street_name', 'event_type',
                 'event_count', 'device_count', 'concern_score',
-                'total_perception_count'
+                'total_perception_count', 'first_seen', 'last_seen'
             ]],
             use_container_width=True
         )
@@ -331,7 +442,7 @@ def render_tab1():
         st.dataframe(
             corridor_top[[
                 'road_name', 'report_count', 'weighted_score',
-                'priority_category', 'dominant_category'
+                'priority_rank', 'priority_category', 'dominant_category'
             ]],
             use_container_width=True
         )
