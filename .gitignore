@@ -71,3 +71,4 @@ htmlcov/
 # API Keys (safety)
 *_api_key.txt
 secrets.json
+/data
