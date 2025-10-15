@@ -26,7 +26,12 @@ tab1, tab2 = st.tabs(["Hotspot Analysis", "Trend Analysis"])
 
 # Tab 1: Hotspot Analysis
 with tab1:
-    render_tab1()
+    try:
+        render_tab1()
+    except Exception as e:
+        st.error(f"Error: {str(e)}")
+        import traceback
+        st.code(traceback.format_exc())
 
 # Tab 2: Trend Analysis (placeholder for now)
 with tab2:
