@@ -1,34 +1,41 @@
 """
-Constants used throughout the application
+Constants and configuration for the Dublin Road Safety Dashboard
 """
 
-# Earth radius in meters (for distance calculations)
-EARTH_RADIUS_M = 6371000
-
-# Coordinate precision
-COORDINATE_PRECISION = 6
-
 # Google Street View URL template
-STREET_VIEW_URL_TEMPLATE = "https://www.google.com/maps/@?api=1&map_action=pano&viewpoint={lat},{lng}&heading={heading}&pitch=0&fov=80"
+STREET_VIEW_URL_TEMPLATE = "https://www.google.com/maps/@?api=1&map_action=pano&viewpoint={lat},{lng}&heading={heading}"
 
-# Map tiles
-MAP_TILES = {
-    "OpenStreetMap": "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
-    "CartoDB Positron": "https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png",
-    "CartoDB Dark Matter": "https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png",
-}
+# Map configuration
+DUBLIN_CENTER = [53.3498, -6.2603]
+DEFAULT_ZOOM = 12
 
-# Color schemes for severity/priority
+# Color schemes
 SEVERITY_COLORS = {
-    'CRITICAL': '#DC2626',  # Red
-    'HIGH': '#F59E0B',      # Orange
-    'MEDIUM': '#10B981',    # Green
-    'LOW': '#6B7280'        # Gray
+    'critical': '#DC2626',  # Red
+    'high': '#F59E0B',      # Orange  
+    'medium': '#10B981',    # Green
+    'low': '#6B7280'        # Gray
 }
 
-# Hotspot distribution weights
-HOTSPOT_WEIGHTS = {
-    'sensor': 0.5,      # 50% from sensor data
-    'perception': 0.3,  # 30% from perception + sensor
-    'corridor': 0.2     # 20% from corridor reports
+LAYER_COLORS = {
+    'popularity': ['#0000FF', '#00FFFF', '#00FF00', '#FFFF00', '#FF0000'],
+    'safety': ['#FFFF00', '#FF8C00', '#FF0000', '#8B0000']
 }
+
+# Data processing parameters
+HOTSPOT_DISTRIBUTION = {
+    'sensor': 0.5,      # 50% sensor data
+    'perception': 0.3,  # 30% perception data  
+    'corridor': 0.2     # 20% corridor data
+}
+
+# Grid resolution for trend analysis
+GRID_RESOLUTION_M = 6
+
+# File paths
+DATA_DIR = "data/processed/tab1_hotspots"
+TREND_DATA_DIR = "data/processed/tab2_trend"
+
+# API configurations (if needed)
+MAX_RETRIES = 3
+TIMEOUT_SECONDS = 30

@@ -16,7 +16,7 @@ from src.ai_insights import generate_hotspot_insights, extract_user_comments
 
 def load_preprocessed_data():
     """Load all preprocessed hotspot data"""
-    data_dir = Path("data/processed")
+    data_dir = Path("data/processed/tab1_hotspots")
     
     # Load sensor hotspots (master)
     sensor_df = pd.read_csv(data_dir / "hotspots_master_with_streets.csv")
