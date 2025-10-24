@@ -72,3 +72,5 @@ htmlcov/
 *_api_key.txt
 secrets.json
 /data
+route_popularity_timeseriesv1.geojson
+timed_heatmap.html
