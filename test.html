@@ -1,0 +1,11 @@
+<!DOCTYPE html>
+<html>
+<body>
+<script>
+fetch("/static/route_popularity_timeseries_small.geojson")
+  .then(r => r.text())
+  .then(t => console.log("Response preview:", t.slice(0,200)))
+  .catch(e => console.error(e));
+</script>
+</body>
+</html>
