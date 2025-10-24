@@ -74,3 +74,5 @@ secrets.json
 /data
 route_popularity_timeseriesv1.geojson
 timed_heatmap.html
+static/route_popularity_timeseries.geojson
+static/route_popularity_timeseries_small.geojson
