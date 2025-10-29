@@ -1,411 +1,445 @@
 """
-Tab 2: Cycling Route Trends Analysis
-Using Leaflet.TimeDimension with large file handling
+Tab 2: Route Popularity Trends
+Professional implementation using GeoJSON road segments for visualization
+and CSV data for analysis content
 """
+
 import streamlit as st
 import pandas as pd
-from pathlib import Path
-import streamlit.components.v1 as components
+import folium
+from streamlit_folium import st_folium
+import plotly.graph_objects as go
+import plotly.express as px
 import json
+import re
 
+try:
+    import geopandas as gpd
+    GEOPANDAS_AVAILABLE = True
+except ImportError:
+    GEOPANDAS_AVAILABLE = False
 
-def load_popularity_data():
-    """Load route popularity data from Parquet file for summary stats"""
-    data_dir = Path("data/processed/tab2_trend")
-    popularity_file = data_dir / "route_popularity" / "dailytop50.parquet"
-    
+def load_route_popularity_data():
+    """Load preprocessed route popularity data from CSV"""
     try:
-        if popularity_file.exists():
-            df = pd.read_parquet(popularity_file)
-            # Parse dates
-            if 'ride_date' in df.columns:
-                df['ride_date'] = pd.to_datetime(df['ride_date'])
-            return df
-        else:
-            return pd.DataFrame()
+        csv_path = "/Users/abhishekkumbhar/Documents/GitHub/spinovate-dashboard/data/processed/tab2_trend/route_popularity/Spinovate Tab 2 - Popularity.csv"
+        df = pd.read_csv(csv_path)
+        
+        # Clean column names
+        df.columns = df.columns.str.strip()
+        
+        # Parse week dates
+        if 'week' in df.columns:
+            df['week_date'] = pd.to_datetime(df['week'], format='%d %b %Y', errors='coerce')
+        
+        # Extract trip numbers for metrics
+        def extract_trips_number(text):
+            if pd.isna(text):
+                return 0
+            match = re.search(r'(\d+)\s+trips?', str(text))
+            return int(match.group(1)) if match else 0
+        
+        if 'peak_trips' in df.columns:
+            df['trips_count'] = df['peak_trips'].apply(extract_trips_number)
+        
+        return df
+    
     except Exception as e:
-        st.error(f"Error loading popularity data: {e}")
+        st.error(f"Error loading CSV data: {e}")
         return pd.DataFrame()
 
-
-def analyze_large_geojson():
-    """Analyze GeoJSON structure without loading the entire file"""
-    geojson_file = Path("route_popularity_timeseries_small.geojson")
-    
-    if not geojson_file.exists():
-        return None
-    
-    file_size_mb = geojson_file.stat().st_size / (1024 * 1024)
-    st.warning(f"📁 **Large File Detected:** {file_size_mb:.1f} MB")
-    
+def load_road_segments():
+    """Load road segment geometry from GeoJSON file"""
     try:
-        # Read just the first few lines to understand structure
-        with open(geojson_file, 'r', encoding='utf-8') as f:
-            # Read first 1000 characters to get structure
-            sample = f.read(1000)
-            
-        st.markdown("### 🔍 GeoJSON Sample Analysis")
-        st.write(f"**File Size:** {file_size_mb:.1f} MB")
-        st.write(f"**Sample (first 1000 chars):**")
-        st.code(sample, language='json')
+        geojson_path = "/Users/abhishekkumbhar/Documents/GitHub/spinovate-dashboard/data/processed/tab2_trend/route_popularity/active_segments.geojson"
         
-        # Try to parse the beginning to understand structure
-        if sample.strip().startswith('{'):
-            # Find the first feature
-            f.seek(0)
-            line_count = 0
-            for line in f:
-                if '"features"' in line:
-                    st.write("✅ Found features array")
-                    break
-                if '"properties"' in line:
-                    st.write("✅ Found properties")
-                    # Try to extract a sample property
-                    if 'time' in line.lower() or 'date' in line.lower():
-                        st.write(f"🕒 **Temporal data found:** {line.strip()[:100]}...")
-                    break
-                line_count += 1
-                if line_count > 50:  # Don't read too much
-                    break
-                    
+        if GEOPANDAS_AVAILABLE:
+            # Try geopandas first
+            try:
+                gdf = gpd.read_file(geojson_path)
+                return gdf
+            except Exception as e:
+                st.warning(f"Geopandas failed: {e}. Trying fallback method...")
+        
+        # Fallback: Load GeoJSON directly with json
+        with open(geojson_path, 'r') as f:
+            geojson_data = json.load(f)
+        
+        # Convert to DataFrame with geometry parsing
+        roads_data = []
+        for feature in geojson_data['features']:
+            properties = feature['properties']
+            geometry = feature['geometry']
+            
+            # Create a simple geometry object
+            roads_data.append({
+                'street_name': properties.get('street_name', 'Unknown'),
+                'geometry_type': geometry['type'],
+                'coordinates': geometry['coordinates']
+            })
+        
+        return pd.DataFrame(roads_data)
+    
     except Exception as e:
-        st.error(f"Error analyzing file: {e}")
-        return None
-    
-    return {"size_mb": file_size_mb}
+        st.error(f"Error loading GeoJSON data: {e}")
+        return pd.DataFrame()
 
+def get_color_for_route(color_name):
+    """Convert color name to hex color"""
+    color_map = {
+        'Green': '#22c55e',
+        'Red': '#ef4444',
+        'Yellow': '#eab308',
+        'Blue': '#3b82f6'
+    }
+    return color_map.get(color_name, '#6b7280')
 
-def create_file_server_html():
-    """Create HTML that serves the GeoJSON via a local file server approach"""
+def create_trend_visualization(street_name, trips_count, color):
+    """Create trend visualization based on available data"""
+    weeks = list(range(1, 13))
     
-    html_content = """
-    <!DOCTYPE html>
-    <html>
-    <head>
-        <title>Temporal Heatmap</title>
-        <meta charset="utf-8" />
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    # Use actual trip count as baseline
+    fig = go.Figure()
+    fig.add_trace(go.Scatter(
+        x=weeks,
+        y=[trips_count] * len(weeks),
+        mode='lines+markers',
+        line=dict(color=get_color_for_route(color), width=3),
+        marker=dict(size=6),
+        name='Peak Weekly Trips',
+        hovertemplate='<b>Week %{x}</b><br>Peak Trips: %{y}<extra></extra>'
+    ))
+    
+    fig.update_layout(
+        title=f'{street_name} - Peak Performance',
+        xaxis_title='Week',
+        yaxis_title='Trip Count',
+        height=300,
+        margin=dict(l=40, r=40, t=50, b=40),
+        font=dict(size=12),
+        showlegend=False,
+        plot_bgcolor='white'
+    )
+    
+    return fig
+
+def create_route_map(df, road_segments_df):
+    """Create map with actual road segment polylines from GeoJSON"""
+    dublin_center = [53.3498, -6.2603]
+    m = folium.Map(location=dublin_center, zoom_start=12, tiles='OpenStreetMap')
+    
+    routes_added = 0
+    
+    # Iterate through road segments
+    for idx, segment_row in road_segments_df.iterrows():
+        street_name = segment_row['street_name']
         
-        <!-- Leaflet CSS -->
-        <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
+        # Find corresponding data in CSV
+        csv_data = df[df['street_name'] == street_name]
         
-        <!-- Leaflet TimeDimension CSS -->
-        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet-timedimension@1.1.1/dist/leaflet.timedimension.control.css" />
+        if csv_data.empty:
+            continue  # Skip if no corresponding data in CSV
         
-        <style>
-            #map { 
-                height: 650px; 
-                width: 100%;
-            }
-            .error-message {
-                background: #ffebee;
-                border: 1px solid #f44336;
-                padding: 10px;
-                margin: 10px;
-                border-radius: 4px;
-                color: #c62828;
-            }
-            .info-message {
-                background: #e3f2fd;
-                border: 1px solid #2196f3;
-                padding: 10px;
-                margin: 10px;
-                border-radius: 4px;
-                color: #1565c0;
-            }
-        </style>
-    </head>
-    <body>
-        <div id="status" class="info-message">
-            📊 Loading temporal heatmap data...
+        route_data = csv_data.iloc[0]
+        color = route_data.get('Colour', 'Gray')
+        trips_count = route_data.get('trips_count', 0)
+        
+        # Create popup with preprocessed data
+        popup_html = f"""
+        <div style="width: 400px; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; line-height: 1.5;">
+            <h4 style="margin: 0 0 16px 0; color: {get_color_for_route(color)}; 
+                       border-bottom: 2px solid {get_color_for_route(color)}; padding-bottom: 8px; font-size: 16px;">
+                {street_name}
+            </h4>
+            
+            <div style="background: #f8f9fa; padding: 12px; border-radius: 8px; margin-bottom: 16px;">
+                <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+                    <span style="font-weight: 600;">Status:</span>
+                    <span style="color: {get_color_for_route(color)}; font-weight: 600;">{color}</span>
+                </div>
+                <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+                    <span style="font-weight: 600;">Peak Trips:</span>
+                    <span style="font-weight: 600;">{trips_count:,}</span>
+                </div>
+                <div style="display: flex; justify-content: space-between;">
+                    <span style="font-weight: 600;">Peak Week:</span>
+                    <span>{route_data.get('week', 'N/A')}</span>
+                </div>
+            </div>
+            
+            <div style="margin-bottom: 16px;">
+                <div style="font-weight: 600; margin-bottom: 8px;">Weather Impact:</div>
+                <div style="font-size: 14px; color: #6b7280; line-height: 1.4;">
+                    {str(route_data.get('weather_impact_note', ''))[:200]}{'...' if len(str(route_data.get('weather_impact_note', ''))) > 200 else ''}
+                </div>
+            </div>
+            
+            <div style="text-align: center; padding-top: 12px; border-top: 1px solid #e5e7eb;">
+                <small style="color: #6b7280;">Select route below for detailed analysis</small>
+            </div>
         </div>
+        """
         
-        <div id="map"></div>
+        # Handle geometry based on available data
+        if GEOPANDAS_AVAILABLE and hasattr(segment_row, 'geometry'):
+            # Original geopandas method
+            geometry = segment_row['geometry']
+            
+            if geometry.geom_type == 'MultiLineString':
+                for line in geometry.geoms:
+                    coords = [[point[1], point[0]] for point in line.coords]
+                    folium.PolyLine(
+                        locations=coords,
+                        color=get_color_for_route(color),
+                        weight=5,
+                        opacity=0.8,
+                        popup=folium.Popup(popup_html, max_width=450),
+                        tooltip=f"{street_name}: {color} status"
+                    ).add_to(m)
+            
+            elif geometry.geom_type == 'LineString':
+                coords = [[point[1], point[0]] for point in geometry.coords]
+                folium.PolyLine(
+                    locations=coords,
+                    color=get_color_for_route(color),
+                    weight=5,
+                    opacity=0.8,
+                    popup=folium.Popup(popup_html, max_width=450),
+                    tooltip=f"{street_name}: {color} status"
+                ).add_to(m)
         
-        <!-- Leaflet JS -->
-        <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
+        else:
+            # Fallback method using raw coordinates
+            geometry_type = segment_row.get('geometry_type', '')
+            coordinates = segment_row.get('coordinates', [])
+            
+            if geometry_type == 'MultiLineString' and coordinates:
+                for line_coords in coordinates:
+                    coords = [[point[1], point[0]] for point in line_coords]  # Convert to [lat, lng]
+                    folium.PolyLine(
+                        locations=coords,
+                        color=get_color_for_route(color),
+                        weight=5,
+                        opacity=0.8,
+                        popup=folium.Popup(popup_html, max_width=450),
+                        tooltip=f"{street_name}: {color} status"
+                    ).add_to(m)
+            
+            elif geometry_type == 'LineString' and coordinates:
+                coords = [[point[1], point[0]] for point in coordinates]  # Convert to [lat, lng]
+                folium.PolyLine(
+                    locations=coords,
+                    color=get_color_for_route(color),
+                    weight=5,
+                    opacity=0.8,
+                    popup=folium.Popup(popup_html, max_width=450),
+                    tooltip=f"{street_name}: {color} status"
+                ).add_to(m)
         
-        <!-- Leaflet TimeDimension JS -->
-        <script src="https://cdn.jsdelivr.net/npm/iso8601-js-period@0.2.1/iso8601.min.js"></script>
-        <script src="https://cdn.jsdelivr.net/npm/leaflet-timedimension@1.1.1/dist/leaflet.timedimension.min.js"></script>
-        
-        <!-- Leaflet Heat JS -->
-        <script src="https://cdn.jsdelivr.net/npm/leaflet.heat@0.2.0/dist/leaflet-heat.js"></script>
-        
-        <script>
-            function updateStatus(message, isError = false) {
-                const statusDiv = document.getElementById('status');
-                statusDiv.textContent = message;
-                statusDiv.className = isError ? 'error-message' : 'info-message';
-            }
-            
-            // Initialize map
-            var map = L.map('map', {
-                zoom: 12,
-                center: [53.3498, -6.2603], // Dublin center
-                timeDimension: true,
-                timeDimensionControl: true,
-                timeDimensionOptions: {
-                    timeInterval: "2024-01-01/2024-12-31",
-                    period: "P1D",
-                    currentTime: Date.parse("2024-01-01T00:00:00Z")
-                },
-                timeDimensionControlOptions: {
-                    autoPlay: false,
-                    loopButton: true,
-                    playReverseButton: true,
-                    timeSliderDragUpdate: true,
-                    speedSlider: false
-                }
-            });
-            
-            // Add base layer
-            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-                attribution: '© OpenStreetMap contributors'
-            }).addTo(map);
-            
-            updateStatus("🗺️ Map initialized, attempting to load data...");
-            
-            // Try to load GeoJSON with better error handling
-            function loadGeojsonData() {
-                // Try different approaches to load the large file
-                
-                // Approach 1: Direct fetch (will likely fail due to CORS/404)
-                fetch('route_popularity_timeseries_small.geojson')
-                    .then(response => {
-                        if (!response.ok) {
-                            throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-                        }
-                        return response.json();
-                    })
-                    .then(data => {
-                        updateStatus("✅ Data loaded successfully! Processing temporal layers...");
-                        processGeojsonData(data);
-                    })
-                    .catch(error => {
-                        console.error('Fetch error:', error);
-                        updateStatus("❌ Failed to load data via fetch: " + error.message, true);
-                        
-                        // Provide fallback instructions
-                        const statusDiv = document.getElementById('status');
-                        statusDiv.innerHTML = `
-                            <strong>❌ Unable to load large GeoJSON file (678MB)</strong><br><br>
-                            <strong>Solutions:</strong><br>
-                            1. <strong>Use a local file server:</strong> Run <code>python -m http.server 8000</code> in your project directory<br>
-                            2. <strong>Reduce file size:</strong> Sample or compress your data<br>
-                            3. <strong>Use tiled approach:</strong> Split data into smaller temporal chunks<br><br>
-                            <strong>Current issue:</strong> Streamlit cannot serve large static files directly.<br>
-                            The file exists but cannot be accessed by the embedded HTML.
-                        `;
-                    });
-            }
-            
-            function processGeojsonData(geojsonData) {
-                try {
-                    console.log('Processing GeoJSON data:', geojsonData);
-                    
-                    // Extract temporal information
-                    if (!geojsonData.features || geojsonData.features.length === 0) {
-                        throw new Error('No features found in GeoJSON');
-                    }
-                    
-                    // Analyze temporal properties
-                    const firstFeature = geojsonData.features[0];
-                    const props = firstFeature.properties;
-                    console.log('First feature properties:', props);
-                    
-                    // Look for temporal fields
-                    const temporalFields = Object.keys(props).filter(key => 
-                        key.toLowerCase().includes('time') || 
-                        key.toLowerCase().includes('date') ||
-                        key.toLowerCase().includes('timestamp')
-                    );
-                    
-                    console.log('Temporal fields found:', temporalFields);
-                    
-                    if (temporalFields.length === 0) {
-                        throw new Error('No temporal fields found in GeoJSON properties');
-                    }
-                    
-                    // Create time dimension layer
-                    var geojsonLayer = L.geoJSON(geojsonData, {
-                        onEachFeature: function(feature, layer) {
-                            // Add popup with properties
-                            if (feature.properties) {
-                                layer.bindPopup(Object.keys(feature.properties)
-                                    .map(key => `<b>${key}:</b> ${feature.properties[key]}`)
-                                    .join('<br>'));
-                            }
-                        }
-                    });
-                    
-                    var timeDimensionLayer = L.timeDimension.layer.geoJson(geojsonLayer, {
-                        updateTimeDimension: true,
-                        addlastPoint: false,
-                        waitForReady: true
-                    });
-                    
-                    timeDimensionLayer.addTo(map);
-                    updateStatus(`✅ Temporal layer created with ${geojsonData.features.length} features`);
-                    
-                } catch (error) {
-                    console.error('Processing error:', error);
-                    updateStatus("❌ Error processing GeoJSON: " + error.message, true);
-                }
-            }
-            
-            // Start loading
-            loadGeojsonData();
-            
-        </script>
-    </body>
-    </html>
-    """
+        routes_added += 1
     
-    return html_content
+    # Add professional legend
+    if routes_added > 0:
+        legend_html = """
+        <div style="position: fixed; 
+                    top: 10px; right: 10px; width: 200px; height: 100px; 
+                    background-color: white; border: 1px solid #d1d5db; z-index:9999; 
+                    font-size: 14px; padding: 16px; border-radius: 8px; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);">
+        <div style="font-weight: 600; margin-bottom: 12px; color: #111827;">Route Performance</div>
+        <div style="margin-bottom: 8px;">
+            <span style="display: inline-block; width: 16px; height: 3px; background-color: #22c55e; margin-right: 8px;"></span>
+            <span style="color: #374151;">Strong Performance</span>
+        </div>
+        <div style="margin-bottom: 8px;">
+            <span style="display: inline-block; width: 16px; height: 3px; background-color: #ef4444; margin-right: 8px;"></span>
+            <span style="color: #374151;">Needs Attention</span>
+        </div>
+        </div>
+        """
+        m.get_root().html.add_child(folium.Element(legend_html))
+    
+    return m, routes_added
 
-
-def render_tab2():
-    """Main function to render Tab 2 content"""
-    
-    st.header("Cycling Route Trends Analysis")
-    st.markdown("**Temporal heatmap with large file handling**")
-    
-    # Check for the large GeoJSON file
-    geojson_file = Path("route_popularity_timeseries_small.geojson")
-    
-    if not geojson_file.exists():
-        st.error("❌ **GeoJSON file not found:** `route_popularity_timeseries_small.geojson`")
-        st.info("Please place the file in the same directory as `app.py`")
+def show_route_details(df, selected_street):
+    """Display detailed analysis for selected route"""
+    if not selected_street:
+        st.info("Select a route from the dropdown above to view detailed analysis")
         return
     
-    # Analyze the file without loading it entirely
-    file_info = analyze_large_geojson()
+    street_data = df[df['street_name'] == selected_street]
+    if street_data.empty:
+        st.error(f"No data found for {selected_street}")
+        return
     
-    # Load summary data for statistics (optional)
-    popularity_df = load_popularity_data()
+    row = street_data.iloc[0]
     
-    # Show summary statistics if data is available
-    if not popularity_df.empty:
-        # Display summary metrics in sidebar
-        st.sidebar.header("Dataset Overview")
-        
-        # Create summary statistics
-        stats = {
-            'total_records': len(popularity_df),
-            'unique_dates': popularity_df['ride_date'].nunique() if 'ride_date' in popularity_df.columns else 0,
-            'avg_popularity': popularity_df['popularity_score'].mean() if 'popularity_score' in popularity_df.columns else 0,
-            'max_popularity': popularity_df['popularity_score'].max() if 'popularity_score' in popularity_df.columns else 0,
-        }
-        
-        st.sidebar.metric("Total Records", f"{stats['total_records']:,}")
-        st.sidebar.metric("Time Period", f"{stats['unique_dates']} days")
-        st.sidebar.metric("Avg Popularity", f"{stats['avg_popularity']:.2f}")
-        st.sidebar.metric("Max Popularity", f"{stats['max_popularity']:.2f}")
+    st.subheader(f"Route Analysis: {selected_street}")
     
-    # Large file handling options
-    st.sidebar.markdown("---")
-    st.sidebar.markdown("**🔧 Large File Solutions:**")
+    # Key metrics
+    col1, col2, col3 = st.columns(3)
     
-    solution_choice = st.sidebar.radio(
-        "Choose approach:",
-        [
-            "Embedded HTML (Current)",
-            "Local File Server",
-            "Data Sampling"
-        ]
+    with col1:
+        st.metric("Peak Weekly Trips", f"{row.get('trips_count', 0):,}")
+    
+    with col2:
+        st.metric("Performance Status", f"{row.get('Colour', 'Unknown')}")
+    
+    with col3:
+        st.metric("Peak Week", row.get('week', 'N/A'))
+    
+    # Visualization
+    st.plotly_chart(
+        create_trend_visualization(selected_street, row.get('trips_count', 0), row.get('Colour', 'Gray')),
+        use_container_width=True
     )
     
-    if solution_choice == "Local File Server":
-        st.sidebar.markdown("""
-        **Steps:**
-        1. Open terminal in project directory
-        2. Run: `python -m http.server 8000`
-        3. Update HTML to use: `http://localhost:8000/route_popularity_timeseries_small.geojson`
-        """)
+    # Weather impact analysis
+    st.subheader("Weather Impact Analysis")
+    st.write(row.get('weather_impact_note', 'No weather data available'))
     
-    elif solution_choice == "Data Sampling":
-        st.sidebar.markdown("""
-        **Reduce file size:**
-        1. Sample every Nth feature
-        2. Reduce temporal resolution
-        3. Geographic bounding box
-        4. Compress coordinates
-        """)
+    # Peak performance details
+    st.subheader("Peak Performance Details")
+    st.write(row.get('peak_trips', 'No peak data available'))
     
-    # Instructions for using the temporal map
-    st.sidebar.markdown("---")
-    st.sidebar.markdown("**🎮 Temporal Map Controls:**")
-    st.sidebar.markdown("⏯️ **Play/Pause:** Animate through time")
-    st.sidebar.markdown("⏭️ **Step:** Move forward/backward in time")
-    st.sidebar.markdown("🔄 **Loop:** Repeat animation")
-    st.sidebar.markdown("📅 **Slider:** Jump to specific time")
+    # Route summary
+    st.subheader("Route Summary")
+    st.write(row.get('summary', 'No summary available'))
+
+def render_tab2():
+    """Main function to render Tab 2"""
+    st.header("Route Popularity Trends")
+    st.markdown("Analysis of cycling route performance and usage patterns across Dublin")
     
-    # Display the temporal heatmap
-    st.subheader("Interactive Temporal Heatmap")
+    # Load data
+    df = load_route_popularity_data()
+    road_segments_df = load_road_segments()
     
-    # Show file status
-    file_size_mb = geojson_file.stat().st_size / (1024 * 1024)
-    st.warning(f"⚠️ **Large File Warning:** {file_size_mb:.1f} MB file detected")
+    if df.empty:
+        st.error("Could not load route popularity data")
+        st.info("Please ensure the CSV file exists and contains the required data")
+        return
     
-    if file_size_mb > 100:
-        st.error("""
-        **File too large for direct embedding!**
-        
-        **Current limitations:**
-        - Streamlit cannot serve large static files directly
-        - Browser memory limits for large datasets
-        - Network transfer time for 678MB file
-        
-        **Recommended solutions:**
-        1. **Use local file server** (see sidebar)
-        2. **Reduce data size** by sampling or temporal aggregation
-        3. **Split into smaller temporal chunks**
-        """)
+    if road_segments_df.empty:
+        st.error("Could not load road segment geometry")
+        st.info("Please ensure the active_segments.geojson file exists")
+        return
     
-    # Create and embed the HTML with error handling
-    html_content = create_file_server_html()
+    # Data validation
+    csv_streets = set(df['street_name'].unique())
     
-    # Embed the HTML
-    components.html(
-        html_content,
-        width=1200,
-        height=700,
-        scrolling=False
+    if GEOPANDAS_AVAILABLE and hasattr(road_segments_df, 'empty') and not road_segments_df.empty:
+        geojson_streets = set(road_segments_df['street_name'].unique())
+    else:
+        geojson_streets = set(road_segments_df['street_name'].unique()) if not road_segments_df.empty else set()
+    
+    matching_streets = csv_streets.intersection(geojson_streets)
+    missing_from_geojson = csv_streets - geojson_streets
+    missing_from_csv = geojson_streets - csv_streets
+    
+    if missing_from_geojson:
+        st.warning(f"Streets in CSV but not in GeoJSON: {missing_from_geojson}")
+    if missing_from_csv:
+        st.warning(f"Streets in GeoJSON but not in CSV: {missing_from_csv}")
+    
+    # Summary metrics
+    col1, col2, col3, col4 = st.columns(4)
+    
+    with col1:
+        total_routes = len(df)
+        st.metric("Total Routes", total_routes)
+    
+    with col2:
+        green_routes = len(df[df['Colour'] == 'Green'])
+        st.metric("Strong Performance", green_routes)
+    
+    with col3:
+        red_routes = len(df[df['Colour'] == 'Red'])
+        st.metric("Needs Attention", red_routes)
+    
+    with col4:
+        avg_trips = df['trips_count'].mean() if 'trips_count' in df.columns else 0
+        st.metric("Average Peak Trips", f"{avg_trips:.0f}")
+    
+    st.markdown("---")
+    
+    # Map section
+    st.subheader("Interactive Route Map")
+    st.markdown("Click on route lines or markers to view summary information")
+    
+    route_map, routes_added = create_route_map(df, road_segments_df)
+    
+    if routes_added > 0:
+        st.markdown(f"Displaying {routes_added} routes with matching data ({len(matching_streets)} streets matched)")
+        map_data = st_folium(route_map, height=500, width=None, key="route_map")
+    else:
+        st.warning("No routes could be displayed. Please check data consistency between CSV and GeoJSON files.")
+    
+    st.markdown("---")
+    
+    # Route selector for detailed analysis
+    st.subheader("Detailed Route Analysis")
+    selected_street = st.selectbox(
+        "Select a route for comprehensive analysis:",
+        options=[''] + df['street_name'].tolist(),
+        help="Choose a route to view detailed performance metrics and analysis"
     )
     
-    # Troubleshooting section
-    with st.expander("🔧 Troubleshooting Large Files"):
-        st.markdown("""
-        **Why 678MB is too large:**
-        - Streamlit message size limit: 200MB
-        - Browser memory consumption
-        - Network transfer time
-        - JSON parsing overhead
+    if selected_street:
+        show_route_details(df, selected_street)
+    else:
+        # Overview section
+        st.markdown("### Performance Overview")
         
-        **Solutions in order of preference:**
+        # Create summary table
+        display_df = df[['street_name', 'week', 'trips_count', 'Colour']].copy()
+        display_df.columns = ['Street Name', 'Peak Week', 'Peak Trips', 'Status']
+        display_df = display_df.sort_values('Peak Trips', ascending=False)
         
-        **1. Local File Server (Recommended)**
-        ```bash
-        # In your project directory:
-        python -m http.server 8000
+        # Style the table
+        def color_status(val):
+            if val == 'Green':
+                return 'background-color: #dcfce7; color: #166534; font-weight: 600; text-align: center;'
+            elif val == 'Red':
+                return 'background-color: #fecaca; color: #dc2626; font-weight: 600; text-align: center;'
+            return 'text-align: center;'
         
-        # Then update your HTML to use:
-        # http://localhost:8000/route_popularity_timeseries_small.geojson
-        ```
+        styled_df = display_df.style.applymap(color_status, subset=['Status'])
+        st.dataframe(styled_df, use_container_width=True, hide_index=True)
         
-        **2. Data Reduction**
-        - Sample every 10th feature: reduces to ~68MB
-        - Daily aggregation instead of hourly
-        - Geographic bounding box for area of interest
+        # Performance charts
+        col1, col2 = st.columns(2)
         
-        **3. Tiled Approach**
-        - Split by month: 12 smaller files
-        - Load tiles on demand
-        - Progressive loading
+        with col1:
+            # Status distribution
+            status_counts = df['Colour'].value_counts()
+            fig_pie = px.pie(
+                values=status_counts.values, 
+                names=status_counts.index,
+                title="Performance Distribution",
+                color_discrete_map={'Green': '#22c55e', 'Red': '#ef4444'}
+            )
+            fig_pie.update_traces(textposition='inside', textinfo='percent+label')
+            fig_pie.update_layout(font=dict(size=12))
+            st.plotly_chart(fig_pie, use_container_width=True)
         
-        **4. Alternative Formats**
-        - Parquet with spatial extension
-        - Vector tiles (MVT)
-        - Compressed GeoJSON
-        """)
+        with col2:
+            # Trip count comparison
+            fig_bar = px.bar(
+                df.sort_values('trips_count', ascending=True), 
+                x='trips_count', 
+                y='street_name',
+                color='Colour',
+                title="Peak Weekly Trips by Route",
+                color_discrete_map={'Green': '#22c55e', 'Red': '#ef4444'},
+                orientation='h'
+            )
+            fig_bar.update_layout(
+                yaxis_title="Route",
+                xaxis_title="Peak Weekly Trips",
+                font=dict(size=12)
+            )
+            st.plotly_chart(fig_bar, use_container_width=True)
+
+# For testing
+if __name__ == "__main__":
+    render_tab2()

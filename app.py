@@ -1,5 +1,6 @@
 """
 Dublin Road Safety Dashboard - Main Application
+Lightweight main app with clean tab organization
 """
 import streamlit as st
 import sys
@@ -9,39 +10,57 @@ from pathlib import Path
 src_path = Path(__file__).parent / "src"
 sys.path.append(str(src_path))
 
-from src.tab1_hotspots import render_tab1
-from src.tab2_trends import render_tab2
-
 # Page configuration
 st.set_page_config(
-    page_title="Dublin Road Safety Dashboard",
+    page_title="Spinovate Safety Dashboard",
     page_icon="🚴‍♂️",
     layout="wide",
     initial_sidebar_state="expanded"
 )
 
 # Main header
-st.title("Dublin Road Safety Dashboard")
-st.markdown("Comprehensive analysis of cycling route safety and usage patterns in Dublin")
+st.title("Spinovate Safety Dashboard")
+st.markdown("AI-Powered Road Safety Analysis for Dublin")
+
+# Import tab modules
+try:
+    from src.tab1_hotspots import render_tab1
+    tab1_available = True
+except ImportError:
+    tab1_available = False
+    st.warning("Tab 1 module not found. Please ensure src/tab1_hotspots.py exists.")
+
+try:
+    from src.tab2_trends import render_tab2
+    tab2_available = True
+except ImportError:
+    tab2_available = False
+    st.warning("Tab 2 module not found. Please ensure src/tab2_route_popularity.py exists.")
 
 # Create tabs
-tab1, tab2 = st.tabs(["Hotspot Analysis", "Trend Analysis"])
+tab1, tab2 = st.tabs(["Hotspot Analysis", "Route Popularity"])
 
 # Tab 1: Hotspot Analysis
 with tab1:
-    try:
-        render_tab1()
-    except Exception as e:
-        st.error(f"Error in Tab 1: {e}")
-        st.info("Please ensure all required data files are available in data/processed/")
+    if tab1_available:
+        try:
+            render_tab1()
+        except Exception as e:
+            st.error(f"Error in Tab 1: {e}")
+            st.info("Please ensure all required data files are available")
+    else:
+        st.info("Tab 1 (Hotspot Analysis) is not yet available")
 
-# Tab 2: Trend Analysis  
+# Tab 2: Route Popularity
 with tab2:
-    try:
-        render_tab2()
-    except Exception as e:
-        st.error(f"Error in Tab 2: {e}")
-        st.info("Please ensure trend data files are available in data/processed/tab2_trend/")
+    if tab2_available:
+        try:
+            render_tab2()
+        except Exception as e:
+            st.error(f"Error in Tab 2: {e}")
+            st.exception(e)
+    else:
+        st.info("Tab 2 (Route Popularity) is not yet available")
 
 # Footer
 st.markdown("---")
@@ -50,36 +69,34 @@ st.markdown("### About This Dashboard")
 with st.expander("Technical Details"):
     st.markdown("""
     **Data Sources:**
-    - Sensor-based abnormal event detection
-    - Community perception reports
-    - Cycling route usage patterns
-    - Daily aggregated safety metrics
+    - Route popularity analysis from cycling trip data
+    - Weather impact correlations
+    - Performance trend analysis
+    - Preprocessed route insights and summaries
+    - Actual road segment geometry from GeoJSON
     
     **Analysis Methods:**
-    - Spatial clustering for hotspot identification
-    - Temporal trend analysis
-    - Multi-layer data fusion
-    - Grid-based aggregation (6m resolution)
+    - Real road segment visualization using MultiLineString geometry
+    - Interactive folium-based mapping with actual street shapes
+    - Performance classification (Green/Red status)
+    - Comprehensive route analysis display
     
-    **Privacy:**
-    - All location data is aggregated
-    - Individual cyclist tracking is anonymized
-    - Reports are processed to remove personal identifiers
+    **Features:**
+    - Interactive map with actual road segment polylines
+    - Route performance metrics and visualizations
+    - Comprehensive analysis of preprocessed data
+    - Professional interface design
+    - Data validation between CSV and GeoJSON sources
     """)
 
 with st.expander("Data Processing Pipeline"):
     st.markdown("""
-    **Tab 1 - Hotspot Analysis:**
-    1. Load preprocessed sensor hotspots, perception reports, and corridor data
-    2. Apply date range filtering
-    3. Select top hotspots using weighted distribution (50% sensor, 30% perception, 20% corridors)
-    4. Combine data sources with color coding by severity
-    5. Generate interactive map with detailed tooltips
-    
-    **Tab 2 - Trend Analysis:**
-    1. Load daily aggregated data from Parquet files
-    2. Filter by selected date and layer type
-    3. Create spatial heatmaps on 6m grid
-    4. Generate temporal trend visualizations
-    5. Provide summary statistics and coverage metrics
+    **Tab 2 - Route Popularity Trends:**
+    1. Load preprocessed route popularity data from CSV file
+    2. Load actual road segment geometry from GeoJSON file
+    3. Match street names between CSV analysis data and GeoJSON geometry
+    4. Create interactive map with color-coded MultiLineString polylines
+    5. Display comprehensive route analysis and summaries
+    6. Provide detailed breakdowns of weather impact and performance data
+    7. Validate data consistency between sources
     """)
