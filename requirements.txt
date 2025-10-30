@@ -37,3 +37,6 @@ requests>=2.31.0
 # AWS
 boto3>=1.28.0
 pyathena>=3.0.0
+
+google-generativeai>=0.7.2
+
