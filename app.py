@@ -6,16 +6,22 @@ import streamlit as st
 import sys, os
 from pathlib import Path
 
-# --- Robust import path setup for Streamlit Cloud ---
-try:
-    app_dir = Path(__file__).resolve().parent
-except NameError:
-    # Fallback if __file__ is not defined (Streamlit Cloud quirk)
-    app_dir = Path(os.getcwd()).resolve()
+# --- Ultimate cross-platform import fix ---
+# Works even if __file__ is blank or Streamlit clones into a subfolder
+cwd = Path(os.getcwd()).resolve()
+possible_srcs = [
+    cwd / "src",
+    cwd.parent / "src",
+    Path("/mount/src/src"),  # Streamlit Cloud fallback
+]
 
-src_path = app_dir / "src"
-if str(src_path) not in sys.path:
-    sys.path.append(str(src_path))
+for src in possible_srcs:
+    if src.exists() and str(src) not in sys.path:
+        sys.path.append(str(src))
+        st.write(f"✅ Added to sys.path: {src}")
+        break
+else:
+    st.error("❌ Could not locate 'src' folder. Check repository layout.")
 
 # Page configuration
 st.set_page_config(
