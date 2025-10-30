@@ -6,13 +6,16 @@ import streamlit as st
 import sys, os
 from pathlib import Path
 
-# Fix for Streamlit Cloud import paths
-os.chdir(os.path.dirname(__file__))
+# --- Robust import path setup for Streamlit Cloud ---
+try:
+    app_dir = Path(__file__).resolve().parent
+except NameError:
+    # Fallback if __file__ is not defined (Streamlit Cloud quirk)
+    app_dir = Path(os.getcwd()).resolve()
 
-# Add src directory to path for imports
-src_path = Path(__file__).parent / "src"
-sys.path.append(str(src_path))
-
+src_path = app_dir / "src"
+if str(src_path) not in sys.path:
+    sys.path.append(str(src_path))
 
 # Page configuration
 st.set_page_config(
