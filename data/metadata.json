@@ -1,0 +1,16 @@
+{
+    "processed_on": "2025-10-15 09:53:33",
+    "eps_meters": 25,
+    "min_samples": 10,
+    "weights": {
+        "count": 0.6,
+        "median_severity": 0.4
+    },
+    "total_raw_events": 25597,
+    "total_hotspots": 302,
+    "event_types": [
+        "pothole",
+        "swerve",
+        "hard_brake"
+    ]
+}
