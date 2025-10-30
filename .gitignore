@@ -79,22 +79,21 @@ static/route_popularity_timeseries_small.geojson
 *.geojson
 
 # ─────────────────────────────────────────────
-# ✅ Allow Streamlit app data (small processed files)
+# ✅ Allow Streamlit app data (only required processed files)
 # ─────────────────────────────────────────────
 !data/
 !data/processed/
 !data/processed/tab1_hotspots/
 !data/processed/tab2_trend/
-
 !data/processed/tab1_hotspots/*.csv
 !data/processed/tab1_hotspots/*.geojson
-!data/processed/tab2_trend/*.csv
-!data/processed/tab2_trend/*.geojson
+!data/processed/tab2_trend/route_popularity/
+!data/processed/tab2_trend/route_popularity/*.csv
+!data/processed/tab2_trend/route_popularity/*.geojson
+!data/processed/tab2_trend/timed_heatmap.html
 
-# ─────────────────────────────────────────────
-# 🧹 Exclude heavy subfolders from tab2_trend
-# ─────────────────────────────────────────────
+# 🧹 Exclude heavy and unnecessary files/folders
 data/processed/tab2_trend/hardbrake/
 data/processed/tab2_trend/pothole/
 data/processed/tab2_trend/swerve/
-
+data/processed/tab2_trend/route_popularity_timeseries.geojson
