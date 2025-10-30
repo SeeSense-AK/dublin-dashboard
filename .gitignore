@@ -91,3 +91,10 @@ static/route_popularity_timeseries_small.geojson
 !data/processed/tab2_trend/*.csv
 !data/processed/tab2_trend/*.geojson
 
+# ─────────────────────────────────────────────
+# 🧹 Exclude heavy subfolders from tab2_trend
+# ─────────────────────────────────────────────
+data/processed/tab2_trend/hardbrake/
+data/processed/tab2_trend/pothole/
+data/processed/tab2_trend/swerve/
+
