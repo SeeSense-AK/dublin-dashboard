@@ -3,12 +3,16 @@ Dublin Road Safety Dashboard - Main Application
 Lightweight main app with clean tab organization
 """
 import streamlit as st
-import sys
+import sys, os
 from pathlib import Path
+
+# Fix for Streamlit Cloud import paths
+os.chdir(os.path.dirname(__file__))
 
 # Add src directory to path for imports
 src_path = Path(__file__).parent / "src"
 sys.path.append(str(src_path))
+
 
 # Page configuration
 st.set_page_config(
