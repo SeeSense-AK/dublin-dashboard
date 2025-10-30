@@ -126,7 +126,7 @@ def create_trend_visualization(street_name, trips_count, color):
 def create_route_map(df, road_segments_df):
     """Create map with actual road segment polylines from GeoJSON"""
     dublin_center = [53.3498, -6.2603]
-    m = folium.Map(location=dublin_center, zoom_start=12, tiles='OpenStreetMap')
+    m = folium.Map(location=dublin_center, zoom_start=12, tiles='CartoDB positron')
     
     routes_added = 0
     
@@ -144,38 +144,28 @@ def create_route_map(df, road_segments_df):
         color = route_data.get('Colour', 'Gray')
         trips_count = route_data.get('trips_count', 0)
         
-        # Create popup with preprocessed data
+        # Determine status text
+        status_text = "Highly Popular" if color == 'Green' else "Popularity Dropped"
+        
+        # Create popup with just route information
         popup_html = f"""
-        <div style="width: 400px; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; line-height: 1.5;">
+        <div style="width: 350px; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; line-height: 1.5;">
             <h4 style="margin: 0 0 16px 0; color: {get_color_for_route(color)}; 
-                       border-bottom: 2px solid {get_color_for_route(color)}; padding-bottom: 8px; font-size: 16px;">
+                       font-size: 18px; font-weight: 600;">
                 {street_name}
             </h4>
             
-            <div style="background: #f8f9fa; padding: 12px; border-radius: 8px; margin-bottom: 16px;">
-                <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
-                    <span style="font-weight: 600;">Status:</span>
-                    <span style="color: {get_color_for_route(color)}; font-weight: 600;">{color}</span>
-                </div>
-                <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
-                    <span style="font-weight: 600;">Peak Trips:</span>
-                    <span style="font-weight: 600;">{trips_count:,}</span>
-                </div>
-                <div style="display: flex; justify-content: space-between;">
-                    <span style="font-weight: 600;">Peak Week:</span>
-                    <span>{route_data.get('week', 'N/A')}</span>
-                </div>
-            </div>
-            
             <div style="margin-bottom: 16px;">
-                <div style="font-weight: 600; margin-bottom: 8px;">Weather Impact:</div>
-                <div style="font-size: 14px; color: #6b7280; line-height: 1.4;">
-                    {str(route_data.get('weather_impact_note', ''))[:200]}{'...' if len(str(route_data.get('weather_impact_note', ''))) > 200 else ''}
+                <div style="margin-bottom: 12px;">
+                    <strong>Status:</strong> <span style="color: {get_color_for_route(color)}; font-weight: 600;">{status_text}</span>
                 </div>
-            </div>
-            
-            <div style="text-align: center; padding-top: 12px; border-top: 1px solid #e5e7eb;">
-                <small style="color: #6b7280;">Select route below for detailed analysis</small>
+                
+                <div style="margin-bottom: 16px;">
+                    <strong>Note:</strong><br>
+                    <div style="font-size: 14px; color: #374151; line-height: 1.4; margin-top: 8px;">
+                        {str(route_data.get('peak_trips', 'No data available'))}
+                    </div>
+                </div>
             </div>
         </div>
         """
@@ -193,8 +183,8 @@ def create_route_map(df, road_segments_df):
                         color=get_color_for_route(color),
                         weight=5,
                         opacity=0.8,
-                        popup=folium.Popup(popup_html, max_width=450),
-                        tooltip=f"{street_name}: {color} status"
+                        popup=folium.Popup(popup_html, max_width=400),
+                        tooltip=street_name
                     ).add_to(m)
             
             elif geometry.geom_type == 'LineString':
@@ -204,8 +194,8 @@ def create_route_map(df, road_segments_df):
                     color=get_color_for_route(color),
                     weight=5,
                     opacity=0.8,
-                    popup=folium.Popup(popup_html, max_width=450),
-                    tooltip=f"{street_name}: {color} status"
+                    popup=folium.Popup(popup_html, max_width=400),
+                    tooltip=street_name
                 ).add_to(m)
         
         else:
@@ -221,8 +211,8 @@ def create_route_map(df, road_segments_df):
                         color=get_color_for_route(color),
                         weight=5,
                         opacity=0.8,
-                        popup=folium.Popup(popup_html, max_width=450),
-                        tooltip=f"{street_name}: {color} status"
+                        popup=folium.Popup(popup_html, max_width=400),
+                        tooltip=street_name
                     ).add_to(m)
             
             elif geometry_type == 'LineString' and coordinates:
@@ -232,8 +222,8 @@ def create_route_map(df, road_segments_df):
                     color=get_color_for_route(color),
                     weight=5,
                     opacity=0.8,
-                    popup=folium.Popup(popup_html, max_width=450),
-                    tooltip=f"{street_name}: {color} status"
+                    popup=folium.Popup(popup_html, max_width=400),
+                    tooltip=street_name
                 ).add_to(m)
         
         routes_added += 1
@@ -248,11 +238,11 @@ def create_route_map(df, road_segments_df):
         <div style="font-weight: 600; margin-bottom: 12px; color: #111827;">Route Performance</div>
         <div style="margin-bottom: 8px;">
             <span style="display: inline-block; width: 16px; height: 3px; background-color: #22c55e; margin-right: 8px;"></span>
-            <span style="color: #374151;">Strong Performance</span>
+            <span style="color: #374151;">Highly Popular</span>
         </div>
         <div style="margin-bottom: 8px;">
             <span style="display: inline-block; width: 16px; height: 3px; background-color: #ef4444; margin-right: 8px;"></span>
-            <span style="color: #374151;">Needs Attention</span>
+            <span style="color: #374151;">Popularity Dropped</span>
         </div>
         </div>
         """
@@ -263,7 +253,6 @@ def create_route_map(df, road_segments_df):
 def show_route_details(df, selected_street):
     """Display detailed analysis for selected route"""
     if not selected_street:
-        st.info("Select a route from the dropdown above to view detailed analysis")
         return
     
     street_data = df[df['street_name'] == selected_street]
@@ -287,12 +276,6 @@ def show_route_details(df, selected_street):
     with col3:
         st.metric("Peak Week", row.get('week', 'N/A'))
     
-    # Visualization
-    st.plotly_chart(
-        create_trend_visualization(selected_street, row.get('trips_count', 0), row.get('Colour', 'Gray')),
-        use_container_width=True
-    )
-    
     # Weather impact analysis
     st.subheader("Weather Impact Analysis")
     st.write(row.get('weather_impact_note', 'No weather data available'))
@@ -307,8 +290,6 @@ def show_route_details(df, selected_street):
 
 def render_tab2():
     """Main function to render Tab 2"""
-    st.header("Route Popularity Trends")
-    st.markdown("Analysis of cycling route performance and usage patterns across Dublin")
     
     # Load data
     df = load_route_popularity_data()
@@ -324,121 +305,52 @@ def render_tab2():
         st.info("Please ensure the active_segments.geojson file exists")
         return
     
-    # Data validation
-    csv_streets = set(df['street_name'].unique())
-    
-    if GEOPANDAS_AVAILABLE and hasattr(road_segments_df, 'empty') and not road_segments_df.empty:
-        geojson_streets = set(road_segments_df['street_name'].unique())
-    else:
-        geojson_streets = set(road_segments_df['street_name'].unique()) if not road_segments_df.empty else set()
-    
-    matching_streets = csv_streets.intersection(geojson_streets)
-    missing_from_geojson = csv_streets - geojson_streets
-    missing_from_csv = geojson_streets - csv_streets
-    
-    if missing_from_geojson:
-        st.warning(f"Streets in CSV but not in GeoJSON: {missing_from_geojson}")
-    if missing_from_csv:
-        st.warning(f"Streets in GeoJSON but not in CSV: {missing_from_csv}")
-    
-    # Summary metrics
-    col1, col2, col3, col4 = st.columns(4)
-    
-    with col1:
-        total_routes = len(df)
-        st.metric("Total Routes", total_routes)
-    
-    with col2:
-        green_routes = len(df[df['Colour'] == 'Green'])
-        st.metric("Strong Performance", green_routes)
-    
-    with col3:
-        red_routes = len(df[df['Colour'] == 'Red'])
-        st.metric("Needs Attention", red_routes)
-    
-    with col4:
-        avg_trips = df['trips_count'].mean() if 'trips_count' in df.columns else 0
-        st.metric("Average Peak Trips", f"{avg_trips:.0f}")
-    
-    st.markdown("---")
-    
-    # Map section
-    st.subheader("Interactive Route Map")
-    st.markdown("Click on route lines or markers to view summary information")
+    # Map section (first thing on the page)
+    st.subheader("Route Popularity")
     
     route_map, routes_added = create_route_map(df, road_segments_df)
     
     if routes_added > 0:
-        st.markdown(f"Displaying {routes_added} routes with matching data ({len(matching_streets)} streets matched)")
         map_data = st_folium(route_map, height=500, width=None, key="route_map")
+        
+        # Check if user clicked on a popup and extract street name
+        clicked_street = None
+        if map_data and 'last_object_clicked_popup' in map_data and map_data['last_object_clicked_popup']:
+            popup_content = str(map_data['last_object_clicked_popup'])
+            
+            # The popup content is plain text, street name appears first
+            # Check which street name appears at the very beginning
+            for street_name in df['street_name'].tolist():
+                if popup_content.strip().startswith(street_name):
+                    clicked_street = street_name
+                    break
+            
+            # Fallback: if no street starts the content, find the one that appears earliest
+            if not clicked_street:
+                earliest_position = len(popup_content)
+                for street_name in df['street_name'].tolist():
+                    position = popup_content.find(street_name)
+                    if position != -1 and position < earliest_position:
+                        clicked_street = street_name
+                        earliest_position = position
+        
+        # Show button only if a street popup was clicked
+        if clicked_street:
+            st.markdown("---")
+            if st.button(f"🔍 View Detailed AI Analysis for {clicked_street}", 
+                        type="primary", 
+                        use_container_width=True,
+                        key=f"analyze_{clicked_street}"):
+                
+                # Show spinner and loading
+                with st.spinner("Generating AI insights..."):
+                    import time
+                    time.sleep(4)  # 4 second delay
+                
+                # Show detailed analysis
+                show_route_details(df, clicked_street)
     else:
         st.warning("No routes could be displayed. Please check data consistency between CSV and GeoJSON files.")
-    
-    st.markdown("---")
-    
-    # Route selector for detailed analysis
-    st.subheader("Detailed Route Analysis")
-    selected_street = st.selectbox(
-        "Select a route for comprehensive analysis:",
-        options=[''] + df['street_name'].tolist(),
-        help="Choose a route to view detailed performance metrics and analysis"
-    )
-    
-    if selected_street:
-        show_route_details(df, selected_street)
-    else:
-        # Overview section
-        st.markdown("### Performance Overview")
-        
-        # Create summary table
-        display_df = df[['street_name', 'week', 'trips_count', 'Colour']].copy()
-        display_df.columns = ['Street Name', 'Peak Week', 'Peak Trips', 'Status']
-        display_df = display_df.sort_values('Peak Trips', ascending=False)
-        
-        # Style the table
-        def color_status(val):
-            if val == 'Green':
-                return 'background-color: #dcfce7; color: #166534; font-weight: 600; text-align: center;'
-            elif val == 'Red':
-                return 'background-color: #fecaca; color: #dc2626; font-weight: 600; text-align: center;'
-            return 'text-align: center;'
-        
-        styled_df = display_df.style.applymap(color_status, subset=['Status'])
-        st.dataframe(styled_df, use_container_width=True, hide_index=True)
-        
-        # Performance charts
-        col1, col2 = st.columns(2)
-        
-        with col1:
-            # Status distribution
-            status_counts = df['Colour'].value_counts()
-            fig_pie = px.pie(
-                values=status_counts.values, 
-                names=status_counts.index,
-                title="Performance Distribution",
-                color_discrete_map={'Green': '#22c55e', 'Red': '#ef4444'}
-            )
-            fig_pie.update_traces(textposition='inside', textinfo='percent+label')
-            fig_pie.update_layout(font=dict(size=12))
-            st.plotly_chart(fig_pie, use_container_width=True)
-        
-        with col2:
-            # Trip count comparison
-            fig_bar = px.bar(
-                df.sort_values('trips_count', ascending=True), 
-                x='trips_count', 
-                y='street_name',
-                color='Colour',
-                title="Peak Weekly Trips by Route",
-                color_discrete_map={'Green': '#22c55e', 'Red': '#ef4444'},
-                orientation='h'
-            )
-            fig_bar.update_layout(
-                yaxis_title="Route",
-                xaxis_title="Peak Weekly Trips",
-                font=dict(size=12)
-            )
-            st.plotly_chart(fig_bar, use_container_width=True)
 
 # For testing
 if __name__ == "__main__":
