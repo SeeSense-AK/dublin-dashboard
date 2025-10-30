@@ -1,30 +1,15 @@
 """
 Dublin Road Safety Dashboard - Main Application
-Lightweight main app with clean tab organization
+AI-Powered Road Safety Analysis for Dublin
 """
 
 import streamlit as st
-import sys
+import sys, os
 from pathlib import Path
 
-# --- Ultimate cross-platform import fix ---
-# Works even if __file__ is blank or Streamlit clones into a subfolder
-cwd = Path(os.getcwd()).resolve()
-possible_srcs = [
-    cwd / "src",
-    cwd.parent / "src",
-    Path("/mount/src/src"),  # Streamlit Cloud fallback
-]
-
-for src in possible_srcs:
-    if src.exists() and str(src) not in sys.path:
-        sys.path.append(str(src))
-        st.write(f"✅ Added to sys.path: {src}")
-        break
-else:
-    st.error("❌ Could not locate 'src' folder. Check repository layout.")
-
-# Page configuration
+# ────────────────────────────────────────────────
+# 1️⃣ MUST be the first Streamlit command
+# ────────────────────────────────────────────────
 st.set_page_config(
     page_title="Spinovate Safety Dashboard",
     page_icon="🚴‍♂️",
@@ -32,9 +17,22 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-# Main header
-st.title("Spinovate Safety Dashboard")
-st.markdown("AI-Powered Road Safety Analysis for Dublin")
+# ────────────────────────────────────────────────
+# 2️⃣ Robust import path setup (works local + cloud)
+# ────────────────────────────────────────────────
+try:
+    app_dir = Path(__file__).resolve().parent
+except NameError:
+    app_dir = Path(os.getcwd()).resolve()
+
+# normally src is beside app.py
+src_path = app_dir / "src"
+# sometimes Streamlit Cloud nests one level deeper
+if not src_path.exists():
+    src_path = app_dir.parent / "src"
+
+if str(src_path) not in sys.path:
+    sys.path.append(str(src_path))
 
 # ────────────────────────────────────────────────
 # 3️⃣ Import tab modules safely
