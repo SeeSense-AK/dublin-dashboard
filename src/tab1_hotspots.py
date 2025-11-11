@@ -316,10 +316,10 @@ def create_hotspot_map(sensor_hotspots, perception_hotspots, corridor_hotspots,
 
 
 def display_hotspot_card(row, source):
-    """Display a single hotspot as a card"""
-    
+    """Display a single hotspot as a professional card"""
+
     hotspot_name = row.get('hotspot_name', 'Hotspot')
-    
+
     # Calculate urgency score
     if source == 'corridor':
         urgency_score = f"{row.get('weighted_score', 0):.1f}%"
@@ -328,6 +328,7 @@ def display_hotspot_card(row, source):
         device_count = 0
         user_reports = row.get('report_count', 0)
         lat, lng = row.get('center_lat'), row.get('center_lng')
+        source_label = "🚧 Corridor Reports"
     else:
         urgency_score = f"{row.get('concern_score', 0) * 100:.1f}%"
         location = row.get('street_name', 'Unknown')
@@ -335,61 +336,94 @@ def display_hotspot_card(row, source):
         device_count = row.get('device_count', 0)
         user_reports = row.get('total_perception_count', 0) if source == 'perception' else 0
         lat, lng = row.get('medoid_lat'), row.get('medoid_lng')
-    
+        source_label = "📊 Core Sensor Data" if source == 'sensor' else "👁️ Perception + Sensor"
+
     # Capitalize event type properly
     if event_type and event_type != 'N/A':
         event_type = event_type.replace('_', ' ').title()
-    
+
     # Color based on urgency
     urgency_value = float(urgency_score.replace('%', ''))
     if urgency_value >= 70:
         urgency_color = '#dc2626'  # Red
+        urgency_bg = 'linear-gradient(135deg, #fee2e2 0%, #fecaca 100%)'
+        status_text = '🚨 HIGH URGENCY'
     elif urgency_value >= 50:
         urgency_color = '#f59e0b'  # Orange
+        urgency_bg = 'linear-gradient(135deg, #fed7aa 0%, #fdba74 100%)'
+        status_text = '⚠️ MEDIUM URGENCY'
     else:
         urgency_color = '#10b981'  # Green
-    
-    # Use columns for better layout
-    with st.container():
-        st.markdown(f"### {hotspot_name}")
-        
-        # Info grid
-        col1, col2, col3, col4 = st.columns(4)
-        
-        with col1:
-            st.markdown("**Location**")
-            st.text(location)
-        
-        with col2:
-            st.markdown("**Event**")
-            st.text(event_type)
-        
-        with col3:
-            st.markdown("**Unique Devices**")
-            st.text(str(device_count))
-        
-        with col4:
-            st.markdown("**User Reports**")
-            st.text(str(user_reports))
-        
-        # Urgency score
-        st.markdown(f"**Urgency Score:** <span style='font-size: 24px; font-weight: 700; color: {urgency_color};'>{urgency_score}</span>", unsafe_allow_html=True)
-        
-        # Buttons
-        col1, col2 = st.columns(2)
-        
-        with col1:
-            view_details = st.button("View Details", key=f"details_{hotspot_name}", use_container_width=True)
-        
-        with col2:
-            street_view_url = STREET_VIEW_URL_TEMPLATE.format(lat=lat, lng=lng, heading=0)
-            st.link_button("Open Street View", street_view_url, use_container_width=True)
-        
-        # Show details if button clicked
-        if view_details:
-            display_hotspot_details(row, source)
-        
-        st.markdown("---")
+        urgency_bg = 'linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%)'
+        status_text = '✅ LOW URGENCY'
+
+    # Professional card HTML
+    card_html = f"""
+    <div class="metric-card fade-in" style="margin-bottom: 2rem; animation-delay: 0.1s;">
+        <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1.5rem;">
+            <div>
+                <h3 style="margin: 0; color: #1a202c; font-weight: 700; font-size: 1.5rem;">{hotspot_name}</h3>
+                <div style="background: {urgency_bg}; color: {urgency_color};
+                           padding: 0.25rem 0.75rem; border-radius: 20px;
+                           font-size: 0.8rem; font-weight: 600; display: inline-block;
+                           margin-top: 0.5rem;">{status_text}</div>
+            </div>
+            <div style="text-align: right;">
+                <div style="font-size: 2rem; font-weight: 700; color: {urgency_color}; margin: 0;">{urgency_score}</div>
+                <div style="font-size: 0.8rem; color: #718096; text-transform: uppercase; letter-spacing: 0.5px;">Urgency Score</div>
+            </div>
+        </div>
+
+        <div style="background: linear-gradient(135deg, #f7fafc 0%, #edf2f7 100%);
+                   border-radius: 12px; padding: 1rem; margin-bottom: 1.5rem;">
+            <div style="color: #4a5568; font-weight: 600; margin-bottom: 0.5rem; font-size: 0.9rem;">📍 {source_label}</div>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-top: 1rem;">
+                <div>
+                    <div style="color: #718096; font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.5px;">Location</div>
+                    <div style="color: #2d3748; font-weight: 600; font-size: 1rem;">{location}</div>
+                </div>
+                <div>
+                    <div style="color: #718096; font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.5px;">Event Type</div>
+                    <div style="color: #2d3748; font-weight: 600; font-size: 1rem;">{event_type}</div>
+                </div>
+                <div>
+                    <div style="color: #718096; font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.5px;">Devices</div>
+                    <div style="color: #2d3748; font-weight: 600; font-size: 1rem;">{device_count}</div>
+                </div>
+                <div>
+                    <div style="color: #718096; font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.5px;">User Reports</div>
+                    <div style="color: #2d3748; font-weight: 600; font-size: 1rem;">{user_reports}</div>
+                </div>
+            </div>
+        </div>
+    </div>
+    """
+
+    st.markdown(card_html, unsafe_allow_html=True)
+
+    # Action buttons
+    col1, col2 = st.columns(2)
+
+    with col1:
+        view_details = st.button(
+            f"🔍 View Details",
+            key=f"details_{hotspot_name}",
+            use_container_width=True,
+            help="Generate AI-powered safety analysis"
+        )
+
+    with col2:
+        street_view_url = STREET_VIEW_URL_TEMPLATE.format(lat=lat, lng=lng, heading=0)
+        st.link_button(
+            f"🗺️ Street View",
+            street_view_url,
+            use_container_width=True,
+            help="Open location in Google Street View"
+        )
+
+    # Show details if button clicked
+    if view_details:
+        display_hotspot_details(row, source)
 
 
 def display_hotspot_details(row, source):
