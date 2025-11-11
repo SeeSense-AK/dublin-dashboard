@@ -846,62 +846,209 @@ def show_abnormal_events_details(df, selected_street):
         st.write("No contributing factors data available")
 
 def render_tab2():
-    """Main function to render Tab 2"""
-    
+    """Main function to render Tab 2 with professional styling"""
+
+    # Professional header
+    st.markdown("""
+    <div style="margin-bottom: 2rem;">
+        <h2 style="color: #1a202c; font-weight: 700; margin-bottom: 0.5rem;">
+            📊 Route Popularity Trends & Abnormal Events
+        </h2>
+        <p style="color: #4a5568; margin: 0; font-size: 1.1rem;">
+            Interactive analysis of route performance and safety trends across Dublin's cycling infrastructure
+        </p>
+    </div>
+    """, unsafe_allow_html=True)
+
     # Load ALL data first
     df = load_route_popularity_data()
     road_segments_df = load_road_segments()
     abnormal_df = load_abnormal_events_data()
     abnormal_segments_df = load_abnormal_events_segments()
-    
+
     if df.empty:
-        st.error("Could not load route popularity data")
+        st.markdown("""
+        <div class="metric-card">
+            <div style="display: flex; align-items: center; gap: 1rem;">
+                <span style="font-size: 2rem; color: #f56565;">❌</span>
+                <div>
+                    <h4 style="margin: 0; color: #1a202c;">Data Loading Error</h4>
+                    <p style="margin: 0.5rem 0 0 0; color: #4a5568;">Could not load route popularity data</p>
+                </div>
+            </div>
+        </div>
+        """, unsafe_allow_html=True)
         st.info("Please ensure the CSV file exists and contains the required data")
         return
-    
+
     if road_segments_df.empty:
-        st.error("Could not load road segment geometry")
+        st.markdown("""
+        <div class="metric-card">
+            <div style="display: flex; align-items: center; gap: 1rem;">
+                <span style="font-size: 2rem; color: #f56565;">⚠️</span>
+                <div>
+                    <h4 style="margin: 0; color: #1a202c;">Geometry Loading Error</h4>
+                    <p style="margin: 0.5rem 0 0 0; color: #4a5568;">Could not load road segment geometry</p>
+                </div>
+            </div>
+        </div>
+        """, unsafe_allow_html=True)
         st.info("Please ensure the active_segments.geojson file exists")
         return
-    
+
     if abnormal_df.empty:
-        st.error("Could not load abnormal events data")
+        st.markdown("""
+        <div class="metric-card">
+            <div style="display: flex; align-items: center; gap: 1rem;">
+                <span style="font-size: 2rem; color: #f56565;">📊</span>
+                <div>
+                    <h4 style="margin: 0; color: #1a202c;">Abnormal Events Data Error</h4>
+                    <p style="margin: 0.5rem 0 0 0; color: #4a5568;">Could not load abnormal events data</p>
+                </div>
+            </div>
+        </div>
+        """, unsafe_allow_html=True)
         st.info("Please ensure the abnormal-events-data.csv file exists")
         return
-    
+
     if abnormal_segments_df.empty:
-        st.error("Could not load abnormal events segment geometry")
+        st.markdown("""
+        <div class="metric-card">
+            <div style="display: flex; align-items: center; gap: 1rem;">
+                <span style="font-size: 2rem; color: #f56565;">🗺️</span>
+                <div>
+                    <h4 style="margin: 0; color: #1a202c;">Abnormal Events Geometry Error</h4>
+                    <p style="margin: 0.5rem 0 0 0; color: #4a5568;">Could not load abnormal events segment geometry</p>
+                </div>
+            </div>
+        </div>
+        """, unsafe_allow_html=True)
         st.info("Please ensure the abnormal-events-segments.geojson file exists")
         return
-    
+
     # Initialize session state for analysis
     if 'route_analysis' not in st.session_state:
         st.session_state.route_analysis = None
     if 'abnormal_analysis' not in st.session_state:
         st.session_state.abnormal_analysis = None
-    
+
+    # Summary Statistics Section
+    total_routes = len(df)
+    popular_routes = len(df[df['Colour'] == 'Green'])
+    declining_routes = len(df[df['Colour'] == 'Red'])
+
+    st.markdown("""
+    <div style="margin: 2rem 0;">
+        <h3 style="color: #1a202c; font-weight: 600; margin-bottom: 1.5rem;">
+            📈 Route Performance Overview
+        </h3>
+    </div>
+    """, unsafe_allow_html=True)
+
+    col1, col2, col3 = st.columns(3)
+
+    with col1:
+        st.markdown(f"""
+        <div class="metric-card">
+            <div style="text-align: center;">
+                <div style="font-size: 2.5rem; font-weight: 700; color: #4299e1; margin: 0;">{total_routes}</div>
+                <div style="color: #718096; font-size: 0.9rem; text-transform: uppercase; letter-spacing: 0.5px;">Total Routes</div>
+                <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                           color: white; padding: 0.5rem 1rem; border-radius: 20px;
+                           margin-top: 0.5rem; display: inline-block; font-weight: 600;">
+                    Monitored
+                </div>
+            </div>
+        </div>
+        """, unsafe_allow_html=True)
+
+    with col2:
+        st.markdown(f"""
+        <div class="metric-card">
+            <div style="text-align: center;">
+                <div style="font-size: 2.5rem; font-weight: 700; color: #48bb78; margin: 0;">{popular_routes}</div>
+                <div style="color: #718096; font-size: 0.9rem; text-transform: uppercase; letter-spacing: 0.5px;">Highly Popular</div>
+                <div style="background: linear-gradient(135deg, #48bb78 0%, #38a169 100%);
+                           color: white; padding: 0.5rem 1rem; border-radius: 20px;
+                           margin-top: 0.5rem; display: inline-block; font-weight: 600;">
+                    {round(popular_routes/total_routes*100)}%
+                </div>
+            </div>
+        </div>
+        """, unsafe_allow_html=True)
+
+    with col3:
+        st.markdown(f"""
+        <div class="metric-card">
+            <div style="text-align: center;">
+                <div style="font-size: 2.5rem; font-weight: 700; color: #f56565; margin: 0;">{declining_routes}</div>
+                <div style="color: #718096; font-size: 0.9rem; text-transform: uppercase; letter-spacing: 0.5px;">Declining Usage</div>
+                <div style="background: linear-gradient(135deg, #f56565 0%, #e53e3e 100%);
+                           color: white; padding: 0.5rem 1rem; border-radius: 20px;
+                           margin-top: 0.5rem; display: inline-block; font-weight: 600;">
+                    {round(declining_routes/total_routes*100)}%
+                </div>
+            </div>
+        </div>
+        """, unsafe_allow_html=True)
+
     # Route Popularity Section
-    st.subheader("Route Popularity")
-    
-    # Add cycleway toggle for route popularity map
-    show_cycleways_route = st.checkbox("Show Cycleways", key="cycleways_route", value=False)
-    
+    st.markdown("""
+    <div style="margin: 3rem 0 2rem 0;">
+        <h3 style="color: #1a202c; font-weight: 600; margin-bottom: 1rem;">
+            🚴‍♂️ Route Popularity Analysis
+        </h3>
+        <p style="color: #4a5568; margin: 0;">
+            Interactive map showing route performance trends. Click on any route for detailed analysis.
+        </p>
+    </div>
+    """, unsafe_allow_html=True)
+
+    # Professional control panel
+    with st.container():
+        st.markdown("""
+        <div class="metric-card" style="padding: 1rem; margin-bottom: 1.5rem;">
+            <div style="display: flex; align-items: center; justify-content: space-between;">
+                <div style="display: flex; align-items: center; gap: 1rem;">
+                    <span style="font-size: 1.5rem;">🗺️</span>
+                    <div>
+                        <h4 style="margin: 0; color: #1a202c;">Map Controls</h4>
+                        <p style="margin: 0; color: #718096; font-size: 0.9rem;">Toggle visualization layers</p>
+                    </div>
+                </div>
+                <div>
+        """, unsafe_allow_html=True)
+
+        # Add cycleway toggle for route popularity map
+        show_cycleways_route = st.checkbox(
+            "🚲 Show Dublin Cycleways",
+            key="cycleways_route",
+            value=False,
+            help="Display Dublin's cycling infrastructure alongside route data"
+        )
+
+        st.markdown("""
+                </div>
+            </div>
+        </div>
+        """, unsafe_allow_html=True)
+
     route_map, routes_added = create_route_map(df, road_segments_df, show_cycleways_route)
-    
+
     if routes_added > 0:
-        map_data = st_folium(route_map, height=500, width=None, key="route_map")
-        
+        map_data = st_folium(route_map, height=600, width=None, key="route_map")
+
         # Check if user clicked on a popup and extract street name
         clicked_street = None
         if map_data and 'last_object_clicked_popup' in map_data and map_data['last_object_clicked_popup']:
             popup_content = str(map_data['last_object_clicked_popup'])
-            
+
             # The popup content is plain text, street name appears first
             for street_name in df['street_name'].tolist():
                 if popup_content.strip().startswith(street_name):
                     clicked_street = street_name
                     break
-            
+
             # Fallback: if no street starts the content, find the one that appears earliest
             if not clicked_street:
                 earliest_position = len(popup_content)
@@ -910,66 +1057,120 @@ def render_tab2():
                     if position != -1 and position < earliest_position:
                         clicked_street = street_name
                         earliest_position = position
-        
+
         # Show button only if a street popup was clicked
         if clicked_street:
-            st.markdown("---")
-            
+            st.markdown("""
+            <div class="metric-card" style="margin: 2rem 0; padding: 1.5rem;">
+                <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 1rem;">
+                    <div style="display: flex; align-items: center; gap: 1rem;">
+                        <span style="font-size: 1.5rem;">🎯</span>
+                        <div>
+                            <h4 style="margin: 0; color: #1a202c;">Route Selected</h4>
+                            <p style="margin: 0; color: #718096; font-size: 0.9rem;"><strong>{street}</strong></p>
+                        </div>
+                    </div>
+                </div>
+            """.format(street=clicked_street), unsafe_allow_html=True)
+
             # Use separate session state for route analysis
-            if st.button(f"🔍 View Detailed AI Analysis for {clicked_street}", 
-                        type="primary", 
+            if st.button(f"🔍 Generate AI-Powered Analysis",
+                        type="primary",
                         use_container_width=True,
                         key=f"analyze_{clicked_street}"):
                 # Store the street to analyze in session state
                 st.session_state.route_analysis = clicked_street
-    
+
+            st.markdown("</div>", unsafe_allow_html=True)
+
     else:
-        st.warning("No routes could be displayed. Please check data consistency between CSV and GeoJSON files.")
-    
+        st.markdown("""
+        <div class="metric-card">
+            <div style="display: flex; align-items: center; gap: 1rem;">
+                <span style="font-size: 2rem; color: #f59e0b;">⚠️</span>
+                <div>
+                    <h4 style="margin: 0; color: #1a202c;">No Routes Available</h4>
+                    <p style="margin: 0.5rem 0 0 0; color: #4a5568;">Please check data consistency between CSV and GeoJSON files</p>
+                </div>
+            </div>
+        </div>
+        """, unsafe_allow_html=True)
+
     # Display ROUTE analysis immediately below route popularity section
     if st.session_state.route_analysis:
         street_name = st.session_state.route_analysis
-        
+
         # Show spinner only on first load
         if st.session_state.get('route_analysis_loaded') != street_name:
-            with st.spinner("Generating AI insights..."):
+            with st.spinner("🤖 Generating AI insights..."):
                 import time
                 time.sleep(2)
             st.session_state.route_analysis_loaded = street_name
-        
+
         show_route_details(df, street_name)
-        
+
         # Close button for route analysis
-        if st.button("Close Analysis", key="close_route_analysis", use_container_width=True):
+        if st.button("✅ Close Analysis", key="close_route_analysis", use_container_width=True):
             st.session_state.route_analysis = None
             st.session_state.route_analysis_loaded = None
-    
-    # Add spacing before abnormal events section
-    st.markdown("---")
-    st.markdown("<br>", unsafe_allow_html=True)
-    
+
     # Abnormal Events Section
-    st.subheader("Abnormal Events")
-    
-    # Add cycleway toggle for abnormal events map
-    show_cycleways_abnormal = st.checkbox("Show Cycleways", key="cycleways_abnormal", value=False)
-    
+    st.markdown("""
+    <div style="margin: 3rem 0 2rem 0;">
+        <h3 style="color: #1a202c; font-weight: 600; margin-bottom: 1rem;">
+            ⚠️ Abnormal Events Analysis
+        </h3>
+        <p style="color: #4a5568; margin: 0;">
+            Safety-focused analysis of unusual cycling events and patterns. Click on highlighted areas for detailed insights.
+        </p>
+    </div>
+    """, unsafe_allow_html=True)
+
+    # Professional control panel for abnormal events
+    with st.container():
+        st.markdown("""
+        <div class="metric-card" style="padding: 1rem; margin-bottom: 1.5rem;">
+            <div style="display: flex; align-items: center; justify-content: space-between;">
+                <div style="display: flex; align-items: center; gap: 1rem;">
+                    <span style="font-size: 1.5rem;">🛡️</span>
+                    <div>
+                        <h4 style="margin: 0; color: #1a202c;">Safety Analysis Controls</h4>
+                        <p style="margin: 0; color: #718096; font-size: 0.9rem;">Visualize safety data and incidents</p>
+                    </div>
+                </div>
+                <div>
+        """, unsafe_allow_html=True)
+
+        # Add cycleway toggle for abnormal events map
+        show_cycleways_abnormal = st.checkbox(
+            "🚲 Show Dublin Cycleways",
+            key="cycleways_abnormal",
+            value=False,
+            help="Display cycling infrastructure with safety incident data"
+        )
+
+        st.markdown("""
+                </div>
+            </div>
+        </div>
+        """, unsafe_allow_html=True)
+
     abnormal_map, abnormal_routes_added = create_abnormal_events_map(abnormal_df, abnormal_segments_df, show_cycleways_abnormal)
-    
+
     if abnormal_routes_added > 0:
-        abnormal_map_data = st_folium(abnormal_map, height=500, width=None, key="abnormal_events_map")
-        
+        abnormal_map_data = st_folium(abnormal_map, height=600, width=None, key="abnormal_events_map")
+
         # Check if user clicked on an abnormal events popup
         clicked_abnormal_street = None
         if abnormal_map_data and 'last_object_clicked_popup' in abnormal_map_data and abnormal_map_data['last_object_clicked_popup']:
             popup_content = str(abnormal_map_data['last_object_clicked_popup'])
-            
+
             # The popup content is plain text, street name appears first
             for street_name in abnormal_df['street_name'].dropna().tolist():
                 if popup_content.strip().startswith(street_name):
                     clicked_abnormal_street = street_name
                     break
-            
+
             # Fallback: find the one that appears earliest
             if not clicked_abnormal_street:
                 earliest_position = len(popup_content)
@@ -978,36 +1179,59 @@ def render_tab2():
                     if position != -1 and position < earliest_position:
                         clicked_abnormal_street = street_name
                         earliest_position = position
-    
+
         # Show button only if an abnormal events street popup was clicked
         if clicked_abnormal_street:
-            st.markdown("---")
-            
+            st.markdown("""
+            <div class="metric-card" style="margin: 2rem 0; padding: 1.5rem;">
+                <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 1rem;">
+                    <div style="display: flex; align-items: center; gap: 1rem;">
+                        <span style="font-size: 1.5rem;">🚨</span>
+                        <div>
+                            <h4 style="margin: 0; color: #1a202c;">Safety Analysis Area</h4>
+                            <p style="margin: 0; color: #718096; font-size: 0.9rem;"><strong>{street}</strong></p>
+                        </div>
+                    </div>
+                </div>
+            """.format(street=clicked_abnormal_street), unsafe_allow_html=True)
+
             # Use separate session state for abnormal analysis
-            if st.button(f"🔍 View Detailed Analysis for {clicked_abnormal_street}", 
-                        type="primary", 
+            if st.button(f"🔍 Detailed Safety Analysis",
+                        type="primary",
                         use_container_width=True,
                         key=f"analyze_abnormal_{clicked_abnormal_street}"):
                 # Store the street to analyze in session state
                 st.session_state.abnormal_analysis = clicked_abnormal_street
+
+            st.markdown("</div>", unsafe_allow_html=True)
     else:
-        st.warning("No abnormal events routes could be displayed. Please check data consistency between CSV and GeoJSON files.")
-    
+        st.markdown("""
+        <div class="metric-card">
+            <div style="display: flex; align-items: center; gap: 1rem;">
+                <span style="font-size: 2rem; color: #f59e0b;">📊</span>
+                <div>
+                    <h4 style="margin: 0; color: #1a202c;">No Abnormal Events Available</h4>
+                    <p style="margin: 0.5rem 0 0 0; color: #4a5568;">Please check data consistency between CSV and GeoJSON files</p>
+                </div>
+            </div>
+        </div>
+        """, unsafe_allow_html=True)
+
     # Display ABNORMAL EVENTS analysis immediately below abnormal events section
     if st.session_state.abnormal_analysis:
         street_name = st.session_state.abnormal_analysis
-        
-        # Show spinner only on first load  
+
+        # Show spinner only on first load
         if st.session_state.get('abnormal_analysis_loaded') != street_name:
-            with st.spinner("Generating AI insights..."):
+            with st.spinner("🤖 Generating safety insights..."):
                 import time
                 time.sleep(2)
             st.session_state.abnormal_analysis_loaded = street_name
-        
+
         show_abnormal_events_details(abnormal_df, street_name)
-        
+
         # Close button for abnormal analysis
-        if st.button("Close Analysis", key="close_abnormal_analysis", use_container_width=True):
+        if st.button("✅ Close Safety Analysis", key="close_abnormal_analysis", use_container_width=True):
             st.session_state.abnormal_analysis = None
             st.session_state.abnormal_analysis_loaded = None
 
