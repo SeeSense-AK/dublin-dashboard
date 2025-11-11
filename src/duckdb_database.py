@@ -11,8 +11,24 @@ from typing import Dict, Any, Optional, List, Tuple
 
 class DuckDBCyclingSafetyDB:
     """DuckDB implementation for hotspot detection"""
-    
+
     def __init__(self):
+        """Initialize DuckDB connection with local CSV files"""
+        # Configure logging
+        logging.basicConfig(level=logging.INFO)
+        self.logger = logging.getLogger(__name__)
+
+        # Initialize connection
+        self.conn = duckdb.connect(':memory:')
+
+        # Input validation patterns
+        self.lat_pattern = re.compile(r'^-?90?\.?\d*$')
+        self.lng_pattern = re.compile(r'^-?180?\.?\d*$')
+        self.date_pattern = re.compile(r'^\d{4}-\d{2}-\d{2}$')
+        self.severity_pattern = re.compile(r'^\d+$')
+
+        # Determine data directory
+        data_dir = Path(__file__).parent.parent / 'data' / 'raw'
         """Initialize DuckDB connection with local CSV files"""
         self.conn = duckdb.connect(':memory:')
         
