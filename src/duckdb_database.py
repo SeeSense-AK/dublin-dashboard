@@ -5,6 +5,9 @@ Drop-in replacement for AthenaDatabase for hotspot detection
 import duckdb
 import pandas as pd
 from pathlib import Path
+import re
+import logging
+from typing import Dict, Any, Optional, List, Tuple
 
 class DuckDBCyclingSafetyDB:
     """DuckDB implementation for hotspot detection"""
