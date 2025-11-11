@@ -29,11 +29,6 @@ class DuckDBCyclingSafetyDB:
 
         # Determine data directory
         data_dir = Path(__file__).parent.parent / 'data' / 'raw'
-        """Initialize DuckDB connection with local CSV files"""
-        self.conn = duckdb.connect(':memory:')
-        
-        # Determine data directory
-        data_dir = Path(__file__).parent.parent / 'data' / 'raw'
         
         # File paths
         sensor_file = data_dir / 'spinovate-abnormal-events.csv'
