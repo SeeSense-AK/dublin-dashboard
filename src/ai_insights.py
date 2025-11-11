@@ -38,7 +38,7 @@ def generate_hotspot_insights(hotspot_data: dict, user_comments: list = None) ->
     
     try:
         # Initialize model
-        model = genai.GenerativeModel('gemini-2.0-flash-exp')
+        model = genai.GenerativeModel('gemini-2.0-flash-001')
         
         # Generate response
         response = model.generate_content(prompt)
