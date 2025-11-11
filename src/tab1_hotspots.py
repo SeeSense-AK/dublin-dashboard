@@ -480,81 +480,185 @@ def display_hotspot_details(row, source):
 
 
 def render_tab1():
-    """Main function to render Tab 1"""
-    
-    st.header("Hotspot Analysis")
-    st.markdown("Analysis combining sensor data, perception reports, and corridor surveys")
-    
+    """Main function to render Tab 1 with professional styling"""
+
+    # Professional header
+    st.markdown("""
+    <div style="margin-bottom: 2rem;">
+        <h2 style="color: #1a202c; font-weight: 700; margin-bottom: 0.5rem;">
+            🔥 Hotspot Analysis
+        </h2>
+        <p style="color: #4a5568; margin: 0; font-size: 1.1rem;">
+            Advanced AI-powered analysis combining sensor data, perception reports, and corridor surveys
+        </p>
+    </div>
+    """, unsafe_allow_html=True)
+
     # Load data
     try:
         sensor_df, perception_df, corridor_df, abnormal_events_df = load_preprocessed_data()
     except Exception as e:
-        st.error(f"Error loading data: {str(e)}")
+        st.error(f"❌ Error loading data: {str(e)}")
         return
-    
-    # Sidebar controls
-    st.sidebar.subheader("Display Settings")
-    
-    # Hotspot count selector
-    total_hotspots = st.sidebar.selectbox(
-        "Number of hotspots to display",
-        options=[10, 20, 30],
-        index=0
-    )
-    
-    # Heatmap toggle
-    show_heatmap = st.sidebar.checkbox("Show Heatmap Layer", value=False)
-    
-    # Display data distribution info
-    sensor_count = round(total_hotspots * 0.5)
-    perception_count = round(total_hotspots * 0.3)
-    corridor_count = total_hotspots - sensor_count - perception_count
-    
-    st.sidebar.info(
-        f"**Distribution:**\n\n"
-        f"Sensor Data: {sensor_count}\n\n"
-        f"Perception + Sensor: {perception_count}\n\n"
-        f"Corridor Reports: {corridor_count}"
-    )
-    
+
+    # Professional sidebar controls
+    with st.sidebar:
+        st.markdown("""
+        <div style="background: linear-gradient(135deg, #4299e1 0%, #3182ce 100%);
+                    color: white; padding: 1rem; border-radius: 15px; margin-bottom: 1.5rem;">
+            <h3 style="margin: 0; font-size: 1.2rem;">⚙️ Display Settings</h3>
+        </div>
+        """, unsafe_allow_html=True)
+
+        # Hotspot count selector
+        total_hotspots = st.selectbox(
+            "🎯 Number of hotspots to display",
+            options=[10, 20, 30],
+            index=0,
+            help="Total number of hotspots to show across all data sources"
+        )
+
+        # Heatmap toggle
+        show_heatmap = st.checkbox("🗺️ Show Heatmap Layer", value=False,
+                                  help="Overlay heatmap showing density and severity of all abnormal events")
+
+        # Display data distribution info
+        sensor_count = round(total_hotspots * 0.5)
+        perception_count = round(total_hotspots * 0.3)
+        corridor_count = total_hotspots - sensor_count - perception_count
+
+        st.markdown("""
+        <div style="background: linear-gradient(135deg, #f7fafc 0%, #edf2f7 100%);
+                    padding: 1rem; border-radius: 12px; border: 1px solid #e2e8f0;">
+            <h4 style="color: #2d3748; margin: 0 0 1rem 0; font-size: 1rem;">📊 Data Distribution</h4>
+            <div style="display: flex; flex-direction: column; gap: 0.5rem;">
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <span style="color: #4a5568;">📊 Core Sensor Data:</span>
+                    <span style="font-weight: 600; color: #2d3748;">{sensor_count}</span>
+                </div>
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <span style="color: #4a5568;">👁️ Perception + Sensor:</span>
+                    <span style="font-weight: 600; color: #2d3748;">{perception_count}</span>
+                </div>
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <span style="color: #4a5568;">🚧 Corridor Reports:</span>
+                    <span style="font-weight: 600; color: #2d3748;">{corridor_count}</span>
+                </div>
+            </div>
+        </div>
+        """.format(
+            sensor_count=sensor_count,
+            perception_count=perception_count,
+            corridor_count=corridor_count
+        ), unsafe_allow_html=True)
+
     # Select top hotspots
     sensor_top, perception_top, corridor_top = select_top_hotspots(
         sensor_df, perception_df, corridor_df, total_hotspots
     )
-    
-    # Display summary metrics
+
+    # Professional summary metrics
+    st.markdown("""
+    <div style="margin: 2rem 0;">
+        <h3 style="color: #1a202c; font-weight: 600; margin-bottom: 1.5rem;">
+            📈 Summary Statistics
+        </h3>
+    </div>
+    """, unsafe_allow_html=True)
+
     col1, col2, col3 = st.columns(3)
-    
+
     with col1:
-        st.metric("Total Sensor Hotspots", len(sensor_df))
-        st.metric("Displaying", len(sensor_top))
-    
+        st.markdown(f"""
+        <div class="metric-card">
+            <div style="text-align: center;">
+                <div style="font-size: 2.5rem; font-weight: 700; color: #4299e1; margin: 0;">{len(sensor_df):,}</div>
+                <div style="color: #718096; font-size: 0.9rem; text-transform: uppercase; letter-spacing: 0.5px;">Total Sensor Hotspots</div>
+                <div style="background: linear-gradient(135deg, #4299e1 0%, #3182ce 100%);
+                           color: white; padding: 0.5rem 1rem; border-radius: 20px;
+                           margin-top: 0.5rem; display: inline-block; font-weight: 600;">
+                    Showing {len(sensor_top)}
+                </div>
+            </div>
+        </div>
+        """, unsafe_allow_html=True)
+
     with col2:
-        st.metric("Total Perception Hotspots", len(perception_df))
-        st.metric("Displaying", len(perception_top))
-    
+        st.markdown(f"""
+        <div class="metric-card">
+            <div style="text-align: center;">
+                <div style="font-size: 2.5rem; font-weight: 700; color: #48bb78; margin: 0;">{len(perception_df):,}</div>
+                <div style="color: #718096; font-size: 0.9rem; text-transform: uppercase; letter-spacing: 0.5px;">Perception Hotspots</div>
+                <div style="background: linear-gradient(135deg, #48bb78 0%, #38a169 100%);
+                           color: white; padding: 0.5rem 1rem; border-radius: 20px;
+                           margin-top: 0.5rem; display: inline-block; font-weight: 600;">
+                    Showing {len(perception_top)}
+                </div>
+            </div>
+        </div>
+        """, unsafe_allow_html=True)
+
     with col3:
-        st.metric("Total Corridor Hotspots", len(corridor_df))
-        st.metric("Displaying", len(corridor_top))
-    
-    # Create and display map
-    st.subheader("Interactive Map")
-    
+        st.markdown(f"""
+        <div class="metric-card">
+            <div style="text-align: center;">
+                <div style="font-size: 2.5rem; font-weight: 700; color: #ed8936; margin: 0;">{len(corridor_df):,}</div>
+                <div style="color: #718096; font-size: 0.9rem; text-transform: uppercase; letter-spacing: 0.5px;">Corridor Hotspots</div>
+                <div style="background: linear-gradient(135deg, #ed8936 0%, #dd6b20 100%);
+                           color: white; padding: 0.5rem 1rem; border-radius: 20px;
+                           margin-top: 0.5rem; display: inline-block; font-weight: 600;">
+                    Showing {len(corridor_top)}
+                </div>
+            </div>
+        </div>
+        """, unsafe_allow_html=True)
+
+    # Professional map section
+    st.markdown("""
+    <div style="margin: 3rem 0 2rem 0;">
+        <h3 style="color: #1a202c; font-weight: 600; margin-bottom: 1rem;">
+            🗺️ Interactive Safety Map
+        </h3>
+        <p style="color: #4a5568; margin: 0;">
+            Explore safety hotspots across Dublin. Red areas indicate higher urgency.
+        </p>
+    </div>
+    """, unsafe_allow_html=True)
+
     if show_heatmap:
-        st.info("Heatmap shows density and severity of all abnormal events")
-    
-    with st.spinner("Loading map..."):
+        st.markdown("""
+        <div style="background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+                   border: 1px solid #f59e0b; border-radius: 12px; padding: 1rem; margin-bottom: 1rem;">
+            <div style="display: flex; align-items: center; gap: 0.5rem;">
+                <span style="font-size: 1.2rem;">ℹ️</span>
+                <span style="color: #92400e; font-weight: 600;">Heatmap Overlay Active</span>
+            </div>
+            <p style="color: #78350f; margin: 0.5rem 0 0 0;">
+                Shows density and severity of all abnormal events in the selected area.
+            </p>
+        </div>
+        """, unsafe_allow_html=True)
+
+    with st.spinner("🗺️ Loading interactive safety map..."):
         m = create_hotspot_map(
             sensor_top, perception_top, corridor_top,
             abnormal_events_df, show_heatmap,
             None, None
         )
         folium_static(m, width=1200, height=600)
-    
-    # Display hotspot details
-    st.markdown("---")
-    st.subheader("Hotspot Details")
-    
+
+    # Professional hotspot details section
+    st.markdown("""
+    <div style="margin: 3rem 0 2rem 0;">
+        <h3 style="color: #1a202c; font-weight: 600; margin-bottom: 1rem;">
+            🔍 Detailed Hotspot Analysis
+        </h3>
+        <p style="color: #4a5568; margin: 0;">
+            Click "View Details" for AI-powered safety insights and recommendations.
+        </p>
+    </div>
+    """, unsafe_allow_html=True)
+
     # Combine all hotspots for display
     all_hotspots = []
     for idx, row in sensor_top.iterrows():
@@ -563,7 +667,7 @@ def render_tab1():
         all_hotspots.append((row, 'perception'))
     for idx, row in corridor_top.iterrows():
         all_hotspots.append((row, 'corridor'))
-    
-    # Display as cards
+
+    # Display as professional cards
     for row, source in all_hotspots:
         display_hotspot_card(row, source)
