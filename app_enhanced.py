@@ -158,7 +158,7 @@ def main():
     # ────────────────────────────────────────────────
     # 8️⃣ Tabs with ENHANCED functionality
     # ────────────────────────────────────────────────
-    tab1, tab2 = st.tabs(["Hotspot Analysis", "Route Popularity Trends"])
+    tab1, tab2 = st.tabs(["Hotspot Analysis", "Trend Analysis"])
 
     with tab1:
         if tab1_available:

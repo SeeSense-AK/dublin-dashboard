@@ -1,0 +1,110 @@
+{
+  "Swords Road": {
+    "Monday": 8706,
+    "Tuesday": 10386,
+    "Wednesday": 10368,
+    "Thursday": 10879,
+    "Friday": 10764,
+    "Saturday": 784,
+    "Sunday": 1799
+  },
+  "Malahide Road": {
+    "Monday": 5255,
+    "Tuesday": 6924,
+    "Wednesday": 8440,
+    "Thursday": 5697,
+    "Friday": 6651,
+    "Saturday": 1511,
+    "Sunday": 1516
+  },
+  "Sandford Road": {
+    "Monday": 2821,
+    "Tuesday": 3793,
+    "Wednesday": 4314,
+    "Thursday": 4968,
+    "Friday": 4317,
+    "Saturday": 3217,
+    "Sunday": 2587
+  },
+  "Ranelagh": {
+    "Monday": 4007,
+    "Tuesday": 5309,
+    "Wednesday": 5026,
+    "Thursday": 6297,
+    "Friday": 5943,
+    "Saturday": 5137,
+    "Sunday": 4115
+  },
+  "North Circular Road": {
+    "Monday": 3386,
+    "Tuesday": 5513,
+    "Wednesday": 4843,
+    "Thursday": 4458,
+    "Friday": 4315,
+    "Saturday": 2265,
+    "Sunday": 2335
+  },
+  "Rathgar Road": {
+    "Monday": 1451,
+    "Tuesday": 2409,
+    "Wednesday": 3709,
+    "Thursday": 3328,
+    "Friday": 3811,
+    "Saturday": 2674,
+    "Sunday": 2812
+  },
+  "Alfie Byrne Road": {
+    "Monday": 1952,
+    "Tuesday": 2182,
+    "Wednesday": 3099,
+    "Thursday": 3040,
+    "Friday": 2089,
+    "Saturday": 2062,
+    "Sunday": 3691
+  },
+  "Blessington Street": {
+    "Monday": 267,
+    "Tuesday": 293,
+    "Wednesday": 283,
+    "Thursday": 307,
+    "Friday": 95,
+    "Saturday": 193,
+    "Sunday": 181
+  },
+  "Seville Place": {
+    "Monday": 1449,
+    "Tuesday": 2119,
+    "Wednesday": 1955,
+    "Thursday": 1704,
+    "Friday": 1735,
+    "Saturday": 802,
+    "Sunday": 677
+  },
+  "Kill Lane": {
+    "Monday": 638,
+    "Tuesday": 1054,
+    "Wednesday": 778,
+    "Thursday": 1080,
+    "Friday": 1009,
+    "Saturday": 243,
+    "Sunday": 247
+  },
+  "Mercer Street & Cuffe Street": {
+    "Monday": 1759,
+    "Tuesday": 1401,
+    "Wednesday": 1679,
+    "Thursday": 1931,
+    "Friday": 1903,
+    "Saturday": 1484,
+    "Sunday": 1598
+  },
+  "Northumberland Road": {
+    "Monday": 1892,
+    "Tuesday": 2560,
+    "Wednesday": 2447,
+    "Thursday": 2972,
+    "Friday": 2636,
+    "Saturday": 1462,
+    "Sunday": 1003
+  }
+}
