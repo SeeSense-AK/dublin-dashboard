@@ -35,10 +35,10 @@ header {visibility: hidden;}
 }
 
 .main h3 {
-    font-size: 1.25rem !important;
-    font-weight: 600 !important;
-    color: #4b5563 !important;
-    margin-bottom: 0.75rem !important;
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: #4b5563;
+    margin-bottom: 0.75rem;
 }
 
 /* ===== HEADER & NAVIGATION ===== */

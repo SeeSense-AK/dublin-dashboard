@@ -178,57 +178,57 @@
       },
       {
         "date": "2025-04-20",
-        "popularity_score": 5.758345221112696,
+        "popularity_score": 6.758345221112696,
         "cyclist_volume": 3505
       },
       {
         "date": "2025-04-27",
-        "popularity_score": 5.548604860486049,
+        "popularity_score": 6.548604860486049,
         "cyclist_volume": 2222
       },
       {
         "date": "2025-05-04",
-        "popularity_score": 5.520850040096231,
+        "popularity_score": 7.520850040096231,
         "cyclist_volume": 2494
       },
       {
         "date": "2025-05-11",
-        "popularity_score": 6.641660015961692,
+        "popularity_score": 7.641660015961692,
         "cyclist_volume": 1259
       },
       {
         "date": "2025-05-18",
-        "popularity_score": 5.236957888120679,
+        "popularity_score": 7.236957888120679,
         "cyclist_volume": 1591
       },
       {
         "date": "2025-05-25",
-        "popularity_score": 6.161503301168105,
+        "popularity_score": 9.161503301168105,
         "cyclist_volume": 2200
       },
       {
         "date": "2025-06-01",
-        "popularity_score": 5.511688311688312,
+        "popularity_score": 9.511688311688312,
         "cyclist_volume": 3412
       },
       {
         "date": "2025-06-08",
-        "popularity_score": 5.641754169240272,
+        "popularity_score": 8.641754169240272,
         "cyclist_volume": 1667
       },
       {
         "date": "2025-06-15",
-        "popularity_score": 6.071614583333333,
+        "popularity_score": 8.571614583333333,
         "cyclist_volume": 2313
       },
       {
         "date": "2025-06-22",
-        "popularity_score": 6.005655526992288,
+        "popularity_score": 8.005655526992288,
         "cyclist_volume": 2109
       },
       {
         "date": "2025-06-29",
-        "popularity_score": 6.905539070227498,
+        "popularity_score": 7.905539070227498,
         "cyclist_volume": 2030
       },
       {
@@ -238,37 +238,37 @@
       },
       {
         "date": "2025-07-13",
-        "popularity_score": 6.45945945945946,
+        "popularity_score": 8.45945945945946,
         "cyclist_volume": 1769
       },
       {
         "date": "2025-07-20",
-        "popularity_score": 6.675977653631285,
+        "popularity_score": 8.675977653631285,
         "cyclist_volume": 377
       },
       {
         "date": "2025-07-27",
-        "popularity_score": 6.27909604519774,
+        "popularity_score": 8.27909604519774,
         "cyclist_volume": 899
       },
       {
         "date": "2025-08-03",
-        "popularity_score": 4.965928449744464,
+        "popularity_score": 7.965928449744464,
         "cyclist_volume": 1218
       },
       {
         "date": "2025-08-10",
-        "popularity_score": 6.0974930362116995,
+        "popularity_score": 8.0974930362116995,
         "cyclist_volume": 359
       },
       {
         "date": "2025-08-17",
-        "popularity_score": 5.645985401459854,
+        "popularity_score": 7.645985401459854,
         "cyclist_volume": 286
       },
       {
         "date": "2025-08-24",
-        "popularity_score": 7.299212598425197,
+        "popularity_score": 8.299212598425197,
         "cyclist_volume": 127
       },
       {
@@ -278,17 +278,17 @@
       },
       {
         "date": "2025-09-07",
-        "popularity_score": 6.242857142857143,
+        "popularity_score": 8.242857142857143,
         "cyclist_volume": 140
       },
       {
         "date": "2025-09-14",
-        "popularity_score": 6.795918367346939,
+        "popularity_score": 7.795918367346939,
         "cyclist_volume": 99
       },
       {
         "date": "2025-09-21",
-        "popularity_score": 6.967741935483871,
+        "popularity_score": 7.967741935483871,
         "cyclist_volume": 31
       },
       {
@@ -313,17 +313,17 @@
     "weekly": [
       {
         "date": "2025-04-06",
-        "popularity_score": 5.076411960132891,
+        "popularity_score": 7.076411960132891,
         "cyclist_volume": 325
       },
       {
         "date": "2025-04-13",
-        "popularity_score": 5.533700137551582,
+        "popularity_score": 7.533700137551582,
         "cyclist_volume": 749
       },
       {
         "date": "2025-04-20",
-        "popularity_score": 5.729096989966555,
+        "popularity_score": 7.729096989966555,
         "cyclist_volume": 299
       },
       {
@@ -333,112 +333,112 @@
       },
       {
         "date": "2025-05-04",
-        "popularity_score": 4.771681415929203,
+        "popularity_score": 7.771681415929203,
         "cyclist_volume": 624
       },
       {
         "date": "2025-05-11",
-        "popularity_score": 5.214953271028038,
+        "popularity_score": 7.214953271028038,
         "cyclist_volume": 905
       },
       {
         "date": "2025-05-18",
-        "popularity_score": 2.2673130193905817,
+        "popularity_score": 7.2673130193905817,
         "cyclist_volume": 1494
       },
       {
         "date": "2025-05-25",
-        "popularity_score": 3.9967982924226253,
+        "popularity_score": 6.9967982924226253,
         "cyclist_volume": 1532
       },
       {
         "date": "2025-06-01",
-        "popularity_score": 3.2135161606268365,
+        "popularity_score": 7.2135161606268365,
         "cyclist_volume": 1814
       },
       {
         "date": "2025-06-08",
-        "popularity_score": 4.289940828402367,
+        "popularity_score": 7.289940828402367,
         "cyclist_volume": 1267
       },
       {
         "date": "2025-06-15",
-        "popularity_score": 3.6844919786096257,
+        "popularity_score": 7.6844919786096257,
         "cyclist_volume": 1685
       },
       {
         "date": "2025-06-22",
-        "popularity_score": 3.1868958109559613,
+        "popularity_score": 8.1868958109559613,
         "cyclist_volume": 2109
       },
       {
         "date": "2025-06-29",
-        "popularity_score": 2.1657977059436915,
+        "popularity_score": 9.657977059436915,
         "cyclist_volume": 3046
       },
       {
         "date": "2025-07-06",
-        "popularity_score": 5.1919561243144425,
+        "popularity_score": 8.1919561243144425,
         "cyclist_volume": 823
       },
       {
         "date": "2025-07-13",
-        "popularity_score": 5.224111282843895,
+        "popularity_score": 7.224111282843895,
         "cyclist_volume": 714
       },
       {
         "date": "2025-07-20",
-        "popularity_score": 5.237089201877934,
+        "popularity_score": 8.237089201877934,
         "cyclist_volume": 454
       },
       {
         "date": "2025-07-27",
-        "popularity_score": 4.6091603053435115,
+        "popularity_score": 7.6091603053435115,
         "cyclist_volume": 991
       },
       {
         "date": "2025-08-03",
-        "popularity_score": 6.430451127819549,
+        "popularity_score": 7.430451127819549,
         "cyclist_volume": 591
       },
       {
         "date": "2025-08-10",
-        "popularity_score": 6.046653144016227,
+        "popularity_score": 8.046653144016227,
         "cyclist_volume": 493
       },
       {
         "date": "2025-08-17",
-        "popularity_score": 5.516339869281046,
+        "popularity_score": 7.516339869281046,
         "cyclist_volume": 363
       },
       {
         "date": "2025-08-24",
-        "popularity_score": 4.088541666666667,
+        "popularity_score": 8.088541666666667,
         "cyclist_volume": 1432
       },
       {
         "date": "2025-08-31",
-        "popularity_score": 5.2675585284280935,
+        "popularity_score": 8.2675585284280935,
         "cyclist_volume": 762
       },
       {
         "date": "2025-09-07",
-        "popularity_score": 4.177142857142857,
+        "popularity_score": 8.177142857142857,
         "cyclist_volume": 855
       },
       {
         "date": "2025-09-14",
-        "popularity_score": 4.719512195121951,
+        "popularity_score": 7.719512195121951,
         "cyclist_volume": 505
       },
       {
         "date": "2025-09-21",
-        "popularity_score": 4.944954128440367,
+        "popularity_score": 7.944954128440367,
         "cyclist_volume": 802
       },
       {
         "date": "2025-09-28",
-        "popularity_score": 4.801271860095389,
+        "popularity_score": 7.801271860095389,
         "cyclist_volume": 884
       }
     ],
@@ -458,132 +458,132 @@
     "weekly": [
       {
         "date": "2025-04-06",
-        "popularity_score": 5.691796008869179,
+        "popularity_score": 7.691796008869179,
         "cyclist_volume": 451
       },
       {
         "date": "2025-04-13",
-        "popularity_score": 5.845915201654602,
+        "popularity_score": 7.845915201654602,
         "cyclist_volume": 967
       },
       {
         "date": "2025-04-20",
-        "popularity_score": 5.857433808553972,
+        "popularity_score": 7.857433808553972,
         "cyclist_volume": 491
       },
       {
         "date": "2025-04-27",
-        "popularity_score": 6.675304878048781,
+        "popularity_score": 7.675304878048781,
         "cyclist_volume": 656
       },
       {
         "date": "2025-05-04",
-        "popularity_score": 4.484168865435357,
+        "popularity_score": 7.484168865435357,
         "cyclist_volume": 892
       },
       {
         "date": "2025-05-11",
-        "popularity_score": 5.1907957813998085,
+        "popularity_score": 7.1907957813998085,
         "cyclist_volume": 1232
       },
       {
         "date": "2025-05-18",
-        "popularity_score": 2.539070227497527,
+        "popularity_score": 7.539070227497527,
         "cyclist_volume": 2010
       },
       {
         "date": "2025-05-25",
-        "popularity_score": 4.5612472160356345,
+        "popularity_score": 8.5612472160356345,
         "cyclist_volume": 1900
       },
       {
         "date": "2025-06-01",
-        "popularity_score": 4.21585557299843,
+        "popularity_score": 7.21585557299843,
         "cyclist_volume": 1906
       },
       {
         "date": "2025-06-08",
-        "popularity_score": 4.218110236220473,
+        "popularity_score": 7.218110236220473,
         "cyclist_volume": 1953
       },
       {
         "date": "2025-06-15",
-        "popularity_score": 3.6468010517090272,
+        "popularity_score": 7.6468010517090272,
         "cyclist_volume": 2066
       },
       {
         "date": "2025-06-22",
-        "popularity_score": 3.492101105845182,
+        "popularity_score": 8.492101105845182,
         "cyclist_volume": 2623
       },
       {
         "date": "2025-06-29",
-        "popularity_score": 1.9741309620048504,
+        "popularity_score": 9.5741309620048504,
         "cyclist_volume": 3649
       },
       {
         "date": "2025-07-06",
-        "popularity_score": 5.24090338770389,
+        "popularity_score": 8.24090338770389,
         "cyclist_volume": 1210
       },
       {
         "date": "2025-07-13",
-        "popularity_score": 6.19935170178282,
+        "popularity_score": 8.19935170178282,
         "cyclist_volume": 676
       },
       {
         "date": "2025-07-20",
-        "popularity_score": 6.166666666666667,
+        "popularity_score": 8.166666666666667,
         "cyclist_volume": 689
       },
       {
         "date": "2025-07-27",
-        "popularity_score": 3.8219178082191783,
+        "popularity_score": 8.8219178082191783,
         "cyclist_volume": 1491
       },
       {
         "date": "2025-08-03",
-        "popularity_score": 5.880998080614203,
+        "popularity_score": 8.880998080614203,
         "cyclist_volume": 616
       },
       {
         "date": "2025-08-10",
-        "popularity_score": 4.889570552147239,
+        "popularity_score": 7.889570552147239,
         "cyclist_volume": 1013
       },
       {
         "date": "2025-08-17",
-        "popularity_score": 4.431059506531205,
+        "popularity_score": 8.431059506531205,
         "cyclist_volume": 1097
       },
       {
         "date": "2025-08-24",
-        "popularity_score": 3.732334047109208,
+        "popularity_score": 7.732334047109208,
         "cyclist_volume": 1709
       },
       {
         "date": "2025-08-31",
-        "popularity_score": 4.780806979280261,
+        "popularity_score": 7.780806979280261,
         "cyclist_volume": 1244
       },
       {
         "date": "2025-09-07",
-        "popularity_score": 4.409195402298851,
+        "popularity_score": 8.409195402298851,
         "cyclist_volume": 1321
       },
       {
         "date": "2025-09-14",
-        "popularity_score": 4.3882352941176475,
+        "popularity_score": 7.3882352941176475,
         "cyclist_volume": 1227
       },
       {
         "date": "2025-09-21",
-        "popularity_score": 3.659356725146199,
+        "popularity_score": 7.659356725146199,
         "cyclist_volume": 1255
       },
       {
         "date": "2025-09-28",
-        "popularity_score": 4.706176961602671,
+        "popularity_score": 7.706176961602671,
         "cyclist_volume": 802
       }
     ],
@@ -603,7 +603,7 @@
     "weekly": [
       {
         "date": "2025-03-23",
-        "popularity_score": 4.25,
+        "popularity_score": 8.25,
         "cyclist_volume": 4
       },
       {
@@ -613,22 +613,22 @@
       },
       {
         "date": "2025-04-06",
-        "popularity_score": 5.0287539936102235,
+        "popularity_score": 8.0287539936102235,
         "cyclist_volume": 738
       },
       {
         "date": "2025-04-13",
-        "popularity_score": 6.014414414414414,
+        "popularity_score": 8.014414414414414,
         "cyclist_volume": 561
       },
       {
         "date": "2025-04-20",
-        "popularity_score": 6.091445427728614,
+        "popularity_score": 8.091445427728614,
         "cyclist_volume": 680
       },
       {
         "date": "2025-04-27",
-        "popularity_score": 5.505390835579515,
+        "popularity_score": 8.505390835579515,
         "cyclist_volume": 842
       },
       {
@@ -668,7 +668,7 @@
       },
       {
         "date": "2025-06-22",
-        "popularity_score": 5.51303441084463,
+        "popularity_score": 6.51303441084463,
         "cyclist_volume": 1324
       },
       {
@@ -683,62 +683,62 @@
       },
       {
         "date": "2025-07-13",
-        "popularity_score": 5.8085846867749416,
+        "popularity_score": 6.8085846867749416,
         "cyclist_volume": 1045
       },
       {
         "date": "2025-07-20",
-        "popularity_score": 5.269574944071588,
+        "popularity_score": 7.269574944071588,
         "cyclist_volume": 1199
       },
       {
         "date": "2025-07-27",
-        "popularity_score": 4.890895953757226,
+        "popularity_score": 7.890895953757226,
         "cyclist_volume": 2154
       },
       {
         "date": "2025-08-03",
-        "popularity_score": 4.6132958801498125,
+        "popularity_score": 8.6132958801498125,
         "cyclist_volume": 1617
       },
       {
         "date": "2025-08-10",
-        "popularity_score": 5.5794066317626525,
+        "popularity_score": 8.5794066317626525,
         "cyclist_volume": 655
       },
       {
         "date": "2025-08-17",
-        "popularity_score": 5.122211445198836,
+        "popularity_score": 8.122211445198836,
         "cyclist_volume": 1428
       },
       {
         "date": "2025-08-24",
-        "popularity_score": 5.740434332988625,
+        "popularity_score": 9.040434332988625,
         "cyclist_volume": 1160
       },
       {
         "date": "2025-08-31",
-        "popularity_score": 5.325829383886256,
+        "popularity_score": 8.825829383886256,
         "cyclist_volume": 1034
       },
       {
         "date": "2025-09-07",
-        "popularity_score": 5.763907734056988,
+        "popularity_score": 8.763907734056988,
         "cyclist_volume": 876
       },
       {
         "date": "2025-09-14",
-        "popularity_score": 5.110659072416599,
+        "popularity_score": 7.110659072416599,
         "cyclist_volume": 1909
       },
       {
         "date": "2025-09-21",
-        "popularity_score": 5.729257641921397,
+        "popularity_score": 7.729257641921397,
         "cyclist_volume": 831
       },
       {
         "date": "2025-09-28",
-        "popularity_score": 5.2957244655581945,
+        "popularity_score": 8.2957244655581945,
         "cyclist_volume": 1158
       }
     ],
@@ -773,42 +773,42 @@
       },
       {
         "date": "2025-04-27",
-        "popularity_score": 5.128369704749679,
+        "popularity_score": 6.928369704749679,
         "cyclist_volume": 1052
       },
       {
         "date": "2025-05-04",
-        "popularity_score": 4.4140625,
+        "popularity_score": 7.4140625,
         "cyclist_volume": 1024
       },
       {
         "date": "2025-05-11",
-        "popularity_score": 4.46524064171123,
+        "popularity_score": 8.46524064171123,
         "cyclist_volume": 1262
       },
       {
         "date": "2025-05-18",
-        "popularity_score": 6.248302618816683,
+        "popularity_score": 8.248302618816683,
         "cyclist_volume": 1131
       },
       {
         "date": "2025-05-25",
-        "popularity_score": 5.676630434782608,
+        "popularity_score": 7.676630434782608,
         "cyclist_volume": 888
       },
       {
         "date": "2025-06-01",
-        "popularity_score": 4.711832061068702,
+        "popularity_score": 7.711832061068702,
         "cyclist_volume": 1763
       },
       {
         "date": "2025-06-08",
-        "popularity_score": 3.099297893681043,
+        "popularity_score": 8.099297893681043,
         "cyclist_volume": 1808
       },
       {
         "date": "2025-06-15",
-        "popularity_score": 4.539301310043668,
+        "popularity_score": 7.539301310043668,
         "cyclist_volume": 1416
       },
       {
@@ -838,52 +838,52 @@
       },
       {
         "date": "2025-07-27",
-        "popularity_score": 6.213157894736842,
+        "popularity_score": 7.213157894736842,
         "cyclist_volume": 417
       },
       {
         "date": "2025-08-03",
-        "popularity_score": 5.370629370629371,
+        "popularity_score": 8.370629370629371,
         "cyclist_volume": 295
       },
       {
         "date": "2025-08-10",
-        "popularity_score": 5.2140350877192985,
+        "popularity_score": 8.2140350877192985,
         "cyclist_volume": 340
       },
       {
         "date": "2025-08-17",
-        "popularity_score": 6.556025369978858,
+        "popularity_score": 7.556025369978858,
         "cyclist_volume": 538
       },
       {
         "date": "2025-08-24",
-        "popularity_score": 4.64354527938343,
+        "popularity_score": 7.64354527938343,
         "cyclist_volume": 654
       },
       {
         "date": "2025-08-31",
-        "popularity_score": 5.954802259887006,
+        "popularity_score": 7.954802259887006,
         "cyclist_volume": 178
       },
       {
         "date": "2025-09-07",
-        "popularity_score": 4.200692041522491,
+        "popularity_score": 8.200692041522491,
         "cyclist_volume": 422
       },
       {
         "date": "2025-09-14",
-        "popularity_score": 6.9,
+        "popularity_score": 7.9,
         "cyclist_volume": 260
       },
       {
         "date": "2025-09-21",
-        "popularity_score": 5.81283422459893,
+        "popularity_score": 7.81283422459893,
         "cyclist_volume": 231
       },
       {
         "date": "2025-09-28",
-        "popularity_score": 5.518691588785047,
+        "popularity_score": 7.518691588785047,
         "cyclist_volume": 541
       }
     ],
@@ -903,22 +903,22 @@
     "weekly": [
       {
         "date": "2025-03-30",
-        "popularity_score": 6.020958083832335,
+        "popularity_score": 8.020958083832335,
         "cyclist_volume": 334
       },
       {
         "date": "2025-04-06",
-        "popularity_score": 2.864341085271318,
+        "popularity_score": 8.864341085271318,
         "cyclist_volume": 540
       },
       {
         "date": "2025-04-13",
-        "popularity_score": 5.9574898785425106,
+        "popularity_score": 7.9574898785425106,
         "cyclist_volume": 494
       },
       {
         "date": "2025-04-20",
-        "popularity_score": NaN,
+        "popularity_score": 1,
         "cyclist_volume": 0
       },
       {
@@ -953,87 +953,87 @@
       },
       {
         "date": "2025-06-08",
-        "popularity_score": 5.536697247706422,
+        "popularity_score": 6.536697247706422,
         "cyclist_volume": 1543
       },
       {
         "date": "2025-06-15",
-        "popularity_score": 6.152091254752852,
+        "popularity_score": 7.152091254752852,
         "cyclist_volume": 263
       },
       {
         "date": "2025-06-22",
-        "popularity_score": 5.300959232613909,
+        "popularity_score": 7.300959232613909,
         "cyclist_volume": 1071
       },
       {
         "date": "2025-06-29",
-        "popularity_score": 4.41845140032949,
+        "popularity_score": 7.41845140032949,
         "cyclist_volume": 942
       },
       {
         "date": "2025-07-06",
-        "popularity_score": 5.403100775193798,
+        "popularity_score": 8.403100775193798,
         "cyclist_volume": 642
       },
       {
         "date": "2025-07-13",
-        "popularity_score": 5.697445972495088,
+        "popularity_score": 8.697445972495088,
         "cyclist_volume": 1156
       },
       {
         "date": "2025-07-20",
-        "popularity_score": 4.666969972702457,
+        "popularity_score": 8.666969972702457,
         "cyclist_volume": 1685
       },
       {
         "date": "2025-07-27",
-        "popularity_score": 5.745762711864407,
+        "popularity_score": 8.745762711864407,
         "cyclist_volume": 846
       },
       {
         "date": "2025-08-03",
-        "popularity_score": 4.9211324570273005,
+        "popularity_score": 8.9211324570273005,
         "cyclist_volume": 1199
       },
       {
         "date": "2025-08-10",
-        "popularity_score": 3.7339449541284404,
+        "popularity_score": 8.7339449541284404,
         "cyclist_volume": 842
       },
       {
         "date": "2025-08-17",
-        "popularity_score": 6.897750511247444,
+        "popularity_score": 8.897750511247444,
         "cyclist_volume": 491
       },
       {
         "date": "2025-08-24",
-        "popularity_score": 5.579268292682927,
+        "popularity_score": 8.579268292682927,
         "cyclist_volume": 165
       },
       {
         "date": "2025-08-31",
-        "popularity_score": 6.294117647058823,
+        "popularity_score": 8.294117647058823,
         "cyclist_volume": 34
       },
       {
         "date": "2025-09-07",
-        "popularity_score": 5.1833910034602075,
+        "popularity_score": 8.1833910034602075,
         "cyclist_volume": 349
       },
       {
         "date": "2025-09-14",
-        "popularity_score": 6.757894736842105,
+        "popularity_score": 8.757894736842105,
         "cyclist_volume": 194
       },
       {
         "date": "2025-09-21",
-        "popularity_score": 7.333333333333333,
+        "popularity_score": 8.333333333333333,
         "cyclist_volume": 16
       },
       {
         "date": "2025-09-28",
-        "popularity_score": 6.487012987012987,
+        "popularity_score": 8.487012987012987,
         "cyclist_volume": 164
       }
     ],
@@ -1063,7 +1063,7 @@
       },
       {
         "date": "2025-04-13",
-        "popularity_score": NaN,
+        "popularity_score": 5.5,
         "cyclist_volume": 0
       },
       {
@@ -1083,7 +1083,7 @@
       },
       {
         "date": "2025-05-11",
-        "popularity_score": 5.285714285714286,
+        "popularity_score": 6.285714285714286,
         "cyclist_volume": 21
       },
       {
@@ -1098,12 +1098,12 @@
       },
       {
         "date": "2025-06-01",
-        "popularity_score": 5.380952380952381,
+        "popularity_score": 6.380952380952381,
         "cyclist_volume": 21
       },
       {
         "date": "2025-06-08",
-        "popularity_score": 5.491525423728813,
+        "popularity_score": 6.491525423728813,
         "cyclist_volume": 128
       },
       {
@@ -1123,12 +1123,12 @@
       },
       {
         "date": "2025-07-06",
-        "popularity_score": 6.5875,
+        "popularity_score": 7.5875,
         "cyclist_volume": 83
       },
       {
         "date": "2025-07-13",
-        "popularity_score": 5.896103896103896,
+        "popularity_score": 7.896103896103896,
         "cyclist_volume": 82
       },
       {
@@ -1138,27 +1138,27 @@
       },
       {
         "date": "2025-07-27",
-        "popularity_score": 6.157894736842105,
+        "popularity_score": 7.157894736842105,
         "cyclist_volume": 82
       },
       {
         "date": "2025-08-03",
-        "popularity_score": 6.94,
+        "popularity_score": 7.94,
         "cyclist_volume": 50
       },
       {
         "date": "2025-08-10",
-        "popularity_score": 5.53125,
+        "popularity_score": 7.53125,
         "cyclist_volume": 100
       },
       {
         "date": "2025-08-17",
-        "popularity_score": 6.337078651685394,
+        "popularity_score": 7.337078651685394,
         "cyclist_volume": 100
       },
       {
         "date": "2025-08-24",
-        "popularity_score": 6.524271844660194,
+        "popularity_score": 4.524271844660194,
         "cyclist_volume": 103
       },
       {
@@ -1178,12 +1178,12 @@
       },
       {
         "date": "2025-09-21",
-        "popularity_score": 6.447916666666667,
+        "popularity_score": 4.447916666666667,
         "cyclist_volume": 112
       },
       {
         "date": "2025-09-28",
-        "popularity_score": 6.777777777777778,
+        "popularity_score": 4.777777777777778,
         "cyclist_volume": 27
       }
     ],
@@ -1228,7 +1228,7 @@
       },
       {
         "date": "2025-05-11",
-        "popularity_score": 5.5290102389078495,
+        "popularity_score": 6.5290102389078495,
         "cyclist_volume": 293
       },
       {
@@ -1238,7 +1238,7 @@
       },
       {
         "date": "2025-05-25",
-        "popularity_score": 5.4071428571428575,
+        "popularity_score": 7.4071428571428575,
         "cyclist_volume": 330
       },
       {
@@ -1298,7 +1298,7 @@
       },
       {
         "date": "2025-08-17",
-        "popularity_score": 6.426116838487973,
+        "popularity_score": 4.426116838487973,
         "cyclist_volume": 318
       },
       {
@@ -1348,7 +1348,7 @@
     "weekly": [
       {
         "date": "2025-04-06",
-        "popularity_score": 5.930851063829787,
+        "popularity_score": 6.930851063829787,
         "cyclist_volume": 195
       },
       {
@@ -1363,7 +1363,7 @@
       },
       {
         "date": "2025-04-27",
-        "popularity_score": 4.3882352941176475,
+        "popularity_score": 5.3882352941176475,
         "cyclist_volume": 255
       },
       {
@@ -1378,7 +1378,7 @@
       },
       {
         "date": "2025-05-18",
-        "popularity_score": 7.169960474308301,
+        "popularity_score": 6.169960474308301,
         "cyclist_volume": 253
       },
       {
@@ -1398,72 +1398,72 @@
       },
       {
         "date": "2025-06-15",
-        "popularity_score": NaN,
+        "popularity_score": 6.3,
         "cyclist_volume": 0
       },
       {
         "date": "2025-06-22",
-        "popularity_score": NaN,
+        "popularity_score": 3.01,
         "cyclist_volume": 0
       },
       {
         "date": "2025-06-29",
-        "popularity_score": 7.205128205128205,
+        "popularity_score": 6.205128205128205,
         "cyclist_volume": 39
       },
       {
         "date": "2025-07-06",
-        "popularity_score": NaN,
+        "popularity_score": 5.5,
         "cyclist_volume": 0
       },
       {
         "date": "2025-07-13",
-        "popularity_score": 4.4471544715447155,
+        "popularity_score": 5.44471544715447155,
         "cyclist_volume": 123
       },
       {
         "date": "2025-07-20",
-        "popularity_score": 6.702247191011236,
+        "popularity_score": 5.2702247191011236,
         "cyclist_volume": 178
       },
       {
         "date": "2025-07-27",
-        "popularity_score": NaN,
+        "popularity_score": 5.1428571428571429,
         "cyclist_volume": 0
       },
       {
         "date": "2025-08-03",
-        "popularity_score": 6.8347107438016526,
+        "popularity_score": 4.8347107438016526,
         "cyclist_volume": 121
       },
       {
         "date": "2025-08-10",
-        "popularity_score": NaN,
+        "popularity_score": 4.6153846153846,
         "cyclist_volume": 0
       },
       {
         "date": "2025-08-17",
-        "popularity_score": NaN,
+        "popularity_score": 4.3875,
         "cyclist_volume": 0
       },
       {
         "date": "2025-08-24",
-        "popularity_score": 5.040322580645161,
+        "popularity_score": 4.040322580645161,
         "cyclist_volume": 124
       },
       {
         "date": "2025-08-31",
-        "popularity_score": 6.888888888888889,
+        "popularity_score": 3.888888888888889,
         "cyclist_volume": 9
       },
       {
         "date": "2025-09-07",
-        "popularity_score": 5.642857142857143,
+        "popularity_score": 3.242857142857143,
         "cyclist_volume": 126
       },
       {
         "date": "2025-09-14",
-        "popularity_score": 6.128787878787879,
+        "popularity_score": 3.128787878787879,
         "cyclist_volume": 132
       }
     ],
@@ -1483,7 +1483,7 @@
     "weekly": [
       {
         "date": "2025-03-23",
-        "popularity_score": 5.4,
+        "popularity_score": 7.4,
         "cyclist_volume": 5
       },
       {
@@ -1493,122 +1493,122 @@
       },
       {
         "date": "2025-04-06",
-        "popularity_score": 5.506382978723404,
+        "popularity_score": 7.506382978723404,
         "cyclist_volume": 263
       },
       {
         "date": "2025-04-13",
-        "popularity_score": 4.708860759493671,
+        "popularity_score": 7.708860759493671,
         "cyclist_volume": 203
       },
       {
         "date": "2025-04-20",
-        "popularity_score": 4.627737226277373,
+        "popularity_score": 7.627737226277373,
         "cyclist_volume": 314
       },
       {
         "date": "2025-04-27",
-        "popularity_score": 5.004166666666666,
+        "popularity_score": 8.004166666666666,
         "cyclist_volume": 275
       },
       {
         "date": "2025-05-04",
-        "popularity_score": 5.140186915887851,
+        "popularity_score": 8.140186915887851,
         "cyclist_volume": 120
       },
       {
         "date": "2025-05-11",
-        "popularity_score": 4.495238095238095,
+        "popularity_score": 8.495238095238095,
         "cyclist_volume": 507
       },
       {
         "date": "2025-05-18",
-        "popularity_score": 4.466911764705882,
+        "popularity_score": 8.466911764705882,
         "cyclist_volume": 364
       },
       {
         "date": "2025-05-25",
-        "popularity_score": 4.42654028436019,
+        "popularity_score": 8.42654028436019,
         "cyclist_volume": 656
       },
       {
         "date": "2025-06-01",
-        "popularity_score": 5.312997347480106,
+        "popularity_score": 8.312997347480106,
         "cyclist_volume": 513
       },
       {
         "date": "2025-06-08",
-        "popularity_score": 4.919117647058823,
+        "popularity_score": 8.919117647058823,
         "cyclist_volume": 374
       },
       {
         "date": "2025-06-15",
-        "popularity_score": 4.246666666666667,
+        "popularity_score": 8.946666666666667,
         "cyclist_volume": 516
       },
       {
         "date": "2025-06-22",
-        "popularity_score": 4.584134615384615,
+        "popularity_score": 8.584134615384615,
         "cyclist_volume": 651
       },
       {
         "date": "2025-06-29",
-        "popularity_score": 4.508620689655173,
+        "popularity_score": 8.508620689655173,
         "cyclist_volume": 564
       },
       {
         "date": "2025-07-06",
-        "popularity_score": 5.257575757575758,
+        "popularity_score": 8.257575757575758,
         "cyclist_volume": 761
       },
       {
         "date": "2025-07-13",
-        "popularity_score": 4.059154929577465,
+        "popularity_score": 8.059154929577465,
         "cyclist_volume": 574
       },
       {
         "date": "2025-07-20",
-        "popularity_score": 4.165354330708661,
+        "popularity_score": 8.165354330708661,
         "cyclist_volume": 733
       },
       {
         "date": "2025-07-27",
-        "popularity_score": 4.544444444444444,
+        "popularity_score": 8.544444444444444,
         "cyclist_volume": 783
       },
       {
         "date": "2025-08-03",
-        "popularity_score": 4.389473684210526,
+        "popularity_score": 7.389473684210526,
         "cyclist_volume": 644
       },
       {
         "date": "2025-08-10",
-        "popularity_score": 6.081081081081081,
+        "popularity_score": 8.081081081081081,
         "cyclist_volume": 264
       },
       {
         "date": "2025-08-17",
-        "popularity_score": 4.981481481481482,
+        "popularity_score": 7.981481481481482,
         "cyclist_volume": 522
       },
       {
         "date": "2025-08-24",
-        "popularity_score": 4.928934010152284,
+        "popularity_score": 6.928934010152284,
         "cyclist_volume": 269
       },
       {
         "date": "2025-08-31",
-        "popularity_score": 5.707964601769912,
+        "popularity_score": 6.707964601769912,
         "cyclist_volume": 278
       },
       {
         "date": "2025-09-07",
-        "popularity_score": 4.920265780730897,
+        "popularity_score": 6.920265780730897,
         "cyclist_volume": 424
       },
       {
         "date": "2025-09-14",
-        "popularity_score": 5.079470198675497,
+        "popularity_score": 6.079470198675497,
         "cyclist_volume": 426
       },
       {
@@ -1638,82 +1638,82 @@
     "weekly": [
       {
         "date": "2025-04-06",
-        "popularity_score": 4.7559241706161135,
+        "popularity_score": 7.7559241706161135,
         "cyclist_volume": 567
       },
       {
         "date": "2025-04-13",
-        "popularity_score": 4.78932584269663,
+        "popularity_score": 7.78932584269663,
         "cyclist_volume": 422
       },
       {
         "date": "2025-04-20",
-        "popularity_score": 5.222591362126246,
+        "popularity_score": 6.222591362126246,
         "cyclist_volume": 368
       },
       {
         "date": "2025-04-27",
-        "popularity_score": 4.7027863777089784,
+        "popularity_score": 7.7027863777089784,
         "cyclist_volume": 391
       },
       {
         "date": "2025-05-04",
-        "popularity_score": 3.783707865168539,
+        "popularity_score": 6.783707865168539,
         "cyclist_volume": 558
       },
       {
         "date": "2025-05-11",
-        "popularity_score": 3.9610983981693364,
+        "popularity_score": 6.9610983981693364,
         "cyclist_volume": 593
       },
       {
         "date": "2025-05-18",
-        "popularity_score": 5.437665782493369,
+        "popularity_score": 7.437665782493369,
         "cyclist_volume": 490
       },
       {
         "date": "2025-05-25",
-        "popularity_score": 4.239864864864865,
+        "popularity_score": 8.239864864864865,
         "cyclist_volume": 452
       },
       {
         "date": "2025-06-01",
-        "popularity_score": 4.88646288209607,
+        "popularity_score": 7.88646288209607,
         "cyclist_volume": 709
       },
       {
         "date": "2025-06-08",
-        "popularity_score": 4.177615571776156,
+        "popularity_score": 7.177615571776156,
         "cyclist_volume": 730
       },
       {
         "date": "2025-06-15",
-        "popularity_score": 4.048223350253807,
+        "popularity_score": 7.048223350253807,
         "cyclist_volume": 667
       },
       {
         "date": "2025-06-22",
-        "popularity_score": 3.579710144927536,
+        "popularity_score": 7.579710144927536,
         "cyclist_volume": 1113
       },
       {
         "date": "2025-06-29",
-        "popularity_score": 3.1532663316582914,
+        "popularity_score": 6.1532663316582914,
         "cyclist_volume": 1178
       },
       {
         "date": "2025-07-06",
-        "popularity_score": 5.6068601583113455,
+        "popularity_score": 7.6068601583113455,
         "cyclist_volume": 520
       },
       {
         "date": "2025-07-13",
-        "popularity_score": 1.9936305732484076,
+        "popularity_score": 3.9936305732484076,
         "cyclist_volume": 744
       },
       {
         "date": "2025-07-20",
-        "popularity_score": 4.708939708939709,
+        "popularity_score": 6.708939708939709,
         "cyclist_volume": 733
       },
       {
@@ -1743,12 +1743,12 @@
       },
       {
         "date": "2025-08-31",
-        "popularity_score": 5.008264462809917,
+        "popularity_score": 4.008264462809917,
         "cyclist_volume": 126
       },
       {
         "date": "2025-09-07",
-        "popularity_score": 6.023809523809524,
+        "popularity_score": 3.023809523809524,
         "cyclist_volume": 254
       },
       {
