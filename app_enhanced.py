@@ -18,10 +18,6 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-# Force light theme via query parameters
-st.query_params.update({"embed_options": "light_theme"})
-
-
 # ────────────────────────────────────────────────
 # 2️⃣ Load Professional CSS
 # ────────────────────────────────────────────────
