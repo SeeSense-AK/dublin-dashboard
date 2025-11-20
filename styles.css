@@ -9,10 +9,6 @@
     max-width: 100%;
 }
 
-/* Remove Streamlit branding */
-footer {visibility: hidden;}
-header {visibility: hidden;}
-
 /* ===== TYPOGRAPHY ===== */
 /* Professional font stack */
 .main * {
