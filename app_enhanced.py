@@ -8,9 +8,6 @@ import streamlit as st
 import sys, os
 from pathlib import Path
 
-# Force light theme via query parameters
-st.query_params.update({"embed_options": "light_theme"})
-
 # ────────────────────────────────────────────────
 # 1️⃣ MUST be the first Streamlit command
 # ────────────────────────────────────────────────
@@ -20,6 +17,10 @@ st.set_page_config(
     layout="wide",
     initial_sidebar_state="expanded"
 )
+
+# Force light theme via query parameters
+st.query_params.update({"embed_options": "light_theme"})
+
 
 # ────────────────────────────────────────────────
 # 2️⃣ Load Professional CSS
