@@ -1352,7 +1352,7 @@ def render_tab2_enhanced():
         if st.session_state.get('route_analysis_loaded') != street_name:
             with st.spinner("Generating AI insights..."):
                 import time
-                time.sleep(3)
+                time.sleep(2)
             st.session_state.route_analysis_loaded = street_name
         
         show_route_details(df, street_name)

@@ -107,6 +107,7 @@ def main():
     # Professional Header
     create_professional_header()
     
+
     # Content Card Container
     st.markdown('<div class="content-card">', unsafe_allow_html=True)
     
