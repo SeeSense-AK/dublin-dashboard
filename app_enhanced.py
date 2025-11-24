@@ -99,6 +99,19 @@ if not tab2_available:
         tab2_available = False
 
 # ────────────────────────────────────────────────
+# 6.5️⃣ Import Report Generator
+# ────────────────────────────────────────────────
+try:
+    from src.report_generator import generate_pdf_report
+    from src.tab1_hotspots_enhanced import load_preprocessed_data
+    from src.tab2_trends_enhanced import load_route_popularity_data
+    report_gen_available = True
+except ImportError as e:
+    report_gen_available = False
+    # st.warning(f"Report generator not available: {e}")
+
+
+# ────────────────────────────────────────────────
 # 7️⃣ Enhanced Main Layout
 # ────────────────────────────────────────────────
 def main():
@@ -107,6 +120,45 @@ def main():
     # Professional Header
     create_professional_header()
     
+    # ────────────────────────────────────────────────
+    # Sidebar - Report Generation
+    # ────────────────────────────────────────────────
+    if report_gen_available:
+        st.sidebar.title("Actions")
+        
+        # Create a container for the report generation to keep it distinct
+        with st.sidebar.container():
+            st.markdown("""
+            <div style="background-color: #f0f9ff; padding: 15px; border-radius: 10px; border: 1px solid #bae6fd; margin-bottom: 20px;">
+                <h4 style="margin-top: 0; color: #0369a1;">📄 Professional Report</h4>
+                <p style="font-size: 0.9em; color: #555;">Generate a detailed PDF report of all dashboard insights.</p>
+            </div>
+            """, unsafe_allow_html=True)
+            
+            if st.sidebar.button("Generate Report", type="primary", use_container_width=True):
+                with st.spinner("Generating professional report..."):
+                    try:
+                        # Load data
+                        sensor_df, perception_df, corridor_df, abnormal_events_df = load_preprocessed_data()
+                        route_df = load_route_popularity_data()
+                        
+                        # Generate PDF
+                        pdf_bytes = generate_pdf_report(sensor_df, perception_df, corridor_df, route_df, abnormal_events_df)
+                        
+                        # Offer download
+                        st.sidebar.download_button(
+                            label="📥 Download PDF Report",
+                            data=pdf_bytes,
+                            file_name="spinovate_safety_report.pdf",
+                            mime="application/pdf",
+                            use_container_width=True
+                        )
+                        st.sidebar.success("Report generated successfully!")
+                        
+                    except Exception as e:
+                        st.sidebar.error(f"Error generating report: {str(e)}")
+        
+        st.sidebar.markdown("---")
 
     # Content Card Container
     st.markdown('<div class="content-card">', unsafe_allow_html=True)
