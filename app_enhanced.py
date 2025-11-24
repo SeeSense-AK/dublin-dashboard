@@ -130,7 +130,7 @@ def main():
         with st.sidebar.container():
             st.markdown("""
             <div style="background-color: #f0f9ff; padding: 15px; border-radius: 10px; border: 1px solid #bae6fd; margin-bottom: 20px;">
-                <h4 style="margin-top: 0; color: #0369a1;">📄 Professional Report</h4>
+                <h4 style="margin-top: 0; color: #0369a1;">Detailed Report</h4>
                 <p style="font-size: 0.9em; color: #555;">Generate a detailed PDF report of all dashboard insights.</p>
             </div>
             """, unsafe_allow_html=True)
