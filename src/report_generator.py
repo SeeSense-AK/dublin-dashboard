@@ -2,6 +2,7 @@ from fpdf import FPDF
 import pandas as pd
 from datetime import datetime
 import time
+import os
 
 class SafetyReport(FPDF):
     def __init__(self):
@@ -22,7 +23,14 @@ class SafetyReport(FPDF):
             # Logo/Brand Text
             self.set_font('Arial', 'B', 10)
             self.set_text_color(*self.brand_primary)
-            self.cell(0, 10, 'SPINOVATE SAFETY DASHBOARD', 0, 0, 'L')
+            
+            # Check for logo
+            if os.path.exists("assets/logo_fixed.png"):
+                self.image("assets/logo_fixed.png", 10, 8, 30)
+                self.set_xy(45, 12)
+                self.cell(0, 10, 'SPINOVATE SAFETY DASHBOARD', 0, 0, 'L')
+            else:
+                self.cell(0, 10, 'SPINOVATE SAFETY DASHBOARD', 0, 0, 'L')
             
             # Date
             self.set_font('Arial', 'I', 9)
@@ -47,8 +55,12 @@ class SafetyReport(FPDF):
         self.set_fill_color(*self.brand_secondary)
         self.rect(0, 0, 210, 297, 'F')
         
-        # Top spacing
-        self.ln(60)
+        # Logo on Cover
+        if os.path.exists("assets/logo_fixed.png"):
+            self.image("assets/logo_fixed.png", 75, 40, 60)
+            self.ln(80)
+        else:
+            self.ln(60)
         
         # Title
         self.set_font('Arial', 'B', 36)

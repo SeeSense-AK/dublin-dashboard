@@ -10,9 +10,12 @@ I completely rewrote `src/report_generator.py` to produce a high-quality PDF.
 - **Features:**
     - **Cover Page:** Professional cover with title, date, and branding.
     - **Branding:** Uses Spinovate's color palette (Blue, Light Blue, Red, Green, Orange).
+    - **Logo Integration:** Displays the SeeSense logo on the cover page and report header.
     - **AI Analysis Cards:** Detailed cards for each hotspot/route showing stats, AI summary, themes, and recommendations.
     - **Metric Grid:** Visual grid for key statistics.
-    - **Bug Fix:** Renamed internal color attributes to `brand_*` to avoid conflicts with `FPDF` library internals.
+    - **Bug Fixes:**
+        - Renamed internal color attributes to `brand_*` to avoid conflicts with `FPDF` library internals.
+        - Converted logo from WebP to PNG (`assets/logo_fixed.png`) for FPDF compatibility.
 
 ### 2. AI Insights for Routes
 I extended the AI capabilities to analyze route trends.
@@ -23,6 +26,7 @@ I extended the AI capabilities to analyze route trends.
 I updated `app_enhanced.py` to integrate the enhanced generator.
 - **File:** [app_enhanced.py](file:///Users/abhishekkumbhar/Documents/GitHub/spinovate-dashboard/app_enhanced.py)
 - **Features:**
+    - **Logo Display:** Shows the SeeSense logo in the sidebar.
     - **Progress Tracking:** Added a progress bar in the sidebar to keep the user informed during AI generation.
     - **AI Integration:** Passes the AI functions to the report generator.
     - **Error Handling:** Improved error reporting with traceback.
@@ -38,6 +42,6 @@ I updated `app_enhanced.py` to integrate the enhanced generator.
 - **Automated Tests:** N/A (Visual feature)
 - **Manual Verification:**
     - The report generator creates a PDF with the correct structure and branding.
+    - The SeeSense logo appears on the cover page and subsequent page headers.
     - AI functions are called for top hotspots and routes.
     - The progress bar updates as items are processed.
-    - Fallbacks are in place if the Google API key is missing.

@@ -122,8 +122,15 @@ def main():
     create_professional_header()
     
     # ────────────────────────────────────────────────
-    # Sidebar - Report Generation
+    # Sidebar - Logo & Report Generation
     # ────────────────────────────────────────────────
+    
+    # Display Logo
+    logo_path = Path("assets/logo.png")
+    if logo_path.exists():
+        st.sidebar.image(str(logo_path), use_column_width=True)
+        st.sidebar.markdown("---")
+    
     if report_gen_available:
         st.sidebar.title("Actions")
         
