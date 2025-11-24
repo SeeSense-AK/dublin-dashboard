@@ -25,8 +25,8 @@ class SafetyReport(FPDF):
             self.set_text_color(*self.brand_primary)
             
             # Check for logo
-            if os.path.exists("assets/logo_fixed.png"):
-                self.image("assets/logo_fixed.png", 10, 8, 30)
+            if os.path.exists("assets/logo.png"):
+                self.image("assets/logo.png", 10, 8, 30)
                 self.set_xy(45, 12)
                 self.cell(0, 10, 'SPINOVATE SAFETY DASHBOARD', 0, 0, 'L')
             else:

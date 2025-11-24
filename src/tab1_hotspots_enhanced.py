@@ -591,16 +591,16 @@ def render_tab1_enhanced():
     perception_count = round(total_hotspots * 0.3)
     corridor_count = total_hotspots - sensor_count - perception_count
     
-    st.sidebar.markdown(f"""
-    <div class="sidebar-info">
-        <div class="sidebar-title">Distribution</div>
-        <div class="sidebar-content">
-            <div>Sensor Data: <strong>{sensor_count}</strong></div>
-            <div>Perception + Sensor: <strong>{perception_count}</strong></div>
-            <div>Corridor Reports: <strong>{corridor_count}</strong></div>
-        </div>
-    </div>
-    """, unsafe_allow_html=True)
+    #st.sidebar.markdown(f"""
+    #<div class="sidebar-info">
+    #    <div class="sidebar-title">Distribution</div>
+    #    <div class="sidebar-content">
+    #        <div>Sensor Data: <strong>{sensor_count}</strong></div>
+    #        <div>Perception + Sensor: <strong>{perception_count}</strong></div>
+    #        <div>Corridor Reports: <strong>{corridor_count}</strong></div>
+    #    </div>
+    #</div>
+    #""", unsafe_allow_html=True)
     
     # Select top hotspots using your original function
     sensor_top, perception_top, corridor_top = select_top_hotspots(
