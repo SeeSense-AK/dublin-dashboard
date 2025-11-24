@@ -56,8 +56,8 @@ class SafetyReport(FPDF):
         self.rect(0, 0, 210, 297, 'F')
         
         # Logo on Cover
-        if os.path.exists("assets/logo_fixed.png"):
-            self.image("assets/logo_fixed.png", 75, 40, 60)
+        if os.path.exists("assets/logo.png"):
+            self.image("assets/logo.png", 75, 40, 60)
             self.ln(80)
         else:
             self.ln(60)

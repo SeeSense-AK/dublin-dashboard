@@ -243,11 +243,11 @@ def main():
     # ────────────────────────────────────────────────
     # 9️⃣ Footer / technical info (Enhanced styling)
     # ────────────────────────────────────────────────
-    # #st.markdown("---")
-    # #st.markdown("### About This Dashboard")
+    # st.markdown("---")
+    # st.markdown("### About This Dashboard")
 
-    # #with st.expander("Technical Details"):
-    #     #st.markdown("""
+    # with st.expander("Technical Details"):
+    #     st.markdown("""
     #     **Data Sources:**
     #     - Route popularity analysis from cycling trip data  
     #     - Weather impact correlations  
@@ -268,7 +268,7 @@ def main():
     #     - Data validation between CSV and GeoJSON sources  
     #     """)
 
-    # #with st.expander("Data Processing Pipeline"):
+    # with st.expander("Data Processing Pipeline"):
     #     st.markdown("""
     #     **Tab 2 – Route Popularity Trends:**
     #     1. Load preprocessed route popularity data from CSV file  
