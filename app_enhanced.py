@@ -99,12 +99,13 @@ if not tab2_available:
         tab2_available = False
 
 # ────────────────────────────────────────────────
-# 6.5️⃣ Import Report Generator
+# 6.5️⃣ Import Report Generator and AI
 # ────────────────────────────────────────────────
 try:
     from src.report_generator import generate_pdf_report
     from src.tab1_hotspots_enhanced import load_preprocessed_data
     from src.tab2_trends_enhanced import load_route_popularity_data
+    from src.ai_insights import generate_hotspot_insights, extract_user_comments, generate_route_insights
     report_gen_available = True
 except ImportError as e:
     report_gen_available = False
@@ -136,14 +137,47 @@ def main():
             """, unsafe_allow_html=True)
             
             if st.sidebar.button("Generate Report", type="primary", use_container_width=True):
-                with st.spinner("Generating professional report..."):
+                # Create a progress bar
+                progress_bar = st.sidebar.progress(0)
+                status_text = st.sidebar.empty()
+                
+                def update_progress(msg):
+                    status_text.text(msg)
+                    # Increment progress slightly (simulated)
+                    if progress_bar:
+                        try:
+                            curr = progress_bar.progress
+                            # This is tricky because we don't know total steps easily, 
+                            # so we'll just let the user know it's working
+                        except:
+                            pass
+
+                with st.spinner("Generating professional report with AI analysis..."):
                     try:
                         # Load data
+                        status_text.text("Loading data...")
                         sensor_df, perception_df, corridor_df, abnormal_events_df = load_preprocessed_data()
                         route_df = load_route_popularity_data()
+                        progress_bar.progress(20)
                         
                         # Generate PDF
-                        pdf_bytes = generate_pdf_report(sensor_df, perception_df, corridor_df, route_df, abnormal_events_df)
+                        # We pass a lambda to update progress bar roughly
+                        step_counter = {'val': 20}
+                        def progress_wrapper(msg):
+                            step_counter['val'] = min(step_counter['val'] + 5, 95)
+                            progress_bar.progress(step_counter['val'])
+                            status_text.text(msg)
+                            
+                        pdf_bytes = generate_pdf_report(
+                            sensor_df, perception_df, corridor_df, route_df, abnormal_events_df,
+                            ai_hotspot_func=generate_hotspot_insights,
+                            ai_route_func=generate_route_insights,
+                            user_comments_func=extract_user_comments,
+                            progress_callback=progress_wrapper
+                        )
+                        
+                        progress_bar.progress(100)
+                        status_text.text("Report ready!")
                         
                         # Offer download
                         st.sidebar.download_button(
@@ -157,6 +191,8 @@ def main():
                         
                     except Exception as e:
                         st.sidebar.error(f"Error generating report: {str(e)}")
+                        import traceback
+                        st.sidebar.code(traceback.format_exc())
         
         st.sidebar.markdown("---")
 

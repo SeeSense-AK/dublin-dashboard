@@ -222,3 +222,83 @@ def extract_user_comments(hotspot_data: dict) -> list:
             ]
     
     return comments
+
+def generate_route_insights(route_data: dict) -> dict:
+    """
+    Generate AI insights for a route
+    
+    Args:
+        route_data: Dictionary containing route metadata
+    
+    Returns:
+        Dictionary with insights, themes, and summary
+    """
+    
+    if not GOOGLE_API_KEY:
+        return {
+            'summary': 'AI insights unavailable - Google API key not configured',
+            'themes': [],
+            'recommendations': []
+        }
+    
+    # Build prompt
+    prompt = build_route_prompt(route_data)
+    
+    try:
+        # Initialize model
+        model = genai.GenerativeModel('gemini-2.0-flash-001')
+        
+        # Generate response
+        response = model.generate_content(prompt)
+        
+        # Parse response (reuse existing parser)
+        insights = parse_ai_response(response.text)
+        
+        return insights
+        
+    except Exception as e:
+        return {
+            'summary': f'Error generating insights: {str(e)}',
+            'themes': [],
+            'recommendations': []
+        }
+
+def build_route_prompt(route_data: dict) -> str:
+    """Build structured prompt for AI route analysis"""
+    
+    prompt = f"""You are a traffic flow and road safety analyst. Analyze this route and provide concise, actionable insights.
+
+**Route Data:**
+- Name: {route_data.get('street_name', 'Unknown')}
+- Status: {'Improved Safety' if route_data.get('Colour') == 'Green' else 'High Risk' if route_data.get('Colour') == 'Red' else 'Neutral'}
+- Peak Trips: {route_data.get('peak_trips', 'N/A')}
+- Weather Impact: {route_data.get('weather_impact_note', 'N/A')}
+- Existing Summary: {route_data.get('summary', 'N/A')}
+"""
+
+    # Add trend data if available
+    if 'Trend' in route_data:
+        prompt += f"- Trend Observation: {route_data.get('Trend')}\n"
+    if 'Observation' in route_data:
+        prompt += f"- General Observation: {route_data.get('Observation')}\n"
+    if 'Possible Contributing Factors' in route_data:
+        prompt += f"- Contributing Factors: {route_data.get('Possible Contributing Factors')}\n"
+
+    prompt += """
+**Task:**
+Based on the data above, provide your response in EXACTLY this format:
+
+SUMMARY:
+[5-6 sentences providing a comprehensive analysis of the route's performance and safety status. Synthesize the existing observations into a professional narrative.]
+
+THEMES:
+[Comma-separated list of 2-4 specific themes, e.g., "High Commuter Volume", "Weather Sensitive", "Safety Improvement", "Infrastructure Deficit"]
+
+RECOMMENDATIONS:
+[2-3 bullet points with specific, actionable recommendations to improve or maintain the route.]
+
+IMPORTANT:
+- Start IMMEDIATELY with "SUMMARY:"
+- Be professional and data-driven
+"""
+    return prompt
