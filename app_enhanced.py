@@ -243,42 +243,42 @@ def main():
     # ────────────────────────────────────────────────
     # 9️⃣ Footer / technical info (Enhanced styling)
     # ────────────────────────────────────────────────
-    st.markdown("---")
-    st.markdown("### About This Dashboard")
+    # #st.markdown("---")
+    # #st.markdown("### About This Dashboard")
 
-    with st.expander("Technical Details"):
-        st.markdown("""
-        **Data Sources:**
-        - Route popularity analysis from cycling trip data  
-        - Weather impact correlations  
-        - Performance trend analysis  
-        - Preprocessed route insights and summaries  
-        - Actual road segment geometry from GeoJSON  
+    # #with st.expander("Technical Details"):
+    #     #st.markdown("""
+    #     **Data Sources:**
+    #     - Route popularity analysis from cycling trip data  
+    #     - Weather impact correlations  
+    #     - Performance trend analysis  
+    #     - Preprocessed route insights and summaries  
+    #     - Actual road segment geometry from GeoJSON  
 
-        **Analysis Methods:**
-        - Real road segment visualization using MultiLineString geometry  
-        - Interactive folium-based mapping with actual street shapes  
-        - Performance classification (Green/Red status)  
-        - Comprehensive route analysis display  
+    #     **Analysis Methods:**
+    #     - Real road segment visualization using MultiLineString geometry  
+    #     - Interactive folium-based mapping with actual street shapes  
+    #     - Performance classification (Green/Red status)  
+    #     - Comprehensive route analysis display  
 
-        **Features:**
-        - Interactive map with road segment polylines  
-        - Route performance metrics and visualizations  
-        - Comprehensive analysis of preprocessed data  
-        - Data validation between CSV and GeoJSON sources  
-        """)
+    #     **Features:**
+    #     - Interactive map with road segment polylines  
+    #     - Route performance metrics and visualizations  
+    #     - Comprehensive analysis of preprocessed data  
+    #     - Data validation between CSV and GeoJSON sources  
+    #     """)
 
-    with st.expander("Data Processing Pipeline"):
-        st.markdown("""
-        **Tab 2 – Route Popularity Trends:**
-        1. Load preprocessed route popularity data from CSV file  
-        2. Load road segment geometry from GeoJSON  
-        3. Match street names between analysis and geometry  
-        4. Create interactive color-coded map  
-        5. Display comprehensive route summaries  
-        6. Provide weather-impact breakdowns  
-        7. Validate data consistency between sources  
-        """)
+    # #with st.expander("Data Processing Pipeline"):
+    #     st.markdown("""
+    #     **Tab 2 – Route Popularity Trends:**
+    #     1. Load preprocessed route popularity data from CSV file  
+    #     2. Load road segment geometry from GeoJSON  
+    #     3. Match street names between analysis and geometry  
+    #     4. Create interactive color-coded map  
+    #     5. Display comprehensive route summaries  
+    #     6. Provide weather-impact breakdowns  
+    #     7. Validate data consistency between sources  
+    #     """)
 
 # ────────────────────────────────────────────────
 # 🔟 Run the application
