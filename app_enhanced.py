@@ -7,6 +7,7 @@ Power BI/Tableau-level professional styling
 import streamlit as st
 import sys, os
 from pathlib import Path
+import pandas as pd
 
 # ────────────────────────────────────────────────
 # 1️⃣ MUST be the first Streamlit command
@@ -163,7 +164,20 @@ def main():
                     try:
                         # Load data
                         status_text.text("Loading data...")
-                        sensor_df, perception_df, corridor_df, abnormal_events_df = load_preprocessed_data()
+                        # UPDATED: Unpack 3 values instead of 4
+                        top_30_df, corridor_df, abnormal_events_df = load_preprocessed_data()
+                        
+                        # Prepare data for report generator (Map Top 30 to Sensor format)
+                        sensor_df = top_30_df.copy()
+                        if not sensor_df.empty:
+                            # Map nested JSON fields to expected column names
+                            sensor_df['concern_score'] = sensor_df.get('scores.composite_score', 0)
+                            sensor_df['street_name'] = sensor_df.get('identification.street_name', 'Unknown')
+                            sensor_df['event_type'] = sensor_df.get('sensor_data.event_type', 'N/A')
+                            sensor_df['device_count'] = sensor_df.get('sensor_data.device_count', 0)
+                        
+                        perception_df = pd.DataFrame() # Perception is now integrated into Top 30 or Corridors
+                        
                         route_df = load_route_popularity_data()
                         progress_bar.progress(20)
                         

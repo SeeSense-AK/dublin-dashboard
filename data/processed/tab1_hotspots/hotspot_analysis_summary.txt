@@ -1,0 +1,87 @@
+================================================================================
+HOTSPOT ANALYSIS SUMMARY
+================================================================================
+
+Analysis Date: 2025-11-26 11:12:44
+Matching Radius: 100m
+
+DATASET OVERVIEW
+--------------------------------------------------------------------------------
+Total sensor hotspots: 302
+Hotspots with collision validation: 206
+Validation rate: 68.2%
+Total collision reports matched: 738
+
+TOP 30 HOTSPOTS
+--------------------------------------------------------------------------------
+Hotspots with fatalities: 8
+Hotspots with serious injuries: 8
+Total collision reports: 276
+Total sensor events: 1390
+
+TOP 10 HOTSPOTS
+--------------------------------------------------------------------------------
+
+#1: Harold's Cross Road
+    Composite Score: 0.981
+    Sensor: 12 hard_brake events
+    Citizen: 15 reports ⚠️ FATALITY
+    Themes: left-hook turning conflicts (2 mentions); red light violations (2 mentions); pedestrian conflicts (2 mentions)
+
+#2: Bachelors Walk
+    Composite Score: 0.978
+    Sensor: 67 pothole events
+    Citizen: 18 reports ⚠️ FATALITY
+    Themes: right-hook turning conflicts (3 mentions); left-hook turning conflicts (2 mentions); Luas/tram hazards (2 mentions)
+
+#3: Grove Road
+    Composite Score: 0.967
+    Sensor: 36 pothole events
+    Citizen: 15 reports ⚠️ FATALITY
+    Themes: left-hook turning conflicts (2 mentions); red light violations (2 mentions); pedestrian conflicts (2 mentions)
+
+#4: Aston Quay
+    Composite Score: 0.948
+    Sensor: 19 pothole events
+    Citizen: 16 reports ⚠️ FATALITY
+    Themes: left-hook turning conflicts (2 mentions); right-hook turning conflicts (2 mentions); HGV conflicts (2 mentions)
+
+#5: Bridge Street
+    Composite Score: 0.920
+    Sensor: 373 pothole events
+    Citizen: 5 reports ⚠️ FATALITY
+    Themes: close passing/overtaking (2 mentions); pedestrian conflicts (1 mentions); bus-related incidents (1 mentions)
+
+#6: Harold's Cross Road
+    Composite Score: 0.762
+    Sensor: 23 hard_brake events
+    Citizen: 10 reports
+    Themes: right-hook turning conflicts (2 mentions); red light violations (2 mentions); pedestrian conflicts (2 mentions)
+
+#7: Merchant's Quay
+    Composite Score: 0.752
+    Sensor: 20 pothole events
+    Citizen: 11 reports ⚠️ SERIOUS INJURY
+    Themes: close passing/overtaking (2 mentions); left-hook turning conflicts (1 mentions); right-hook turning conflicts (1 mentions)
+
+#8: High Street
+    Composite Score: 0.741
+    Sensor: 53 pothole events
+    Citizen: 10 reports
+    Themes: left-hook turning conflicts (2 mentions); right-hook turning conflicts (1 mentions); car door incidents (1 mentions)
+
+#9: Parkgate Street
+    Composite Score: 0.736
+    Sensor: 20 hard_brake events
+    Citizen: 8 reports ⚠️ SERIOUS INJURY
+    Themes: left-hook turning conflicts (1 mentions); junction design issues (1 mentions); bus-related incidents (1 mentions)
+
+#10: Capel Street
+    Composite Score: 0.736
+    Sensor: 12 hard_brake events
+    Citizen: 11 reports
+    Themes: right-hook turning conflicts (3 mentions); close passing/overtaking (1 mentions); pedestrian conflicts (1 mentions)
+
+================================================================================
+END OF SUMMARY
+================================================================================

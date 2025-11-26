@@ -1,0 +1,2250 @@
+[
+  {
+    "rank": 1,
+    "identification": {
+      "cluster_id": "hard_brake_9",
+      "street_name": "Harold's Cross Road",
+      "latitude": 53.329399,
+      "longitude": -6.275641
+    },
+    "scores": {
+      "composite_score": 0.9806590909090909,
+      "sensor_concern_score": 0.5568181818181819,
+      "composite_rank": 1,
+      "sensor_only_rank": 21
+    },
+    "sensor_data": {
+      "event_type": "hard_brake",
+      "event_count": 12,
+      "median_severity": 10.0,
+      "max_severity": 10,
+      "device_count": 3,
+      "first_seen": "2025-06-19",
+      "last_seen": "2025-08-31"
+    },
+    "collision_reports": {
+      "total_count": 15,
+      "breakdown": {
+        "near_miss": 7,
+        "collision": 5,
+        "hazard": 3
+      },
+      "causes": {
+        "infrastructure": 5,
+        "driver_car": 7,
+        "driver_hgv": 1,
+        "driver_bus": 0
+      },
+      "outcomes": {
+        "no_injuries": 12,
+        "minor_injuries": 2,
+        "serious_injuries": 0,
+        "fatalities": 1
+      },
+      "severity": {
+        "average": 2.966666666666667,
+        "maximum": 20.0
+      },
+      "date_range": {
+        "start": "2009-01-14",
+        "end": "2025-09-11"
+      }
+    },
+    "flags": {
+      "has_fatality": true,
+      "has_serious_injury": false,
+      "is_validated": true
+    },
+    "narrative": {
+      "theme_summary": "left-hook turning conflicts (2 mentions); red light violations (2 mentions); pedestrian conflicts (2 mentions)",
+      "common_themes": {
+        "left_hook": 2,
+        "right_hook": 1,
+        "close_pass": 1,
+        "red_light": 2,
+        "pedestrian_conflict": 2,
+        "cycle_lane_blocked": 1,
+        "junction_design": 1,
+        "speed": 1,
+        "hgv": 1,
+        "taxi": 1,
+        "bus": 1,
+        "luas": 1
+      },
+      "sample_descriptions": [
+        "Collision between cyclist and HGV\n",
+        "Cyclist ran red light and hit another cyclist",
+        "Driver used Bus Lane to skip traffic and suddenly turned into cul-de-sac without indicating or checking mirrors ",
+        "Driver veered onto cycle lane without looking and hit me",
+        "Car moved left into filter lane not noticing that I was cycling in the cycle lane. Hit me as I tried to suddenly break. I fell off my bike. "
+      ]
+    }
+  },
+  {
+    "rank": 2,
+    "identification": {
+      "cluster_id": "pothole_56",
+      "street_name": "Bachelors Walk",
+      "latitude": 53.347353,
+      "longitude": -6.259212
+    },
+    "scores": {
+      "composite_score": 0.9783436357543261,
+      "sensor_concern_score": 0.5315622715086523,
+      "composite_rank": 2,
+      "sensor_only_rank": 33
+    },
+    "sensor_data": {
+      "event_type": "pothole",
+      "event_count": 67,
+      "median_severity": 9.0,
+      "max_severity": 10,
+      "device_count": 21,
+      "first_seen": "2025-06-16",
+      "last_seen": "2025-09-24"
+    },
+    "collision_reports": {
+      "total_count": 18,
+      "breakdown": {
+        "near_miss": 7,
+        "collision": 10,
+        "hazard": 1
+      },
+      "causes": {
+        "infrastructure": 7,
+        "driver_car": 7,
+        "driver_hgv": 2,
+        "driver_bus": 1
+      },
+      "outcomes": {
+        "no_injuries": 9,
+        "minor_injuries": 6,
+        "serious_injuries": 1,
+        "fatalities": 2
+      },
+      "severity": {
+        "average": 5.305555555555555,
+        "maximum": 20.0
+      },
+      "date_range": {
+        "start": "2001-06-27",
+        "end": "2025-11-11"
+      }
+    },
+    "flags": {
+      "has_fatality": true,
+      "has_serious_injury": true,
+      "is_validated": true
+    },
+    "narrative": {
+      "theme_summary": "right-hook turning conflicts (3 mentions); left-hook turning conflicts (2 mentions); Luas/tram hazards (2 mentions)",
+      "common_themes": {
+        "left_hook": 2,
+        "right_hook": 3,
+        "red_light": 1,
+        "pedestrian_conflict": 1,
+        "junction_design": 1,
+        "speed": 1,
+        "hgv": 1,
+        "taxi": 1,
+        "bus": 1,
+        "luas": 2
+      },
+      "sample_descriptions": [
+        "Collision between HGV and cyclist- Dr Olivia Potterton",
+        "Collision between HGV and cyclist- Tanya Holst",
+        "A HGV turning left onto O’Connell Street collided with my bike and ran over me.",
+        "Lady on a bike got stuck in Luas tracks and fell off bike, bus had to doge around her, near miss",
+        "When changing lanes here before the light change I was knocked off my bike luckily they were stopped at the lights so they didn't drive fast"
+      ]
+    }
+  },
+  {
+    "rank": 3,
+    "identification": {
+      "cluster_id": "pothole_63",
+      "street_name": "Grove Road",
+      "latitude": 53.329507,
+      "longitude": -6.275514
+    },
+    "scores": {
+      "composite_score": 0.966925481355106,
+      "sensor_concern_score": 0.5203509627102121,
+      "composite_rank": 3,
+      "sensor_only_rank": 35
+    },
+    "sensor_data": {
+      "event_type": "pothole",
+      "event_count": 36,
+      "median_severity": 10.0,
+      "max_severity": 10,
+      "device_count": 14,
+      "first_seen": "2025-06-18",
+      "last_seen": "2025-09-21"
+    },
+    "collision_reports": {
+      "total_count": 15,
+      "breakdown": {
+        "near_miss": 7,
+        "collision": 5,
+        "hazard": 3
+      },
+      "causes": {
+        "infrastructure": 5,
+        "driver_car": 7,
+        "driver_hgv": 1,
+        "driver_bus": 0
+      },
+      "outcomes": {
+        "no_injuries": 12,
+        "minor_injuries": 2,
+        "serious_injuries": 0,
+        "fatalities": 1
+      },
+      "severity": {
+        "average": 2.966666666666667,
+        "maximum": 20.0
+      },
+      "date_range": {
+        "start": "2009-01-14",
+        "end": "2025-09-11"
+      }
+    },
+    "flags": {
+      "has_fatality": true,
+      "has_serious_injury": false,
+      "is_validated": true
+    },
+    "narrative": {
+      "theme_summary": "left-hook turning conflicts (2 mentions); red light violations (2 mentions); pedestrian conflicts (2 mentions)",
+      "common_themes": {
+        "left_hook": 2,
+        "right_hook": 1,
+        "close_pass": 1,
+        "red_light": 2,
+        "pedestrian_conflict": 2,
+        "cycle_lane_blocked": 1,
+        "junction_design": 1,
+        "speed": 1,
+        "hgv": 1,
+        "taxi": 1,
+        "bus": 1,
+        "luas": 1
+      },
+      "sample_descriptions": [
+        "Collision between cyclist and HGV\n",
+        "Cyclist ran red light and hit another cyclist",
+        "Driver used Bus Lane to skip traffic and suddenly turned into cul-de-sac without indicating or checking mirrors ",
+        "Driver veered onto cycle lane without looking and hit me",
+        "Car moved left into filter lane not noticing that I was cycling in the cycle lane. Hit me as I tried to suddenly break. I fell off my bike. "
+      ]
+    }
+  },
+  {
+    "rank": 4,
+    "identification": {
+      "cluster_id": "pothole_185",
+      "street_name": "Aston Quay",
+      "latitude": 53.346816,
+      "longitude": -6.259892
+    },
+    "scores": {
+      "composite_score": 0.9482005697050938,
+      "sensor_concern_score": 0.4892761394101877,
+      "composite_rank": 4,
+      "sensor_only_rank": 61
+    },
+    "sensor_data": {
+      "event_type": "pothole",
+      "event_count": 19,
+      "median_severity": 10.0,
+      "max_severity": 10,
+      "device_count": 5,
+      "first_seen": "2025-07-24",
+      "last_seen": "2025-09-22"
+    },
+    "collision_reports": {
+      "total_count": 16,
+      "breakdown": {
+        "near_miss": 6,
+        "collision": 9,
+        "hazard": 1
+      },
+      "causes": {
+        "infrastructure": 6,
+        "driver_car": 5,
+        "driver_hgv": 2,
+        "driver_bus": 2
+      },
+      "outcomes": {
+        "no_injuries": 7,
+        "minor_injuries": 6,
+        "serious_injuries": 1,
+        "fatalities": 2
+      },
+      "severity": {
+        "average": 5.78125,
+        "maximum": 20.0
+      },
+      "date_range": {
+        "start": "2001-06-27",
+        "end": "2025-11-11"
+      }
+    },
+    "flags": {
+      "has_fatality": true,
+      "has_serious_injury": true,
+      "is_validated": true
+    },
+    "narrative": {
+      "theme_summary": "left-hook turning conflicts (2 mentions); right-hook turning conflicts (2 mentions); HGV conflicts (2 mentions)",
+      "common_themes": {
+        "left_hook": 2,
+        "right_hook": 2,
+        "red_light": 1,
+        "pedestrian_conflict": 1,
+        "junction_design": 1,
+        "speed": 1,
+        "hgv": 2,
+        "taxi": 1,
+        "bus": 1,
+        "luas": 2
+      },
+      "sample_descriptions": [
+        "Collision between HGV and cyclist- Dr Olivia Potterton",
+        "Collision between HGV and cyclist- Tanya Holst",
+        "A HGV turning left onto O’Connell Street collided with my bike and ran over me.",
+        "Lady on a bike got stuck in Luas tracks and fell off bike, bus had to doge around her, near miss",
+        "When changing lanes here before the light change I was knocked off my bike luckily they were stopped at the lights so they didn't drive fast"
+      ]
+    }
+  },
+  {
+    "rank": 5,
+    "identification": {
+      "cluster_id": "pothole_3",
+      "street_name": "Bridge Street",
+      "latitude": 53.341711,
+      "longitude": -6.22824
+    },
+    "scores": {
+      "composite_score": 0.9199375,
+      "sensor_concern_score": 1.0,
+      "composite_rank": 5,
+      "sensor_only_rank": 1
+    },
+    "sensor_data": {
+      "event_type": "pothole",
+      "event_count": 373,
+      "median_severity": 7.0,
+      "max_severity": 10,
+      "device_count": 15,
+      "first_seen": "2025-06-12",
+      "last_seen": "2025-09-22"
+    },
+    "collision_reports": {
+      "total_count": 5,
+      "breakdown": {
+        "near_miss": 2,
+        "collision": 2,
+        "hazard": 1
+      },
+      "causes": {
+        "infrastructure": 2,
+        "driver_car": 2,
+        "driver_hgv": 1,
+        "driver_bus": 0
+      },
+      "outcomes": {
+        "no_injuries": 4,
+        "minor_injuries": 0,
+        "serious_injuries": 0,
+        "fatalities": 1
+      },
+      "severity": {
+        "average": 4.9,
+        "maximum": 20.0
+      },
+      "date_range": {
+        "start": "2023-12-26",
+        "end": "2024-09-19"
+      }
+    },
+    "flags": {
+      "has_fatality": true,
+      "has_serious_injury": false,
+      "is_validated": true
+    },
+    "narrative": {
+      "theme_summary": "close passing/overtaking (2 mentions); pedestrian conflicts (1 mentions); bus-related incidents (1 mentions)",
+      "common_themes": {
+        "close_pass": 2,
+        "pedestrian_conflict": 1,
+        "bus": 1
+      },
+      "sample_descriptions": [
+        "Collision involving commercial van and a pedestrian at approximately 8am.",
+        "A car coming from Thorncastle st did not yield and hit me on the bike as I was waiting to turn right from Irishtown road",
+        "Car attempted to overtake me on narrow bridge. A bus came against them in the opposite direction, they swerved back into lane.",
+        "Dangerous Overtaking of a Cyclist",
+        "Road narrows a lot here and along with incline make the stretch hazardous for cyclists"
+      ]
+    }
+  },
+  {
+    "rank": 6,
+    "identification": {
+      "cluster_id": "hard_brake_11",
+      "street_name": "Harold's Cross Road",
+      "latitude": 53.32374,
+      "longitude": -6.27878
+    },
+    "scores": {
+      "composite_score": 0.7618693181818182,
+      "sensor_concern_score": 0.6051136363636364,
+      "composite_rank": 6,
+      "sensor_only_rank": 13
+    },
+    "sensor_data": {
+      "event_type": "hard_brake",
+      "event_count": 23,
+      "median_severity": 9.0,
+      "max_severity": 10,
+      "device_count": 3,
+      "first_seen": "2025-06-19",
+      "last_seen": "2025-06-24"
+    },
+    "collision_reports": {
+      "total_count": 10,
+      "breakdown": {
+        "near_miss": 6,
+        "collision": 2,
+        "hazard": 2
+      },
+      "causes": {
+        "infrastructure": 2,
+        "driver_car": 7,
+        "driver_hgv": 0,
+        "driver_bus": 0
+      },
+      "outcomes": {
+        "no_injuries": 7,
+        "minor_injuries": 3,
+        "serious_injuries": 0,
+        "fatalities": 0
+      },
+      "severity": {
+        "average": 2.1,
+        "maximum": 6.0
+      },
+      "date_range": {
+        "start": "2015-02-22",
+        "end": "2025-06-10"
+      }
+    },
+    "flags": {
+      "has_fatality": false,
+      "has_serious_injury": false,
+      "is_validated": true
+    },
+    "narrative": {
+      "theme_summary": "right-hook turning conflicts (2 mentions); red light violations (2 mentions); pedestrian conflicts (2 mentions)",
+      "common_themes": {
+        "left_hook": 1,
+        "right_hook": 2,
+        "red_light": 2,
+        "pedestrian_conflict": 2,
+        "junction_design": 1,
+        "bus": 1
+      },
+      "sample_descriptions": [
+        "Knocked off the bike by a car turning left into cemetery.",
+        "I ended up on the bonnet of a car at this junction when cycling towards Kimmage. The driver didn't see me. I had bike lights. Early evening ",
+        "Car turned right at junction of park onto Harold’s Cross Road. Broke pedestrian light and made contact with pedestrian and dog.",
+        "Car turning right onto Harold’s Cross Road southbound goes through red light at pedestrian crossing",
+        "At pedestrian crossing.A cyclist broke the lights.Bus stopped at traffic light.Cyclist unseen kept going and missed my two sons by inches."
+      ]
+    }
+  },
+  {
+    "rank": 7,
+    "identification": {
+      "cluster_id": "pothole_11",
+      "street_name": "Merchant's Quay",
+      "latitude": 53.345005,
+      "longitude": -6.272509
+    },
+    "scores": {
+      "composite_score": 0.7515747623689982,
+      "sensor_concern_score": 0.4456495247379967,
+      "composite_rank": 7,
+      "sensor_only_rank": 174
+    },
+    "sensor_data": {
+      "event_type": "pothole",
+      "event_count": 20,
+      "median_severity": 9.0,
+      "max_severity": 10,
+      "device_count": 6,
+      "first_seen": "2025-06-13",
+      "last_seen": "2025-09-20"
+    },
+    "collision_reports": {
+      "total_count": 11,
+      "breakdown": {
+        "near_miss": 6,
+        "collision": 1,
+        "hazard": 4
+      },
+      "causes": {
+        "infrastructure": 7,
+        "driver_car": 1,
+        "driver_hgv": 0,
+        "driver_bus": 1
+      },
+      "outcomes": {
+        "no_injuries": 10,
+        "minor_injuries": 0,
+        "serious_injuries": 1,
+        "fatalities": 0
+      },
+      "severity": {
+        "average": 1.6363636363636365,
+        "maximum": 10.0
+      },
+      "date_range": {
+        "start": "2024-02-08",
+        "end": "2025-05-10"
+      }
+    },
+    "flags": {
+      "has_fatality": false,
+      "has_serious_injury": true,
+      "is_validated": true
+    },
+    "narrative": {
+      "theme_summary": "close passing/overtaking (2 mentions); left-hook turning conflicts (1 mentions); right-hook turning conflicts (1 mentions)",
+      "common_themes": {
+        "left_hook": 1,
+        "right_hook": 1,
+        "close_pass": 2,
+        "pedestrian_conflict": 1,
+        "bus": 1,
+        "luas": 1
+      },
+      "sample_descriptions": [
+        "Cyclist in cycle lane coming down hill from Christchurch hit by a car coming from the Civic Offices car park across lanes of traffic",
+        "Northbound car lane narrows forcing drivers into bike lane ",
+        "Dublin Bus driver Dangerous Overtaking of a Cyclist ",
+        "Motorbike nearly hit me as he attempted to overtake a car.",
+        "Car turning left failed to stop for a bicycle cycling straight on"
+      ]
+    }
+  },
+  {
+    "rank": 8,
+    "identification": {
+      "cluster_id": "pothole_31",
+      "street_name": "High Street",
+      "latitude": 53.342859,
+      "longitude": -6.271818
+    },
+    "scores": {
+      "composite_score": 0.7406503930051183,
+      "sensor_concern_score": 0.5514257860102365,
+      "composite_rank": 8,
+      "sensor_only_rank": 25
+    },
+    "sensor_data": {
+      "event_type": "pothole",
+      "event_count": 53,
+      "median_severity": 10.0,
+      "max_severity": 10,
+      "device_count": 16,
+      "first_seen": "2025-06-14",
+      "last_seen": "2025-09-19"
+    },
+    "collision_reports": {
+      "total_count": 10,
+      "breakdown": {
+        "near_miss": 5,
+        "collision": 2,
+        "hazard": 3
+      },
+      "causes": {
+        "infrastructure": 7,
+        "driver_car": 2,
+        "driver_hgv": 1,
+        "driver_bus": 0
+      },
+      "outcomes": {
+        "no_injuries": 7,
+        "minor_injuries": 3,
+        "serious_injuries": 0,
+        "fatalities": 0
+      },
+      "severity": {
+        "average": 2.05,
+        "maximum": 6.0
+      },
+      "date_range": {
+        "start": "2023-04-10",
+        "end": "2025-03-27"
+      }
+    },
+    "flags": {
+      "has_fatality": false,
+      "has_serious_injury": false,
+      "is_validated": true
+    },
+    "narrative": {
+      "theme_summary": "left-hook turning conflicts (2 mentions); right-hook turning conflicts (1 mentions); car door incidents (1 mentions)",
+      "common_themes": {
+        "left_hook": 2,
+        "right_hook": 1,
+        "dooring": 1,
+        "junction_design": 1,
+        "hgv": 1,
+        "taxi": 1,
+        "bus": 1
+      },
+      "sample_descriptions": [
+        "Cycling in cycle lane. Car overtook me and then turned left without looking or indicating. Slammed into passenger door and fell hard",
+        "Side swiped in a bike lane by a left tuning taxi no indication. ",
+        "Cars accelerating up the hill turning left on High st, nearly hitting cyclists which are coming up hill going straight down Winetavern st.",
+        "Cars rushing  up hill to travel left at Christchurch Junction where bikes are forced to cross line of traffic. Badly positioned yellow box",
+        "Car going left, cyclist go straight"
+      ]
+    }
+  },
+  {
+    "rank": 9,
+    "identification": {
+      "cluster_id": "hard_brake_15",
+      "street_name": "Parkgate Street",
+      "latitude": 53.348048,
+      "longitude": -6.291679
+    },
+    "scores": {
+      "composite_score": 0.7362500000000002,
+      "sensor_concern_score": 0.6250000000000001,
+      "composite_rank": 9,
+      "sensor_only_rank": 11
+    },
+    "sensor_data": {
+      "event_type": "hard_brake",
+      "event_count": 20,
+      "median_severity": 10.0,
+      "max_severity": 10,
+      "device_count": 1,
+      "first_seen": "2025-06-23",
+      "last_seen": "2025-06-23"
+    },
+    "collision_reports": {
+      "total_count": 8,
+      "breakdown": {
+        "near_miss": 5,
+        "collision": 2,
+        "hazard": 1
+      },
+      "causes": {
+        "infrastructure": 4,
+        "driver_car": 4,
+        "driver_hgv": 0,
+        "driver_bus": 0
+      },
+      "outcomes": {
+        "no_injuries": 6,
+        "minor_injuries": 1,
+        "serious_injuries": 1,
+        "fatalities": 0
+      },
+      "severity": {
+        "average": 2.6875,
+        "maximum": 10.0
+      },
+      "date_range": {
+        "start": "2022-06-15",
+        "end": "2024-03-15"
+      }
+    },
+    "flags": {
+      "has_fatality": false,
+      "has_serious_injury": true,
+      "is_validated": true
+    },
+    "narrative": {
+      "theme_summary": "left-hook turning conflicts (1 mentions); junction design issues (1 mentions); bus-related incidents (1 mentions)",
+      "common_themes": {
+        "left_hook": 1,
+        "junction_design": 1,
+        "bus": 1
+      },
+      "sample_descriptions": [
+        "Cyclist on ground.  Car exiting from Parkgate street stopped with Hazards on",
+        "Cyclist travelling along the cycle lane adjacent to path suddenly moved out to go  right at the junction.  I was travelling from Phoenix Park",
+        "Car pulled across bike lane which is screened by parked cars. Driver apologised!",
+        "Cycle lane suddenly VERY narrow and curbed - pedal can hit pavement when trying to avoid bus wing mirrors. Scary. ",
+        "There is a yield sign for traffic coming from Parkgate onto  Wofle Tone Quay. Car didn't stop and almost hit bicycle - happens regularly."
+      ]
+    }
+  },
+  {
+    "rank": 10,
+    "identification": {
+      "cluster_id": "hard_brake_21",
+      "street_name": "Capel Street",
+      "latitude": 53.346718,
+      "longitude": -6.268146
+    },
+    "scores": {
+      "composite_score": 0.7356590909090909,
+      "sensor_concern_score": 0.5568181818181819,
+      "composite_rank": 10,
+      "sensor_only_rank": 21
+    },
+    "sensor_data": {
+      "event_type": "hard_brake",
+      "event_count": 12,
+      "median_severity": 10.0,
+      "max_severity": 10,
+      "device_count": 1,
+      "first_seen": "2025-06-23",
+      "last_seen": "2025-06-23"
+    },
+    "collision_reports": {
+      "total_count": 11,
+      "breakdown": {
+        "near_miss": 6,
+        "collision": 5,
+        "hazard": 0
+      },
+      "causes": {
+        "infrastructure": 3,
+        "driver_car": 6,
+        "driver_hgv": 2,
+        "driver_bus": 0
+      },
+      "outcomes": {
+        "no_injuries": 8,
+        "minor_injuries": 3,
+        "serious_injuries": 0,
+        "fatalities": 0
+      },
+      "severity": {
+        "average": 2.5454545454545454,
+        "maximum": 6.0
+      },
+      "date_range": {
+        "start": "2022-03-01",
+        "end": "2025-11-12"
+      }
+    },
+    "flags": {
+      "has_fatality": false,
+      "has_serious_injury": false,
+      "is_validated": true
+    },
+    "narrative": {
+      "theme_summary": "right-hook turning conflicts (3 mentions); close passing/overtaking (1 mentions); pedestrian conflicts (1 mentions)",
+      "common_themes": {
+        "right_hook": 3,
+        "close_pass": 1,
+        "pedestrian_conflict": 1,
+        "junction_design": 1,
+        "taxi": 1
+      },
+      "sample_descriptions": [
+        "Car sped up and turned right through a yellow light, hitting me as I was proceeding straight. ",
+        "Cycling straight on a green light, car turned right over the Liffey without checking his mirror. Collided into the side of his car.",
+        "Coach turned right without checking in right wing mirror. Collided with cyclist who was going straight on. ",
+        "Cyclists continuing straight on in cycle lane,  but car turned right, crossing over cycling lane and hitting a cyclist in the process",
+        "Hit by taxi turning right as I was cycle straight (he overtook me)"
+      ]
+    }
+  },
+  {
+    "rank": 11,
+    "identification": {
+      "cluster_id": "pothole_50",
+      "street_name": "Wellington Quay",
+      "latitude": 53.345352,
+      "longitude": -6.267529
+    },
+    "scores": {
+      "composite_score": 0.6998961735315622,
+      "sensor_concern_score": 0.4837923470631246,
+      "composite_rank": 11,
+      "sensor_only_rank": 81
+    },
+    "sensor_data": {
+      "event_type": "pothole",
+      "event_count": 16,
+      "median_severity": 10.0,
+      "max_severity": 10,
+      "device_count": 8,
+      "first_seen": "2025-06-16",
+      "last_seen": "2025-08-17"
+    },
+    "collision_reports": {
+      "total_count": 12,
+      "breakdown": {
+        "near_miss": 6,
+        "collision": 6,
+        "hazard": 0
+      },
+      "causes": {
+        "infrastructure": 3,
+        "driver_car": 7,
+        "driver_hgv": 2,
+        "driver_bus": 0
+      },
+      "outcomes": {
+        "no_injuries": 8,
+        "minor_injuries": 4,
+        "serious_injuries": 0,
+        "fatalities": 0
+      },
+      "severity": {
+        "average": 2.8333333333333335,
+        "maximum": 6.0
+      },
+      "date_range": {
+        "start": "2022-03-01",
+        "end": "2025-11-12"
+      }
+    },
+    "flags": {
+      "has_fatality": false,
+      "has_serious_injury": false,
+      "is_validated": true
+    },
+    "narrative": {
+      "theme_summary": "right-hook turning conflicts (3 mentions); close passing/overtaking (1 mentions); pedestrian conflicts (1 mentions)",
+      "common_themes": {
+        "right_hook": 3,
+        "close_pass": 1,
+        "pedestrian_conflict": 1,
+        "junction_design": 1,
+        "taxi": 1,
+        "bus": 1
+      },
+      "sample_descriptions": [
+        "Car sped up and turned right through a yellow light, hitting me as I was proceeding straight. ",
+        "Assaulted by motorist who veered into the bus lane",
+        "Cycling straight on a green light, car turned right over the Liffey without checking his mirror. Collided into the side of his car.",
+        "Coach turned right without checking in right wing mirror. Collided with cyclist who was going straight on. ",
+        "Cyclists continuing straight on in cycle lane,  but car turned right, crossing over cycling lane and hitting a cyclist in the process"
+      ]
+    }
+  },
+  {
+    "rank": 12,
+    "identification": {
+      "cluster_id": "pothole_146",
+      "street_name": "Usher's Quay",
+      "latitude": 53.345489,
+      "longitude": -6.276948
+    },
+    "scores": {
+      "composite_score": 0.6932873811844992,
+      "sensor_concern_score": 0.4728247623689984,
+      "composite_rank": 12,
+      "sensor_only_rank": 149
+    },
+    "sensor_data": {
+      "event_type": "pothole",
+      "event_count": 10,
+      "median_severity": 10.0,
+      "max_severity": 10,
+      "device_count": 2,
+      "first_seen": "2025-07-03",
+      "last_seen": "2025-08-18"
+    },
+    "collision_reports": {
+      "total_count": 11,
+      "breakdown": {
+        "near_miss": 7,
+        "collision": 4,
+        "hazard": 0
+      },
+      "causes": {
+        "infrastructure": 5,
+        "driver_car": 4,
+        "driver_hgv": 0,
+        "driver_bus": 0
+      },
+      "outcomes": {
+        "no_injuries": 10,
+        "minor_injuries": 1,
+        "serious_injuries": 0,
+        "fatalities": 0
+      },
+      "severity": {
+        "average": 1.7272727272727273,
+        "maximum": 6.0
+      },
+      "date_range": {
+        "start": "2020-01-01",
+        "end": "2025-10-06"
+      }
+    },
+    "flags": {
+      "has_fatality": false,
+      "has_serious_injury": false,
+      "is_validated": true
+    },
+    "narrative": {
+      "theme_summary": "left-hook turning conflicts (2 mentions); pedestrian conflicts (2 mentions); right-hook turning conflicts (1 mentions)",
+      "common_themes": {
+        "left_hook": 2,
+        "right_hook": 1,
+        "pedestrian_conflict": 2,
+        "junction_design": 1,
+        "speed": 1,
+        "taxi": 1,
+        "bus": 1,
+        "luas": 1
+      },
+      "sample_descriptions": [
+        "Unsure of details as I arrived on the scene, but injured cyclist being tended to by gardai & firemen.",
+        "Car turned right without checking bike lane on their right as I was going straight, resulting in collision.",
+        "Hit at slow speed by a taxi driver when crossing the road. The car was exiting the petrol station and did not yield. Speed off after the hit",
+        "Passed a young woman on my commute standing on the footpath with a buckled front wheel. She was uninjured but shook. ",
+        "Cycle lane moves from building side of the street to riverside when crossing the junction heading east. "
+      ]
+    }
+  },
+  {
+    "rank": 13,
+    "identification": {
+      "cluster_id": "pothole_51",
+      "street_name": "Inns Quay",
+      "latitude": 53.345784,
+      "longitude": -6.275581
+    },
+    "scores": {
+      "composite_score": 0.687440135266878,
+      "sensor_concern_score": 0.5386302705337559,
+      "composite_rank": 13,
+      "sensor_only_rank": 31
+    },
+    "sensor_data": {
+      "event_type": "pothole",
+      "event_count": 46,
+      "median_severity": 10.0,
+      "max_severity": 10,
+      "device_count": 15,
+      "first_seen": "2025-06-16",
+      "last_seen": "2025-09-22"
+    },
+    "collision_reports": {
+      "total_count": 9,
+      "breakdown": {
+        "near_miss": 6,
+        "collision": 3,
+        "hazard": 0
+      },
+      "causes": {
+        "infrastructure": 5,
+        "driver_car": 2,
+        "driver_hgv": 0,
+        "driver_bus": 0
+      },
+      "outcomes": {
+        "no_injuries": 8,
+        "minor_injuries": 1,
+        "serious_injuries": 0,
+        "fatalities": 0
+      },
+      "severity": {
+        "average": 1.7777777777777777,
+        "maximum": 6.0
+      },
+      "date_range": {
+        "start": "2022-05-04",
+        "end": "2024-10-07"
+      }
+    },
+    "flags": {
+      "has_fatality": false,
+      "has_serious_injury": false,
+      "is_validated": true
+    },
+    "narrative": {
+      "theme_summary": "pedestrian conflicts (2 mentions); left-hook turning conflicts (1 mentions); right-hook turning conflicts (1 mentions)",
+      "common_themes": {
+        "left_hook": 1,
+        "right_hook": 1,
+        "pedestrian_conflict": 2,
+        "junction_design": 1,
+        "taxi": 1,
+        "bus": 1,
+        "luas": 1
+      },
+      "sample_descriptions": [
+        "Unsure of details as I arrived on the scene, but injured cyclist being tended to by gardai & firemen.",
+        "Car turned right without checking bike lane on their right as I was going straight, resulting in collision.",
+        "Passed a young woman on my commute standing on the footpath with a buckled front wheel. She was uninjured but shook. ",
+        "Cycle lane moves from building side of the street to riverside when crossing the junction heading east. ",
+        "There is no sign here to say the cycle lane is ending. It is very easy to end up in the bus lane, if you didn't know to wait for the lights"
+      ]
+    }
+  },
+  {
+    "rank": 14,
+    "identification": {
+      "cluster_id": "pothole_28",
+      "street_name": "College Green",
+      "latitude": 53.344526,
+      "longitude": -6.259922
+    },
+    "scores": {
+      "composite_score": 0.6834559011698758,
+      "sensor_concern_score": 0.6830368023397515,
+      "composite_rank": 14,
+      "sensor_only_rank": 8
+    },
+    "sensor_data": {
+      "event_type": "pothole",
+      "event_count": 125,
+      "median_severity": 10.0,
+      "max_severity": 10,
+      "device_count": 25,
+      "first_seen": "2025-06-13",
+      "last_seen": "2025-09-23"
+    },
+    "collision_reports": {
+      "total_count": 7,
+      "breakdown": {
+        "near_miss": 2,
+        "collision": 3,
+        "hazard": 2
+      },
+      "causes": {
+        "infrastructure": 6,
+        "driver_car": 0,
+        "driver_hgv": 0,
+        "driver_bus": 0
+      },
+      "outcomes": {
+        "no_injuries": 2,
+        "minor_injuries": 5,
+        "serious_injuries": 0,
+        "fatalities": 0
+      },
+      "severity": {
+        "average": 3.2857142857142856,
+        "maximum": 6.0
+      },
+      "date_range": {
+        "start": "2024-01-21",
+        "end": "2025-10-18"
+      }
+    },
+    "flags": {
+      "has_fatality": false,
+      "has_serious_injury": false,
+      "is_validated": true
+    },
+    "narrative": {
+      "theme_summary": "Luas/tram hazards (3 mentions); pedestrian conflicts (1 mentions); taxi-related incidents (1 mentions)",
+      "common_themes": {
+        "pedestrian_conflict": 1,
+        "taxi": 1,
+        "luas": 3
+      },
+      "sample_descriptions": [
+        "Bicycle tyre stuck in Luas tram track. Fell off bicycle. Soft tissue injuries (bruises, bleeding, pain) right hip, elbow and neck.",
+        "Slipped and fell on wet Luas track",
+        "Collision between a pedestrian and a delivery person on a bike.",
+        "Wet tram tracks caused a fall",
+        "Tram tracks at college green become extra slippy when wet. Frequent spot for collisions with taxis/bicyclists falling."
+      ]
+    }
+  },
+  {
+    "rank": 15,
+    "identification": {
+      "cluster_id": "hard_brake_13",
+      "street_name": "Wilton Terrace",
+      "latitude": 53.332262,
+      "longitude": -6.252688
+    },
+    "scores": {
+      "composite_score": 0.6738238636363636,
+      "sensor_concern_score": 0.6960227272727274,
+      "composite_rank": 15,
+      "sensor_only_rank": 7
+    },
+    "sensor_data": {
+      "event_type": "hard_brake",
+      "event_count": 39,
+      "median_severity": 8.0,
+      "max_severity": 10,
+      "device_count": 8,
+      "first_seen": "2025-06-21",
+      "last_seen": "2025-08-01"
+    },
+    "collision_reports": {
+      "total_count": 7,
+      "breakdown": {
+        "near_miss": 4,
+        "collision": 2,
+        "hazard": 1
+      },
+      "causes": {
+        "infrastructure": 3,
+        "driver_car": 3,
+        "driver_hgv": 0,
+        "driver_bus": 0
+      },
+      "outcomes": {
+        "no_injuries": 5,
+        "minor_injuries": 2,
+        "serious_injuries": 0,
+        "fatalities": 0
+      },
+      "severity": {
+        "average": 1.9285714285714286,
+        "maximum": 6.0
+      },
+      "date_range": {
+        "start": "2017-05-08",
+        "end": "2024-09-23"
+      }
+    },
+    "flags": {
+      "has_fatality": false,
+      "has_serious_injury": false,
+      "is_validated": true
+    },
+    "narrative": {
+      "theme_summary": "pedestrian conflicts (2 mentions); right-hook turning conflicts (1 mentions); red light violations (1 mentions)",
+      "common_themes": {
+        "right_hook": 1,
+        "red_light": 1,
+        "poor_visibility": 1,
+        "pedestrian_conflict": 2,
+        "taxi": 1
+      },
+      "sample_descriptions": [
+        "Pedestrian walked out into bike path without looking. Braked and went into back of audi to avoid him. Damaged my front bumper and hand.",
+        "I was cycling on Mespil road and a car came out from Sussex street and didn’t yield and hit my front wheel, buckling it completely ",
+        "Cycle path disappears meeting pedestrians at a narrow blind corner",
+        "Vehicles regularly break this red light, appears many don't notice it.",
+        "Car turning right from Mespil Road to Sussex Terrace attempted to make turn across yellow box without checking cycle lane was clear."
+      ]
+    }
+  },
+  {
+    "rank": 16,
+    "identification": {
+      "cluster_id": "pothole_181",
+      "street_name": "South Circular Road",
+      "latitude": 53.34011,
+      "longitude": -6.307623
+    },
+    "scores": {
+      "composite_score": 0.65919647209359,
+      "sensor_concern_score": 0.4046429441871802,
+      "composite_rank": 16,
+      "sensor_only_rank": 194
+    },
+    "sensor_data": {
+      "event_type": "pothole",
+      "event_count": 10,
+      "median_severity": 8.5,
+      "max_severity": 10,
+      "device_count": 4,
+      "first_seen": "2025-07-22",
+      "last_seen": "2025-08-22"
+    },
+    "collision_reports": {
+      "total_count": 14,
+      "breakdown": {
+        "near_miss": 9,
+        "collision": 2,
+        "hazard": 3
+      },
+      "causes": {
+        "infrastructure": 1,
+        "driver_car": 8,
+        "driver_hgv": 5,
+        "driver_bus": 0
+      },
+      "outcomes": {
+        "no_injuries": 12,
+        "minor_injuries": 2,
+        "serious_injuries": 0,
+        "fatalities": 0
+      },
+      "severity": {
+        "average": 1.6071428571428572,
+        "maximum": 6.0
+      },
+      "date_range": {
+        "start": "2024-02-22",
+        "end": "2025-07-25"
+      }
+    },
+    "flags": {
+      "has_fatality": false,
+      "has_serious_injury": false,
+      "is_validated": true
+    },
+    "narrative": {
+      "theme_summary": "left-hook turning conflicts (2 mentions); car door incidents (2 mentions); red light violations (2 mentions)",
+      "common_themes": {
+        "left_hook": 2,
+        "right_hook": 1,
+        "dooring": 2,
+        "red_light": 2,
+        "pedestrian_conflict": 2,
+        "cycle_lane_blocked": 1,
+        "junction_design": 2,
+        "hgv": 1
+      },
+      "sample_descriptions": [
+        "Car turned left without looking in bike lane and crashed into me",
+        "Car illegally parked on sidewalk opened door into me (cycling in a protected cycle lane) throwing me off my bike into the intersection.",
+        "A big truck ran a green pedestrian light when l was about to push my buggy accross with my 2 year old",
+        "Car drove straight through red light at pedestrian crossing outside Spar. Narrowly missing pedestrian who luckily looked before crossing.",
+        "While going North across this intersection towards CircleK, van turned left without looking."
+      ]
+    }
+  },
+  {
+    "rank": 17,
+    "identification": {
+      "cluster_id": "swerve_29",
+      "street_name": "Merchant's Quay",
+      "latitude": 53.345005,
+      "longitude": -6.272509
+    },
+    "scores": {
+      "composite_score": 0.6583234126984125,
+      "sensor_concern_score": 0.2628968253968254,
+      "composite_rank": 17,
+      "sensor_only_rank": 280
+    },
+    "sensor_data": {
+      "event_type": "swerve",
+      "event_count": 10,
+      "median_severity": 4.0,
+      "max_severity": 10,
+      "device_count": 1,
+      "first_seen": "2025-07-27",
+      "last_seen": "2025-08-02"
+    },
+    "collision_reports": {
+      "total_count": 11,
+      "breakdown": {
+        "near_miss": 6,
+        "collision": 1,
+        "hazard": 4
+      },
+      "causes": {
+        "infrastructure": 7,
+        "driver_car": 1,
+        "driver_hgv": 0,
+        "driver_bus": 1
+      },
+      "outcomes": {
+        "no_injuries": 10,
+        "minor_injuries": 0,
+        "serious_injuries": 1,
+        "fatalities": 0
+      },
+      "severity": {
+        "average": 1.6363636363636365,
+        "maximum": 10.0
+      },
+      "date_range": {
+        "start": "2024-02-08",
+        "end": "2025-05-10"
+      }
+    },
+    "flags": {
+      "has_fatality": false,
+      "has_serious_injury": true,
+      "is_validated": true
+    },
+    "narrative": {
+      "theme_summary": "close passing/overtaking (2 mentions); left-hook turning conflicts (1 mentions); right-hook turning conflicts (1 mentions)",
+      "common_themes": {
+        "left_hook": 1,
+        "right_hook": 1,
+        "close_pass": 2,
+        "pedestrian_conflict": 1,
+        "bus": 1,
+        "luas": 1
+      },
+      "sample_descriptions": [
+        "Cyclist in cycle lane coming down hill from Christchurch hit by a car coming from the Civic Offices car park across lanes of traffic",
+        "Northbound car lane narrows forcing drivers into bike lane ",
+        "Dublin Bus driver Dangerous Overtaking of a Cyclist ",
+        "Motorbike nearly hit me as he attempted to overtake a car.",
+        "Car turning left failed to stop for a bicycle cycling straight on"
+      ]
+    }
+  },
+  {
+    "rank": 18,
+    "identification": {
+      "cluster_id": "pothole_19",
+      "street_name": "Cheltenham Place",
+      "latitude": 53.330057,
+      "longitude": -6.264153
+    },
+    "scores": {
+      "composite_score": 0.6427016816963198,
+      "sensor_concern_score": 0.6154033633926397,
+      "composite_rank": 18,
+      "sensor_only_rank": 12
+    },
+    "sensor_data": {
+      "event_type": "pothole",
+      "event_count": 88,
+      "median_severity": 10.0,
+      "max_severity": 10,
+      "device_count": 22,
+      "first_seen": "2025-06-13",
+      "last_seen": "2025-09-23"
+    },
+    "collision_reports": {
+      "total_count": 7,
+      "breakdown": {
+        "near_miss": 3,
+        "collision": 4,
+        "hazard": 0
+      },
+      "causes": {
+        "infrastructure": 1,
+        "driver_car": 3,
+        "driver_hgv": 2,
+        "driver_bus": 0
+      },
+      "outcomes": {
+        "no_injuries": 4,
+        "minor_injuries": 3,
+        "serious_injuries": 0,
+        "fatalities": 0
+      },
+      "severity": {
+        "average": 3.2857142857142856,
+        "maximum": 6.0
+      },
+      "date_range": {
+        "start": "2019-05-08",
+        "end": "2024-06-04"
+      }
+    },
+    "flags": {
+      "has_fatality": false,
+      "has_serious_injury": false,
+      "is_validated": true
+    },
+    "narrative": {
+      "theme_summary": "left-hook turning conflicts (1 mentions); right-hook turning conflicts (1 mentions); red light violations (1 mentions)",
+      "common_themes": {
+        "left_hook": 1,
+        "right_hook": 1,
+        "red_light": 1,
+        "junction_design": 1,
+        "hgv": 1,
+        "taxi": 1
+      },
+      "sample_descriptions": [
+        "Cyclist injured while trying to pass to left of 4-axle digger transporter ",
+        "Car turning left hit cyclist heading straight ",
+        "Can turning left hit a cyclist, knocking him to the ground",
+        "Van turning left without indicating or pausing for those in cycling lane, cyclist hit side of van as there was no time to brake fully.",
+        "Taxi driver swung out from left hand junction without looking, forcing me (continuing straight along canal) to brake to avoid collision."
+      ]
+    }
+  },
+  {
+    "rank": 19,
+    "identification": {
+      "cluster_id": "pothole_53",
+      "street_name": "Stoneybatter",
+      "latitude": 53.350631,
+      "longitude": -6.282162
+    },
+    "scores": {
+      "composite_score": 0.6099976389227395,
+      "sensor_concern_score": 0.485620277845479,
+      "composite_rank": 19,
+      "sensor_only_rank": 73
+    },
+    "sensor_data": {
+      "event_type": "pothole",
+      "event_count": 17,
+      "median_severity": 10.0,
+      "max_severity": 10,
+      "device_count": 7,
+      "first_seen": "2025-06-15",
+      "last_seen": "2025-09-13"
+    },
+    "collision_reports": {
+      "total_count": 8,
+      "breakdown": {
+        "near_miss": 2,
+        "collision": 4,
+        "hazard": 2
+      },
+      "causes": {
+        "infrastructure": 3,
+        "driver_car": 4,
+        "driver_hgv": 1,
+        "driver_bus": 0
+      },
+      "outcomes": {
+        "no_injuries": 4,
+        "minor_injuries": 4,
+        "serious_injuries": 0,
+        "fatalities": 0
+      },
+      "severity": {
+        "average": 3.375,
+        "maximum": 6.0
+      },
+      "date_range": {
+        "start": "2018-10-15",
+        "end": "2025-09-18"
+      }
+    },
+    "flags": {
+      "has_fatality": false,
+      "has_serious_injury": false,
+      "is_validated": true
+    },
+    "narrative": {
+      "theme_summary": "left-hook turning conflicts (2 mentions); car door incidents (1 mentions); blocked cycle lanes (1 mentions)",
+      "common_themes": {
+        "left_hook": 2,
+        "dooring": 1,
+        "cycle_lane_blocked": 1,
+        "junction_design": 1,
+        "speed": 1,
+        "taxi": 1,
+        "bus": 1
+      },
+      "sample_descriptions": [
+        "Cars coming from the Blackehall PL road decided to turn right while the cyclist coming from Stoneybatter is turning left to N King street",
+        "Van driver came out of Arbour Hill aiming to go across to Brunswick St. Hit cyclist who was coming down Manor St. ",
+        "Driver sped across main road from minor to minor road hitting cyclist travelling on main road side-on. ",
+        "Taxi driver turned left across cycle lane pinning me against the kerb. ",
+        "Passenger in van opened his door into the path of a cyclist who had to dodge. "
+      ]
+    }
+  },
+  {
+    "rank": 20,
+    "identification": {
+      "cluster_id": "hard_brake_30",
+      "street_name": "Wilton Terrace",
+      "latitude": 53.334149,
+      "longitude": -6.246488
+    },
+    "scores": {
+      "composite_score": 0.6053011363636364,
+      "sensor_concern_score": 0.3664772727272727,
+      "composite_rank": 20,
+      "sensor_only_rank": 218
+    },
+    "sensor_data": {
+      "event_type": "hard_brake",
+      "event_count": 11,
+      "median_severity": 6.0,
+      "max_severity": 10,
+      "device_count": 3,
+      "first_seen": "2025-06-24",
+      "last_seen": "2025-09-13"
+    },
+    "collision_reports": {
+      "total_count": 8,
+      "breakdown": {
+        "near_miss": 5,
+        "collision": 1,
+        "hazard": 2
+      },
+      "causes": {
+        "infrastructure": 0,
+        "driver_car": 8,
+        "driver_hgv": 0,
+        "driver_bus": 0
+      },
+      "outcomes": {
+        "no_injuries": 7,
+        "minor_injuries": 0,
+        "serious_injuries": 1,
+        "fatalities": 0
+      },
+      "severity": {
+        "average": 2.0,
+        "maximum": 10.0
+      },
+      "date_range": {
+        "start": "2024-02-27",
+        "end": "2024-12-17"
+      }
+    },
+    "flags": {
+      "has_fatality": false,
+      "has_serious_injury": true,
+      "is_validated": true
+    },
+    "narrative": {
+      "theme_summary": "blocked cycle lanes (2 mentions); right-hook turning conflicts (1 mentions); junction design issues (1 mentions)",
+      "common_themes": {
+        "right_hook": 1,
+        "cycle_lane_blocked": 2,
+        "junction_design": 1,
+        "taxi": 1
+      },
+      "sample_descriptions": [
+        "Car pulled into the cycle lane without indication and hit me. Driver pulled back out into the car lane and continued driving.\n",
+        "Car turned on to main road without due care and almost collided with me. ",
+        "Car parked in cycle lane pulled out without looking ",
+        "Car turning right coming through the junction had to break hard and swerve the car to go straight instead of right to avoid hitting me",
+        "Cycle lane blocked by construction. As I moved around it a taxi came from behind and squeezed me towards the traffic cones."
+      ]
+    }
+  },
+  {
+    "rank": 21,
+    "identification": {
+      "cluster_id": "pothole_10",
+      "street_name": "Dame Street",
+      "latitude": 53.344141,
+      "longitude": -6.266929
+    },
+    "scores": {
+      "composite_score": 0.5975928893492567,
+      "sensor_concern_score": 0.6044357786985135,
+      "composite_rank": 21,
+      "sensor_only_rank": 14
+    },
+    "sensor_data": {
+      "event_type": "pothole",
+      "event_count": 82,
+      "median_severity": 10.0,
+      "max_severity": 10,
+      "device_count": 18,
+      "first_seen": "2025-06-13",
+      "last_seen": "2025-09-22"
+    },
+    "collision_reports": {
+      "total_count": 4,
+      "breakdown": {
+        "near_miss": 3,
+        "collision": 1,
+        "hazard": 0
+      },
+      "causes": {
+        "infrastructure": 0,
+        "driver_car": 3,
+        "driver_hgv": 0,
+        "driver_bus": 1
+      },
+      "outcomes": {
+        "no_injuries": 3,
+        "minor_injuries": 0,
+        "serious_injuries": 0,
+        "fatalities": 1
+      },
+      "severity": {
+        "average": 5.75,
+        "maximum": 20.0
+      },
+      "date_range": {
+        "start": "2022-05-01",
+        "end": "2025-03-14"
+      }
+    },
+    "flags": {
+      "has_fatality": true,
+      "has_serious_injury": false,
+      "is_validated": true
+    },
+    "narrative": {
+      "theme_summary": "left-hook turning conflicts (1 mentions); taxi-related incidents (1 mentions); bus-related incidents (1 mentions)",
+      "common_themes": {
+        "left_hook": 1,
+        "taxi": 1,
+        "bus": 1
+      },
+      "sample_descriptions": [
+        "Cyclist in his 70s died in a collision in involving car driver",
+        "Bus was thundering down on top of me. Much too close to my bicycle but I didn’t know it was there and slowed my bike. Just missed being hit.",
+        "Taxi turning left, late indicator. ",
+        "Multiple near misses with cars, usually taxis, cutting across to turn left suddenly without indicating or looking around"
+      ]
+    }
+  },
+  {
+    "rank": 22,
+    "identification": {
+      "cluster_id": "pothole_80",
+      "street_name": "Westmoreland",
+      "latitude": 53.34621,
+      "longitude": -6.258973
+    },
+    "scores": {
+      "composite_score": 0.5967143553497442,
+      "sensor_concern_score": 0.3474287106994882,
+      "composite_rank": 22,
+      "sensor_only_rank": 227
+    },
+    "sensor_data": {
+      "event_type": "pothole",
+      "event_count": 16,
+      "median_severity": 7.0,
+      "max_severity": 10,
+      "device_count": 6,
+      "first_seen": "2025-06-20",
+      "last_seen": "2025-09-12"
+    },
+    "collision_reports": {
+      "total_count": 6,
+      "breakdown": {
+        "near_miss": 2,
+        "collision": 3,
+        "hazard": 1
+      },
+      "causes": {
+        "infrastructure": 1,
+        "driver_car": 2,
+        "driver_hgv": 1,
+        "driver_bus": 1
+      },
+      "outcomes": {
+        "no_injuries": 3,
+        "minor_injuries": 1,
+        "serious_injuries": 0,
+        "fatalities": 2
+      },
+      "severity": {
+        "average": 8.083333333333334,
+        "maximum": 20.0
+      },
+      "date_range": {
+        "start": "2001-06-27",
+        "end": "2024-09-18"
+      }
+    },
+    "flags": {
+      "has_fatality": true,
+      "has_serious_injury": false,
+      "is_validated": true
+    },
+    "narrative": {
+      "theme_summary": "Luas/tram hazards (2 mentions); red light violations (1 mentions); junction design issues (1 mentions)",
+      "common_themes": {
+        "red_light": 1,
+        "junction_design": 1,
+        "hgv": 1,
+        "taxi": 1,
+        "bus": 1,
+        "luas": 2
+      },
+      "sample_descriptions": [
+        "Collision between HGV and cyclist- Dr Olivia Potterton",
+        "Collision between HGV and cyclist- Tanya Holst",
+        "A bus forced me onto the luas track causing me to lose balance and fall in the middle of the busiest junction in Dublin!!!",
+        "Taxi over taking another vehicle almost collided with cyclist",
+        "Car rolled forward while at red light and almost hit cyclist"
+      ]
+    }
+  },
+  {
+    "rank": 23,
+    "identification": {
+      "cluster_id": "pothole_66",
+      "street_name": "Leeson Street Lower",
+      "latitude": 53.332195,
+      "longitude": -6.252881
+    },
+    "scores": {
+      "composite_score": 0.5899403789909822,
+      "sensor_concern_score": 0.5046307579819644,
+      "composite_rank": 23,
+      "sensor_only_rank": 45
+    },
+    "sensor_data": {
+      "event_type": "pothole",
+      "event_count": 102,
+      "median_severity": 7.0,
+      "max_severity": 10,
+      "device_count": 21,
+      "first_seen": "2025-06-12",
+      "last_seen": "2025-09-24"
+    },
+    "collision_reports": {
+      "total_count": 7,
+      "breakdown": {
+        "near_miss": 4,
+        "collision": 2,
+        "hazard": 1
+      },
+      "causes": {
+        "infrastructure": 3,
+        "driver_car": 3,
+        "driver_hgv": 0,
+        "driver_bus": 0
+      },
+      "outcomes": {
+        "no_injuries": 5,
+        "minor_injuries": 2,
+        "serious_injuries": 0,
+        "fatalities": 0
+      },
+      "severity": {
+        "average": 1.9285714285714286,
+        "maximum": 6.0
+      },
+      "date_range": {
+        "start": "2017-05-08",
+        "end": "2024-09-23"
+      }
+    },
+    "flags": {
+      "has_fatality": false,
+      "has_serious_injury": false,
+      "is_validated": true
+    },
+    "narrative": {
+      "theme_summary": "pedestrian conflicts (2 mentions); right-hook turning conflicts (1 mentions); red light violations (1 mentions)",
+      "common_themes": {
+        "right_hook": 1,
+        "red_light": 1,
+        "poor_visibility": 1,
+        "pedestrian_conflict": 2,
+        "taxi": 1
+      },
+      "sample_descriptions": [
+        "Pedestrian walked out into bike path without looking. Braked and went into back of audi to avoid him. Damaged my front bumper and hand.",
+        "I was cycling on Mespil road and a car came out from Sussex street and didn’t yield and hit my front wheel, buckling it completely ",
+        "Cycle path disappears meeting pedestrians at a narrow blind corner",
+        "Vehicles regularly break this red light, appears many don't notice it.",
+        "Car turning right from Mespil Road to Sussex Terrace attempted to make turn across yellow box without checking cycle lane was clear."
+      ]
+    }
+  },
+  {
+    "rank": 24,
+    "identification": {
+      "cluster_id": "swerve_9",
+      "street_name": "Bridge Street",
+      "latitude": 53.341721,
+      "longitude": -6.228077
+    },
+    "scores": {
+      "composite_score": 0.5724123376623377,
+      "sensor_concern_score": 0.3003246753246754,
+      "composite_rank": 24,
+      "sensor_only_rank": 259
+    },
+    "sensor_data": {
+      "event_type": "swerve",
+      "event_count": 12,
+      "median_severity": 4.5,
+      "max_severity": 10,
+      "device_count": 3,
+      "first_seen": "2025-06-24",
+      "last_seen": "2025-09-19"
+    },
+    "collision_reports": {
+      "total_count": 6,
+      "breakdown": {
+        "near_miss": 3,
+        "collision": 2,
+        "hazard": 1
+      },
+      "causes": {
+        "infrastructure": 3,
+        "driver_car": 2,
+        "driver_hgv": 1,
+        "driver_bus": 0
+      },
+      "outcomes": {
+        "no_injuries": 5,
+        "minor_injuries": 0,
+        "serious_injuries": 0,
+        "fatalities": 1
+      },
+      "severity": {
+        "average": 4.25,
+        "maximum": 20.0
+      },
+      "date_range": {
+        "start": "2019-09-06",
+        "end": "2024-09-19"
+      }
+    },
+    "flags": {
+      "has_fatality": true,
+      "has_serious_injury": false,
+      "is_validated": true
+    },
+    "narrative": {
+      "theme_summary": "close passing/overtaking (2 mentions); pedestrian conflicts (1 mentions); bus-related incidents (1 mentions)",
+      "common_themes": {
+        "close_pass": 2,
+        "pedestrian_conflict": 1,
+        "bus": 1
+      },
+      "sample_descriptions": [
+        "Collision involving commercial van and a pedestrian at approximately 8am.",
+        "A car coming from Thorncastle st did not yield and hit me on the bike as I was waiting to turn right from Irishtown road",
+        "Dangerous overtaking of a cyclist",
+        "Car attempted to overtake me on narrow bridge. A bus came against them in the opposite direction, they swerved back into lane.",
+        "Dangerous Overtaking of a Cyclist"
+      ]
+    }
+  },
+  {
+    "rank": 25,
+    "identification": {
+      "cluster_id": "pothole_112",
+      "street_name": "Merchant's Quay",
+      "latitude": 53.345227,
+      "longitude": -6.275789
+    },
+    "scores": {
+      "composite_score": 0.5656445588593713,
+      "sensor_concern_score": 0.3965391177187425,
+      "composite_rank": 25,
+      "sensor_only_rank": 198
+    },
+    "sensor_data": {
+      "event_type": "pothole",
+      "event_count": 18,
+      "median_severity": 8.0,
+      "max_severity": 10,
+      "device_count": 7,
+      "first_seen": "2025-06-26",
+      "last_seen": "2025-09-18"
+    },
+    "collision_reports": {
+      "total_count": 8,
+      "breakdown": {
+        "near_miss": 5,
+        "collision": 3,
+        "hazard": 0
+      },
+      "causes": {
+        "infrastructure": 5,
+        "driver_car": 1,
+        "driver_hgv": 0,
+        "driver_bus": 0
+      },
+      "outcomes": {
+        "no_injuries": 7,
+        "minor_injuries": 1,
+        "serious_injuries": 0,
+        "fatalities": 0
+      },
+      "severity": {
+        "average": 1.875,
+        "maximum": 6.0
+      },
+      "date_range": {
+        "start": "2022-05-04",
+        "end": "2024-10-07"
+      }
+    },
+    "flags": {
+      "has_fatality": false,
+      "has_serious_injury": false,
+      "is_validated": true
+    },
+    "narrative": {
+      "theme_summary": "pedestrian conflicts (2 mentions); right-hook turning conflicts (1 mentions); junction design issues (1 mentions)",
+      "common_themes": {
+        "right_hook": 1,
+        "pedestrian_conflict": 2,
+        "junction_design": 1,
+        "taxi": 1,
+        "bus": 1,
+        "luas": 1
+      },
+      "sample_descriptions": [
+        "Unsure of details as I arrived on the scene, but injured cyclist being tended to by gardai & firemen.",
+        "Car turned right without checking bike lane on their right as I was going straight, resulting in collision.",
+        "Passed a young woman on my commute standing on the footpath with a buckled front wheel. She was uninjured but shook. ",
+        "Cycle lane moves from building side of the street to riverside when crossing the junction heading east. ",
+        "There is no sign here to say the cycle lane is ending. It is very easy to end up in the bus lane, if you didn't know to wait for the lights"
+      ]
+    }
+  },
+  {
+    "rank": 26,
+    "identification": {
+      "cluster_id": "pothole_208",
+      "street_name": "Arbour Hill",
+      "latitude": 53.350078,
+      "longitude": -6.283028
+    },
+    "scores": {
+      "composite_score": 0.5567873811844991,
+      "sensor_concern_score": 0.4728247623689984,
+      "composite_rank": 26,
+      "sensor_only_rank": 149
+    },
+    "sensor_data": {
+      "event_type": "pothole",
+      "event_count": 10,
+      "median_severity": 10.0,
+      "max_severity": 10,
+      "device_count": 1,
+      "first_seen": "2025-08-04",
+      "last_seen": "2025-08-16"
+    },
+    "collision_reports": {
+      "total_count": 7,
+      "breakdown": {
+        "near_miss": 2,
+        "collision": 4,
+        "hazard": 1
+      },
+      "causes": {
+        "infrastructure": 3,
+        "driver_car": 3,
+        "driver_hgv": 1,
+        "driver_bus": 0
+      },
+      "outcomes": {
+        "no_injuries": 3,
+        "minor_injuries": 4,
+        "serious_injuries": 0,
+        "fatalities": 0
+      },
+      "severity": {
+        "average": 3.7857142857142856,
+        "maximum": 6.0
+      },
+      "date_range": {
+        "start": "2018-10-15",
+        "end": "2025-09-18"
+      }
+    },
+    "flags": {
+      "has_fatality": false,
+      "has_serious_injury": false,
+      "is_validated": true
+    },
+    "narrative": {
+      "theme_summary": "left-hook turning conflicts (2 mentions); car door incidents (1 mentions); speeding (1 mentions)",
+      "common_themes": {
+        "left_hook": 2,
+        "dooring": 1,
+        "speed": 1,
+        "taxi": 1,
+        "bus": 1
+      },
+      "sample_descriptions": [
+        "Cars coming from the Blackehall PL road decided to turn right while the cyclist coming from Stoneybatter is turning left to N King street",
+        "Van driver came out of Arbour Hill aiming to go across to Brunswick St. Hit cyclist who was coming down Manor St. ",
+        "Driver sped across main road from minor to minor road hitting cyclist travelling on main road side-on. ",
+        "Taxi driver turned left across cycle lane pinning me against the kerb. ",
+        "Passenger in van opened his door into the path of a cyclist who had to dodge. "
+      ]
+    }
+  },
+  {
+    "rank": 27,
+    "identification": {
+      "cluster_id": "pothole_88",
+      "street_name": "Saint John's Road West",
+      "latitude": 53.346953,
+      "longitude": -6.29187
+    },
+    "scores": {
+      "composite_score": 0.5565917773580307,
+      "sensor_concern_score": 0.4783085547160615,
+      "composite_rank": 27,
+      "sensor_only_rank": 101
+    },
+    "sensor_data": {
+      "event_type": "pothole",
+      "event_count": 13,
+      "median_severity": 10.0,
+      "max_severity": 10,
+      "device_count": 3,
+      "first_seen": "2025-06-22",
+      "last_seen": "2025-08-18"
+    },
+    "collision_reports": {
+      "total_count": 6,
+      "breakdown": {
+        "near_miss": 2,
+        "collision": 3,
+        "hazard": 1
+      },
+      "causes": {
+        "infrastructure": 2,
+        "driver_car": 4,
+        "driver_hgv": 0,
+        "driver_bus": 0
+      },
+      "outcomes": {
+        "no_injuries": 3,
+        "minor_injuries": 2,
+        "serious_injuries": 1,
+        "fatalities": 0
+      },
+      "severity": {
+        "average": 4.083333333333333,
+        "maximum": 10.0
+      },
+      "date_range": {
+        "start": "2022-05-12",
+        "end": "2025-01-30"
+      }
+    },
+    "flags": {
+      "has_fatality": false,
+      "has_serious_injury": true,
+      "is_validated": true
+    },
+    "narrative": {
+      "theme_summary": "left-hook turning conflicts (1 mentions); close passing/overtaking (1 mentions); red light violations (1 mentions)",
+      "common_themes": {
+        "left_hook": 1,
+        "close_pass": 1,
+        "red_light": 1,
+        "pedestrian_conflict": 1,
+        "speed": 1,
+        "taxi": 1,
+        "bus": 1
+      },
+      "sample_descriptions": [
+        "Cyclist on ground.  Car exiting from Parkgate street stopped with Hazards on",
+        "Cycling in cycle lane with right of way across bridge. Taxi cut me off to turn left across orange light.",
+        "Vehicle turning left without looking hit cyclist",
+        "Close pass",
+        "Cycle lane suddenly VERY narrow and curbed - pedal can hit pavement when trying to avoid bus wing mirrors. Scary. "
+      ]
+    }
+  },
+  {
+    "rank": 28,
+    "identification": {
+      "cluster_id": "pothole_5",
+      "street_name": "Baggot Street Lower",
+      "latitude": 53.334299,
+      "longitude": -6.245407
+    },
+    "scores": {
+      "composite_score": 0.5510368785035341,
+      "sensor_concern_score": 0.5116987570070681,
+      "composite_rank": 28,
+      "sensor_only_rank": 40
+    },
+    "sensor_data": {
+      "event_type": "pothole",
+      "event_count": 81,
+      "median_severity": 8.0,
+      "max_severity": 10,
+      "device_count": 22,
+      "first_seen": "2025-06-12",
+      "last_seen": "2025-09-26"
+    },
+    "collision_reports": {
+      "total_count": 8,
+      "breakdown": {
+        "near_miss": 6,
+        "collision": 0,
+        "hazard": 2
+      },
+      "causes": {
+        "infrastructure": 0,
+        "driver_car": 8,
+        "driver_hgv": 0,
+        "driver_bus": 0
+      },
+      "outcomes": {
+        "no_injuries": 8,
+        "minor_injuries": 0,
+        "serious_injuries": 0,
+        "fatalities": 0
+      },
+      "severity": {
+        "average": 0.875,
+        "maximum": 1.0
+      },
+      "date_range": {
+        "start": "2024-02-27",
+        "end": "2024-12-17"
+      }
+    },
+    "flags": {
+      "has_fatality": false,
+      "has_serious_injury": false,
+      "is_validated": true
+    },
+    "narrative": {
+      "theme_summary": "blocked cycle lanes (2 mentions); right-hook turning conflicts (1 mentions); junction design issues (1 mentions)",
+      "common_themes": {
+        "right_hook": 1,
+        "cycle_lane_blocked": 2,
+        "junction_design": 1,
+        "taxi": 1
+      },
+      "sample_descriptions": [
+        "Car turned on to main road without due care and almost collided with me. ",
+        "Car parked in cycle lane pulled out without looking ",
+        "Car turning right coming through the junction had to break hard and swerve the car to go straight instead of right to avoid hitting me",
+        "Cycle lane blocked by construction. As I moved around it a taxi came from behind and squeezed me towards the traffic cones.",
+        "Driver of taxi moved left into the bike lane without checking mirror while i cycled alongside"
+      ]
+    }
+  },
+  {
+    "rank": 29,
+    "identification": {
+      "cluster_id": "hard_brake_28",
+      "street_name": "Terenure Road North",
+      "latitude": 53.310633,
+      "longitude": -6.283167
+    },
+    "scores": {
+      "composite_score": 0.5484943181818183,
+      "sensor_concern_score": 0.6676136363636365,
+      "composite_rank": 29,
+      "sensor_only_rank": 9
+    },
+    "sensor_data": {
+      "event_type": "hard_brake",
+      "event_count": 25,
+      "median_severity": 10.0,
+      "max_severity": 10,
+      "device_count": 1,
+      "first_seen": "2025-06-24",
+      "last_seen": "2025-06-24"
+    },
+    "collision_reports": {
+      "total_count": 4,
+      "breakdown": {
+        "near_miss": 0,
+        "collision": 3,
+        "hazard": 1
+      },
+      "causes": {
+        "infrastructure": 0,
+        "driver_car": 1,
+        "driver_hgv": 2,
+        "driver_bus": 0
+      },
+      "outcomes": {
+        "no_injuries": 2,
+        "minor_injuries": 1,
+        "serious_injuries": 1,
+        "fatalities": 0
+      },
+      "severity": {
+        "average": 4.625,
+        "maximum": 10.0
+      },
+      "date_range": {
+        "start": "2024-02-22",
+        "end": "2024-05-13"
+      }
+    },
+    "flags": {
+      "has_fatality": false,
+      "has_serious_injury": true,
+      "is_validated": true
+    },
+    "narrative": {
+      "theme_summary": "blocked cycle lanes (1 mentions); HGV conflicts (1 mentions); bus-related incidents (1 mentions)",
+      "common_themes": {
+        "cycle_lane_blocked": 1,
+        "hgv": 1,
+        "bus": 1
+      },
+      "sample_descriptions": [
+        "Truck with work machine in tow hit cyclist",
+        "Van waiting beyond stop line turns left without indicating into cyclist going straight",
+        "Car turned into a cyclist who was going straight ahead, man came off his bike but seemed to be injured",
+        "Vehicles parked in southbound bus lane every day during evening rush hour operation hours"
+      ]
+    }
+  },
+  {
+    "rank": 30,
+    "identification": {
+      "cluster_id": "swerve_20",
+      "street_name": "Baggot Street Lower",
+      "latitude": 53.334439,
+      "longitude": -6.245663
+    },
+    "scores": {
+      "composite_score": 0.5475670995670995,
+      "sensor_concern_score": 0.4491341991341991,
+      "composite_rank": 30,
+      "sensor_only_rank": 172
+    },
+    "sensor_data": {
+      "event_type": "swerve",
+      "event_count": 24,
+      "median_severity": 6.0,
+      "max_severity": 10,
+      "device_count": 3,
+      "first_seen": "2025-06-24",
+      "last_seen": "2025-07-26"
+    },
+    "collision_reports": {
+      "total_count": 7,
+      "breakdown": {
+        "near_miss": 4,
+        "collision": 1,
+        "hazard": 2
+      },
+      "causes": {
+        "infrastructure": 0,
+        "driver_car": 7,
+        "driver_hgv": 0,
+        "driver_bus": 0
+      },
+      "outcomes": {
+        "no_injuries": 6,
+        "minor_injuries": 1,
+        "serious_injuries": 0,
+        "fatalities": 0
+      },
+      "severity": {
+        "average": 1.5714285714285714,
+        "maximum": 6.0
+      },
+      "date_range": {
+        "start": "2008-08-19",
+        "end": "2024-10-26"
+      }
+    },
+    "flags": {
+      "has_fatality": false,
+      "has_serious_injury": false,
+      "is_validated": true
+    },
+    "narrative": {
+      "theme_summary": "blocked cycle lanes (2 mentions); right-hook turning conflicts (1 mentions); junction design issues (1 mentions)",
+      "common_themes": {
+        "right_hook": 1,
+        "cycle_lane_blocked": 2,
+        "junction_design": 1,
+        "taxi": 1
+      },
+      "sample_descriptions": [
+        "I was cycling southbound. A taxi driver also heading south pulled across me to drop his passenger on the footpath, knocking me off my bike.",
+        "Car turned on to main road without due care and almost collided with me. ",
+        "Car parked in cycle lane pulled out without looking ",
+        "Car turning right coming through the junction had to break hard and swerve the car to go straight instead of right to avoid hitting me",
+        "Cycle lane blocked by construction. As I moved around it a taxi came from behind and squeezed me towards the traffic cones."
+      ]
+    }
+  }
+]

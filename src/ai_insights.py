@@ -135,8 +135,8 @@ SUMMARY:
 THEMES:
 [Comma-separated list of 2-4 specific safety themes based primarily on user comments, e.g., "Severe pothole damage", "Poor road surface quality", "Cyclist-vehicle conflicts", "Visibility issues"]
 
-RECOMMENDATIONS:
-[2-3 bullet points with specific, actionable recommendations. If user comments mention specific problems, address those directly. Prioritize based on severity metrics if available.]
+POSSIBLE MITIGATION ACTIONS:
+[2-3 bullet points with specific, advisory actions. Use soft, non-prescriptive language like "Consider...", "Potential options include...", "It may be beneficial to...". Avoid direct commands like "Fix this" or "Install that".]
 
 IMPORTANT:
 - Start IMMEDIATELY with "SUMMARY:" - do not include any preamble, acknowledgments, or meta-commentary
@@ -145,7 +145,7 @@ IMPORTANT:
 - If users mention specific hazards (potholes, close passes, etc.), name them explicitly
 - If temporal data shows this is a long-standing issue, mention it
 - If severity metrics are high, emphasize the urgency
-- Make recommendations specific to the actual problems reported"""
+- Position yourself as an advisor providing options, not an authority giving orders"""
     
     return prompt
 
@@ -169,7 +169,7 @@ def parse_ai_response(response_text: str) -> dict:
             insights['summary'] = summary_section
             
             # Extract themes and recommendations
-            remaining = sections[1].split('RECOMMENDATIONS:')
+            remaining = sections[1].split('POSSIBLE MITIGATION ACTIONS:')
             
             if len(remaining) >= 1:
                 themes_text = remaining[0].strip()
@@ -294,8 +294,8 @@ SUMMARY:
 THEMES:
 [Comma-separated list of 2-4 specific themes, e.g., "High Commuter Volume", "Weather Sensitive", "Safety Improvement", "Infrastructure Deficit"]
 
-RECOMMENDATIONS:
-[2-3 bullet points with specific, actionable recommendations to improve or maintain the route.]
+POSSIBLE MITIGATION ACTIONS:
+[2-3 bullet points with specific, advisory actions. Use soft, non-prescriptive language like "Consider...", "Potential options include...", "It may be beneficial to...". Avoid direct commands like "Fix this" or "Install that".]
 
 IMPORTANT:
 - Start IMMEDIATELY with "SUMMARY:"

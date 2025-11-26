@@ -18,6 +18,29 @@ class SafetyReport(FPDF):
         self.brand_green = (16, 185, 129)    # #10b981
         self.brand_orange = (245, 158, 11)   # #f59e0b
         
+    def sanitize_text(self, text):
+        """Replace incompatible unicode characters with latin-1 equivalents"""
+        if not isinstance(text, str):
+            return str(text)
+            
+        replacements = {
+            '\u2018': "'",  # Left single quote
+            '\u2019': "'",  # Right single quote
+            '\u201c': '"',  # Left double quote
+            '\u201d': '"',  # Right double quote
+            '\u2013': '-',  # En dash
+            '\u2014': '-',  # Em dash
+            '\u2026': '...', # Ellipsis
+            '\u2022': '-',  # Bullet
+            '\u00a0': ' ',  # Non-breaking space
+        }
+        
+        for char, replacement in replacements.items():
+            text = text.replace(char, replacement)
+            
+        # Final fallback: encode to latin-1 with replacement, then decode back
+        return text.encode('latin-1', 'replace').decode('latin-1')
+        
     def header(self):
         if self.page_no() > 1:
             # Logo/Brand Text
@@ -97,6 +120,7 @@ class SafetyReport(FPDF):
         self.cell(0, 5, 'AI-Powered Road Safety Intelligence', 0, 1, 'C')
 
     def chapter_title(self, title):
+        title = self.sanitize_text(title)
         self.ln(5)
         self.set_font('Arial', 'B', 16)
         self.set_text_color(*self.brand_primary)
@@ -110,6 +134,7 @@ class SafetyReport(FPDF):
         self.ln(5)
 
     def chapter_body(self, body):
+        body = self.sanitize_text(body)
         self.set_font('Arial', '', 11)
         self.set_text_color(*self.brand_text)
         self.multi_cell(0, 6, body)
@@ -149,19 +174,19 @@ class SafetyReport(FPDF):
             self.set_xy(x, y + 3)
             self.set_font('Arial', 'B', 9)
             self.set_text_color(100, 100, 100)
-            self.cell(55, 5, label, 0, 1, 'C')
+            self.cell(55, 5, self.sanitize_text(label), 0, 1, 'C')
             
             # Value
             self.set_xy(x, y + 10)
             self.set_font('Arial', 'B', 16)
             self.set_text_color(*color)
-            self.cell(55, 8, str(value), 0, 1, 'C')
+            self.cell(55, 8, self.sanitize_text(str(value)), 0, 1, 'C')
             
             # Subtext
             self.set_xy(x, y + 20)
             self.set_font('Arial', '', 8)
             self.set_text_color(128, 128, 128)
-            self.cell(55, 5, subtext, 0, 1, 'C')
+            self.cell(55, 5, self.sanitize_text(subtext), 0, 1, 'C')
             
         self.ln(35)
 
@@ -183,12 +208,12 @@ class SafetyReport(FPDF):
         # Title
         self.set_font('Arial', 'B', 12)
         self.set_text_color(*self.brand_primary)
-        self.cell(100, 15, f"  {title}", 0, 0, 'L')
+        self.cell(100, 15, f"  {self.sanitize_text(title)}", 0, 0, 'L')
         
         # Subtitle (Type/Score)
         self.set_font('Arial', 'B', 10)
         self.set_text_color(*self.brand_text)
-        self.cell(70, 15, subtitle, 0, 1, 'R')
+        self.cell(70, 15, self.sanitize_text(subtitle), 0, 1, 'R')
         
         self.ln(2)
         
@@ -196,7 +221,7 @@ class SafetyReport(FPDF):
         self.set_font('Arial', 'B', 9)
         self.set_text_color(100, 100, 100)
         stats_text = " | ".join([f"{k}: {v}" for k, v in stats.items()])
-        self.cell(0, 8, stats_text, 0, 1, 'L')
+        self.cell(0, 8, self.sanitize_text(stats_text), 0, 1, 'L')
         
         self.ln(2)
         
@@ -208,7 +233,7 @@ class SafetyReport(FPDF):
             
             self.set_font('Arial', '', 10)
             self.set_text_color(*self.brand_text)
-            self.multi_cell(0, 5, insights['summary'])
+            self.multi_cell(0, 5, self.sanitize_text(insights['summary']))
             self.ln(3)
             
         # Themes
@@ -220,7 +245,7 @@ class SafetyReport(FPDF):
             self.set_font('Arial', 'I', 10)
             self.set_text_color(*self.brand_text)
             themes_text = ", ".join(insights['themes'])
-            self.multi_cell(0, 5, themes_text)
+            self.multi_cell(0, 5, self.sanitize_text(themes_text))
             self.ln(3)
             
         # Recommendations
@@ -234,7 +259,7 @@ class SafetyReport(FPDF):
             for rec in insights['recommendations']:
                 self.cell(5) # indent
                 self.cell(2, 5, "-", 0, 0)
-                self.multi_cell(0, 5, rec)
+                self.multi_cell(0, 5, self.sanitize_text(rec))
         
         self.ln(5)
         self.set_draw_color(220, 220, 220)
