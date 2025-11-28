@@ -53,20 +53,20 @@ def render_summary_panel(top_30_selected, corridor_selected):
     
     # Process Top 30
     for _, row in top_30_selected.iterrows():
-        score = row.get('scores.composite_score', 0)
-        if score >= 0.7:
+        score = row.get('scores.composite_score', 0) * 100
+        if score >= 80:
             critical_count += 1
-        elif score >= 0.3:
+        elif score >= 60:
             medium_count += 1
         else:
             low_count += 1
             
     # Process Corridors
     for _, row in corridor_selected.iterrows():
-        priority = row.get('priority_category', 'MEDIUM')
-        if priority == 'CRITICAL' or priority == 'HIGH':
+        score = row.get('weighted_score', 0)
+        if score >= 80:
             critical_count += 1
-        elif priority == 'MEDIUM':
+        elif score >= 60:
             medium_count += 1
         else:
             low_count += 1
@@ -131,7 +131,7 @@ def render_summary_panel(top_30_selected, corridor_selected):
         st.markdown(f"""
         <div class="summary-card-hover">
             <div class="summary-value text-amber">{medium_count}</div>
-            <div class="summary-label">Medium Priority</div>
+            <div class="summary-label">High Priority</div>
         </div>
         """, unsafe_allow_html=True)
         
@@ -139,7 +139,7 @@ def render_summary_panel(top_30_selected, corridor_selected):
         st.markdown(f"""
         <div class="summary-card-hover">
             <div class="summary-value text-blue">{low_count}</div>
-            <div class="summary-label">Low Priority</div>
+            <div class="summary-label">Medium Priority</div>
         </div>
         """, unsafe_allow_html=True)
     
@@ -154,20 +154,33 @@ def render_compact_hotspot_list(top_30_selected, corridor_selected):
         all_hotspots.append((row, 'top_30'))
     for idx, row in corridor_selected.iterrows():
         all_hotspots.append((row, 'corridor'))
+    
+    # Sort by hotspot name to ensure correct order (Hotspot 1, Hotspot 2...)
+    def get_id(item):
+        name = item[0].get('hotspot_name', 'Hotspot 999')
+        try:
+            return int(name.replace('Hotspot ', ''))
+        except:
+            return 999
+            
+    all_hotspots.sort(key=get_id)
         
     # Header Row
     st.markdown("""
-    <div style="display: grid; grid-template-columns: 0.5fr 2fr 1fr 2fr 1.5fr 1fr 1fr 1.5fr; gap: 10px; padding: 10px; background-color: #262626; border-radius: 5px; font-weight: bold; font-size: 0.9em; color: #CCC;">
-        <div>Pri</div>
+    <div style="display: grid; grid-template-columns: 0.7fr 1.5fr 0.8fr 2fr 1.5fr 0.8fr 0.8fr 1fr; gap: 10px; padding: 10px; background-color: #262626; border-radius: 5px; font-weight: bold; font-size: 0.9em; color: #CCC; text-align: center; align-items: center;">
+        <div>Priority</div>
         <div>Hotspot Name</div>
         <div>Score</div>
         <div>Location</div>
         <div>Event Type</div>
-        <div>Devices</div>
+        <div>Riders</div>
         <div>Reports</div>
-        <div>Actions</div>
+        <div>Analysis</div>
     </div>
     """, unsafe_allow_html=True)
+    
+    # Add separator after header for consistent spacing
+    st.markdown("<hr style='margin: 0; border-color: #333;'>", unsafe_allow_html=True)
     
     # List Items
     for i, (row, source) in enumerate(all_hotspots):
@@ -185,63 +198,61 @@ def render_compact_hotspot_list(top_30_selected, corridor_selected):
             priority_cat = row.get('priority_category', 'MEDIUM')
             
             # Determine Color
-            if priority_cat in ['CRITICAL', 'HIGH']:
-                color = "#DC2626" # Red
-            elif priority_cat == 'MEDIUM':
-                color = "#F59E0B" # Amber
-            else:
-                color = "#3B82F6" # Blue
+            color = get_color_by_score(urgency_val)
                 
         else: # Top 30
             score_val = row.get('scores.composite_score', 0)
             urgency_val = score_val * 100
             urgency_score = f"{urgency_val:.1f}%"
+            
+            # Handle list-type street names
             location = row.get('identification.street_name', 'Unknown')
+            if isinstance(location, list):
+                location = " / ".join(location)
+                
             event_type = row.get('sensor_data.event_type', 'N/A')
             device_count = row.get('sensor_data.device_count', 0)
             user_reports = row.get('collision_reports.total_count', 0)
             lat, lng = row.get('identification.latitude'), row.get('identification.longitude')
             
             # Determine Color
-            if urgency_val >= 70:
-                color = "#DC2626"
-            elif urgency_val >= 30:
-                color = "#F59E0B"
-            else:
-                color = "#3B82F6"
+            color = get_color_by_score(urgency_val)
 
         # Clean Event Type
         if event_type and event_type != 'N/A':
             event_type = event_type.replace('_', ' ').title()
             
         # Render Row
-        col1, col2, col3, col4, col5, col6, col7, col8 = st.columns([0.5, 2, 1, 2, 1.5, 1, 1, 1.5])
+        col1, col2, col3, col4, col5, col6, col7, col8 = st.columns([0.7, 1.5, 0.8, 2, 1.5, 0.8, 0.8, 1])
         
         with col1:
-            st.markdown(f'<div style="background-color: {color}; width: 12px; height: 12px; border-radius: 50%; margin-top: 8px;"></div>', unsafe_allow_html=True)
+            st.markdown(f'<div style="background-color: {color}; width: 12px; height: 12px; border-radius: 50%; margin: 12px auto;"></div>', unsafe_allow_html=True)
         with col2:
-            st.write(hotspot_name)
+            st.markdown(f"<div style='text-align: center; padding: 10px 0;'>{hotspot_name}</div>", unsafe_allow_html=True)
         with col3:
-            st.write(urgency_score)
+            st.markdown(f"<div style='text-align: center; padding: 10px 0;'>{urgency_score}</div>", unsafe_allow_html=True)
         with col4:
-            st.write(location)
+            st.markdown(f"<div style='text-align: center; padding: 10px 0;'>{location}</div>", unsafe_allow_html=True)
         with col5:
-            st.write(event_type)
+            st.markdown(f"<div style='text-align: center; padding: 10px 0;'>{event_type}</div>", unsafe_allow_html=True)
         with col6:
-            st.write(str(device_count))
+            st.markdown(f"<div style='text-align: center; padding: 10px 0;'>{device_count}</div>", unsafe_allow_html=True)
         with col7:
-            st.write(str(user_reports))
+            st.markdown(f"<div style='text-align: center; padding: 10px 0;'>{user_reports}</div>", unsafe_allow_html=True)
         with col8:
-            if st.button("View Analysis", key=f"btn_{i}", use_container_width=True):
+            # Center the button vertically using a container with padding if needed, 
+            # but st.button is hard to style directly. 
+            # We rely on the text padding to match the button's natural height/spacing.
+            if st.button("View", key=f"btn_{i}", use_container_width=True):
                 st.session_state['selected_hotspot'] = row
                 st.session_state['selected_source'] = source
                 st.session_state['view_mode'] = 'detail'
                 st.rerun()
                 
-        st.markdown("<hr style='margin: 5px 0; border-color: #333;'>", unsafe_allow_html=True)
+        st.markdown("<hr style='margin: 0; border-color: #333;'>", unsafe_allow_html=True)
 
 def render_hotspot_details_page():
-    """Render dedicated full-page view for hotspot analysis"""
+    """Render dedicated full-page view for hotspot analysis with professional styling"""
     
     row = st.session_state.get('selected_hotspot')
     source = st.session_state.get('selected_source')
@@ -251,7 +262,85 @@ def render_hotspot_details_page():
         st.rerun()
         return
 
-    # Back Button at the top
+    # Professional CSS
+    st.markdown("""
+    <style>
+    .detail-header {
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        font-size: 2.5rem;
+        font-weight: 600;
+        color: #1f2937;
+        margin-bottom: 0.5rem;
+    }
+    .detail-subhead {
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        font-size: 1.1rem;
+        color: #6b7280;
+        margin-bottom: 2rem;
+    }
+    .stat-box {
+        background-color: #ffffff;
+        border: 1px solid #e5e7eb;
+        border-radius: 6px;
+        padding: 1.5rem;
+        text-align: center;
+    }
+    .stat-label {
+        font-size: 0.85rem;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        color: #6b7280;
+        margin-bottom: 0.5rem;
+    }
+    .stat-value {
+        font-size: 1.8rem;
+        font-weight: 700;
+        color: #111827;
+    }
+    .analysis-container {
+        background-color: #f9fafb;
+        border: 1px solid #e5e7eb;
+        border-radius: 8px;
+        padding: 2rem;
+        margin-top: 2rem;
+    }
+    .analysis-title {
+        font-size: 1.5rem;
+        font-weight: 600;
+        color: #111827;
+        margin-bottom: 1.5rem;
+        border-bottom: 1px solid #e5e7eb;
+        padding-bottom: 1rem;
+    }
+    .analysis-subtitle {
+        font-size: 1.1rem;
+        font-weight: 600;
+        color: #374151;
+        margin-top: 1rem;
+        margin-bottom: 0.5rem;
+    }
+    .analysis-list {
+        list-style-type: none;
+        padding-left: 0;
+    }
+    .analysis-list li {
+        position: relative;
+        padding-left: 1.5rem;
+        margin-bottom: 0.5rem;
+        color: #4b5563;
+        line-height: 1.6;
+    }
+    .analysis-list li::before {
+        content: "•";
+        position: absolute;
+        left: 0;
+        color: #9ca3af;
+        font-weight: bold;
+    }
+    </style>
+    """, unsafe_allow_html=True)
+
+    # Back Button
     if st.button("← Back to List"):
         st.session_state['view_mode'] = 'list'
         st.rerun()
@@ -267,118 +356,83 @@ def render_hotspot_details_page():
         reports = row.get('report_count', 0)
         priority = row.get('priority_category', 'N/A')
     else:
+        # Handle list-type street names
         location = row.get('identification.street_name', 'Unknown')
+        if isinstance(location, list):
+            location = " / ".join(location)
+            
         lat, lng = row.get('identification.latitude'), row.get('identification.longitude')
         urgency_score = f"{row.get('scores.composite_score', 0) * 100:.1f}%"
         event_type = row.get('sensor_data.event_type', 'N/A')
         reports = row.get('collision_reports.total_count', 0)
         priority = "Top 30"
 
-    # Header Section
-    st.header(f"{hotspot_name}")
-    st.subheader(f"Location: {location}")
+    # Header
+    st.markdown(f'<div class="detail-header">{hotspot_name}</div>', unsafe_allow_html=True)
+    st.markdown(f'<div class="detail-subhead">Location: {location}</div>', unsafe_allow_html=True)
     
-    # Map Section - Full width on top
-    st.markdown("#### Location Map")
-    try:
-        m = folium.Map(location=[lat, lng], zoom_start=16, tiles='CartoDB positron')
-        folium.Marker([lat, lng], popup=hotspot_name).add_to(m)
-        folium_static(m, height=350)
-    except Exception as e:
-        st.error(f"Could not render map: {e}")
+    # Map and Street View Container
+    col_map, col_sv = st.columns([2, 1])
     
-    # Street View Link below map
-    street_view_url = STREET_VIEW_URL_TEMPLATE.format(lat=lat, lng=lng, heading=0)
-    st.link_button("🌐 Open Google Street View", street_view_url, use_container_width=True)
-    
-    # Statistics Section - Below the map with hover cards
-    st.markdown("---")
-    st.markdown("### Key Statistics")
-    
-    # Add the hover card CSS for detail page
-    st.markdown("""
-    <style>
-    .detail-card-hover {
-        text-align: center; 
-        background: #f8fafc; 
-        padding: 1.5rem; 
-        border-radius: 8px; 
-        margin: 0.5rem;
-        transition: all 0.3s;
-        cursor: pointer;
-        border: 1px solid #e5e7eb;
-        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-    }
-    .detail-card-hover:hover {
-        transform: translateY(-4px);
-        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
-        background: #f1f5f9;
-        border: 1px solid #e5e7eb;
-    }
-    .detail-value {
-        font-size: 1.8rem;
-        font-weight: bold;
-        color: #1f2937;
-        margin: 0.5rem 0;
-    }
-    .detail-label {
-        font-size: 0.9rem;
-        color: #6b7280;
-        text-transform: uppercase;
-        letter-spacing: 0.05em;
-    }
-    </style>
-    """, unsafe_allow_html=True)
-    
-    # Create stats in columns with hover cards
-    col1, col2, col3, col4 = st.columns(4)
-    
-    with col1:
+    with col_map:
+        try:
+            m = folium.Map(location=[lat, lng], zoom_start=16, tiles='CartoDB positron')
+            folium.Marker([lat, lng], popup=hotspot_name).add_to(m)
+            folium_static(m, height=300)
+        except Exception as e:
+            st.error(f"Could not render map: {e}")
+            
+    with col_sv:
+        st.markdown("<br>", unsafe_allow_html=True) # Spacing
         st.markdown(f"""
-        <div class="detail-card-hover">
-            <div class="detail-label">Urgency Score</div>
-            <div class="detail-value">{urgency_score}</div>
+        <div style="background: #f3f4f6; padding: 20px; border-radius: 8px; text-align: center; height: 100%; display: flex; flex-direction: column; justify-content: center;">
+            <p style="color: #4b5563; margin-bottom: 15px;">View actual road conditions</p>
+            <a href="{STREET_VIEW_URL_TEMPLATE.format(lat=lat, lng=lng, heading=0)}" target="_blank" style="text-decoration: none;">
+                <button style="background-color: white; border: 1px solid #d1d5db; color: #374151; padding: 10px 20px; border-radius: 6px; cursor: pointer; font-weight: 500; width: 100%;">
+                    Open Street View
+                </button>
+            </a>
         </div>
         """, unsafe_allow_html=True)
     
-    with col2:
+    # Key Statistics Grid
+    st.markdown("<br>", unsafe_allow_html=True)
+    s1, s2, s3, s4 = st.columns(4)
+    
+    with s1:
         st.markdown(f"""
-        <div class="detail-card-hover">
-            <div class="detail-label">Priority Level</div>
-            <div class="detail-value">{priority}</div>
+        <div class="stat-box">
+            <div class="stat-label">Urgency Score</div>
+            <div class="stat-value">{urgency_score}</div>
         </div>
         """, unsafe_allow_html=True)
-        
-    with col3:
+    with s2:
         st.markdown(f"""
-        <div class="detail-card-hover">
-            <div class="detail-label">Event Type</div>
-            <div class="detail-value">{event_type}</div>
+        <div class="stat-box">
+            <div class="stat-label">Priority Level</div>
+            <div class="stat-value">{priority}</div>
         </div>
         """, unsafe_allow_html=True)
-        
-    with col4:
+    with s3:
         st.markdown(f"""
-        <div class="detail-card-hover">
-            <div class="detail-label">Reports</div>
-            <div class="detail-value">{reports}</div>
+        <div class="stat-box">
+            <div class="stat-label">Event Type</div>
+            <div class="stat-value">{event_type}</div>
+        </div>
+        """, unsafe_allow_html=True)
+    with s4:
+        st.markdown(f"""
+        <div class="stat-box">
+            <div class="stat-label">Reports</div>
+            <div class="stat-value">{reports}</div>
         </div>
         """, unsafe_allow_html=True)
 
-    # Rest of the function remains the same (no hover effects on other components)
-    # Quick Summary below statistics
-    if source == 'top_30':
-        theme_summary = row.get('narrative.theme_summary')
-        if theme_summary:
-            st.markdown("### Quick Summary")
-            st.info(theme_summary)
-
-    # Bottom Section: AI Analysis
-    st.markdown("---")
-    st.markdown("## AI Safety Analysis")
+    # AI Safety Analysis
+    st.markdown('<div class="analysis-container">', unsafe_allow_html=True)
+    st.markdown('<div class="analysis-title">AI Safety Analysis</div>', unsafe_allow_html=True)
     
-    # Generate/Display Full Insights
-    with st.spinner("Generating detailed advisory report..."):
+    with st.spinner("Generating analysis..."):
         hotspot_data = row.to_dict()
         hotspot_data['source'] = source
         
@@ -390,37 +444,34 @@ def render_hotspot_details_page():
                 
             insights = generate_hotspot_insights(hotspot_data, user_comments)
             
-            # Summary Section
-            st.markdown("### Analysis Summary")
-            st.write(insights['summary'])
+            # Summary
+            st.markdown(f'<p style="color: #374151; font-size: 1.05rem; line-height: 1.6;">{insights["summary"]}</p>', unsafe_allow_html=True)
             
-            # Themes and Recommendations in columns
-            st.markdown("<br>", unsafe_allow_html=True)
-            col_a, col_b = st.columns(2, gap="large")
+            st.markdown("<hr style='border-color: #e5e7eb; margin: 2rem 0;'>", unsafe_allow_html=True)
             
-            with col_a:
+            # Two Column Layout for Themes and Actions
+            ac1, ac2 = st.columns(2, gap="large")
+            
+            with ac1:
+                st.markdown('<div class="analysis-subtitle">Key Safety Themes</div>', unsafe_allow_html=True)
                 if insights.get('themes'):
-                    st.markdown("### Key Safety Themes")
-                    for theme in insights['themes']:
-                        st.markdown(f"• {theme}")
+                    themes_html = '<ul class="analysis-list">' + ''.join([f'<li>{t}</li>' for t in insights['themes']]) + '</ul>'
+                    st.markdown(themes_html, unsafe_allow_html=True)
                 else:
-                    st.markdown("### Key Safety Themes")
-                    st.info("No specific themes identified")
+                    st.markdown('<p style="color: #6b7280; font-style: italic;">No specific themes identified.</p>', unsafe_allow_html=True)
             
-            with col_b:
+            with ac2:
+                st.markdown('<div class="analysis-subtitle">Recommended Actions</div>', unsafe_allow_html=True)
                 if insights.get('recommendations'):
-                    st.markdown("### Recommended Mitigation Actions")
-                    for rec in insights['recommendations']:
-                        st.markdown(f"• {rec}")
+                    recs_html = '<ul class="analysis-list">' + ''.join([f'<li>{r}</li>' for r in insights['recommendations']]) + '</ul>'
+                    st.markdown(recs_html, unsafe_allow_html=True)
                 else:
-                    st.markdown("### Recommended Mitigation Actions")
-                    st.info("No specific recommendations available")
+                    st.markdown('<p style="color: #6b7280; font-style: italic;">No specific recommendations available.</p>', unsafe_allow_html=True)
                     
         except Exception as e:
             st.error(f"Analysis unavailable: {e}")
-            st.info("This feature requires the AI insights module to be properly configured.")
-
-    # Additional spacing at bottom
+            
+    st.markdown('</div>', unsafe_allow_html=True) # End analysis container
     st.markdown("<br><br>", unsafe_allow_html=True)
 
 # ────────────────────────────────────────────────
@@ -464,14 +515,31 @@ def load_preprocessed_data():
         center_lat = sum(lats) / len(lats)
         center_lng = sum(lngs) / len(lngs)
         
+        # Calculate Normalized Score based on Priority
+        priority = props.get('priority_category', 'MEDIUM')
+        report_count = props.get('report_count', 0)
+        
+        if priority == 'CRITICAL':
+            base_score = 70
+        elif priority == 'HIGH':
+            base_score = 30
+        elif priority == 'MEDIUM':
+            base_score = 20
+        else:
+            base_score = 10
+            
+        # Add variation based on report count (max 9 points)
+        variation = min(9, report_count * 0.5)
+        normalized_score = base_score + variation
+        
         corridors_data.append({
             'road_name': props.get('road_name', 'Unknown'),
             'center_lat': center_lat,
             'center_lng': center_lng,
-            'report_count': props.get('report_count', 0),
-            'weighted_score': props.get('weighted_score', 0),
+            'report_count': report_count,
+            'weighted_score': normalized_score, # Use normalized score
             'priority_rank': props.get('priority_rank', 999),
-            'priority_category': props.get('priority_category', 'MEDIUM'),
+            'priority_category': priority,
             'dominant_category': props.get('dominant_category', 'Unknown'),
             'all_comments': props.get('all_comments', ''),
             'maxspeed': props.get('maxspeed', 'N/A'),
@@ -485,62 +553,55 @@ def load_preprocessed_data():
 
 def select_top_hotspots(top_30_df, corridor_df, total_count=10):
     """
-    Select top hotspots based on weighted distribution:
-    - 70% from Top 30 Hotspots (already ranked)
-    - 30% from Corridors (ranked by priority_rank)
+    Select top hotspots based on unified ranking:
+    - Combine all sources
+    - Normalize scores (0-100)
+    - Sort by score and take top N
     """
-    if top_30_df.empty:
+    if top_30_df.empty and corridor_df.empty:
         return pd.DataFrame(), pd.DataFrame()
 
-    # Calculate counts for each source
-    top_30_count = round(total_count * 0.7)
-    corridor_count = total_count - top_30_count
+    # 1. Prepare Top 30
+    t30 = top_30_df.copy()
+    if not t30.empty:
+        t30['source'] = 'top_30'
+        t30['source_label'] = 'Top 30 Priority'
+        # Normalize score to 0-100
+        t30['sorting_score'] = t30.get('scores.composite_score', 0) * 100
     
-    # Select top from Top 30 (already sorted by rank in JSON usually, but ensure sort)
-    if 'rank' in top_30_df.columns:
-        top_30_selected = top_30_df.sort_values('rank').head(top_30_count).copy()
-    else:
-        top_30_selected = top_30_df.head(top_30_count).copy()
+    # 2. Prepare Corridors
+    corr = corridor_df.copy()
+    if not corr.empty:
+        corr['source'] = 'corridor'
+        corr['source_label'] = 'Corridor Reports'
+        # Use weighted_score directly for sorting
+        corr['sorting_score'] = corr.get('weighted_score', 0)
         
-    top_30_selected['source'] = 'top_30'
-    top_30_selected['source_label'] = 'Top 30 Priority'
+    # 3. Combine and Sort
+    combined = pd.concat([t30, corr], ignore_index=True)
+    combined = combined.sort_values('sorting_score', ascending=False)
     
-    # Select top from Corridors
-    corridor_selected = corridor_df.nsmallest(corridor_count, 'priority_rank').copy()
-    corridor_selected['source'] = 'corridor'
-    corridor_selected['source_label'] = 'Corridor Reports'
+    # 4. Take Top N
+    top_n = combined.head(total_count).copy()
     
-    # Assign sequential hotspot IDs for display
-    hotspot_id = 1
-    for df in [top_30_selected, corridor_selected]:
-        ids = []
-        for _ in range(len(df)):
-            ids.append(f"Hotspot {hotspot_id}")
-            hotspot_id += 1
-        df['hotspot_name'] = ids
+    # 5. Assign Sequential IDs
+    hotspot_ids = [f"Hotspot {i+1}" for i in range(len(top_n))]
+    top_n['hotspot_name'] = hotspot_ids
+    
+    # 6. Split back for UI rendering
+    top_30_selected = top_n[top_n['source'] == 'top_30'].copy()
+    corridor_selected = top_n[top_n['source'] == 'corridor'].copy()
     
     return top_30_selected, corridor_selected
 
-def get_color_by_score(score, source, priority_category=None):
-    """Get color based on concern/weighted score"""
-    if source == 'corridor':
-        color_map = {
-            'CRITICAL': '#DC2626',
-            'HIGH': '#F59E0B',
-            'MEDIUM': '#10B981',
-            'LOW': '#6B7280'
-        }
-        return color_map.get(priority_category, '#6B7280')
+def get_color_by_score(score):
+    """Get color based on score (0-100)"""
+    if score >= 80:
+        return '#DC2626'  # Red
+    elif score >= 60:
+        return '#F59E0B'  # Amber
     else:
-        # Top 30 score is 0-1
-        if score >= 0.7:
-            return '#DC2626'  # Red
-        elif score >= 0.5:
-            return '#F59E0B'  # Orange
-        elif score >= 0.3:
-            return '#10B981'  # Green
-        else:
-            return '#6B7280'  # Gray
+        return '#3B82F6'  # Blue
 
 def create_popup_html(row, source):
     """Create HTML popup for hotspot markers"""
@@ -568,6 +629,9 @@ def create_popup_html(row, source):
         device_count = row.get('sensor_data.device_count', 'N/A')
         concern_score = row.get('scores.composite_score', 0)
         street_name = row.get('identification.street_name', 'Unknown Street')
+        if isinstance(street_name, list):
+            street_name = " / ".join(street_name)
+            
         event_count = row.get('sensor_data.event_count', 'N/A')
         collision_count = row.get('collision_reports.total_count', 0)
         
@@ -619,7 +683,7 @@ def create_hotspot_map(top_30_selected, corridor_selected,
     
     # Add Top 30 hotspots
     for idx, row in top_30_selected.iterrows():
-        color = get_color_by_score(row.get('scores.composite_score', 0), 'top_30')
+        color = get_color_by_score(row.get('scores.composite_score', 0) * 100)
         popup_html = create_popup_html(row, 'top_30')
         
         folium.CircleMarker(
@@ -636,11 +700,7 @@ def create_hotspot_map(top_30_selected, corridor_selected,
     
     # Add corridor hotspots (as polygons)
     for idx, row in corridor_selected.iterrows():
-        color = get_color_by_score(
-            row['weighted_score'], 
-            'corridor', 
-            row['priority_category']
-        )
+        color = get_color_by_score(row['weighted_score'])
         popup_html = create_popup_html(row, 'corridor')
         
         # Draw polygon
