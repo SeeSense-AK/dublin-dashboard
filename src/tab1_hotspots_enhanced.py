@@ -362,7 +362,7 @@ def render_hotspot_details_page():
         urgency_score = f"{row.get('weighted_score', 0):.1f}%"
         event_type = row.get('dominant_category', 'N/A')
         reports = row.get('report_count', 0)
-        priority = row.get('priority_category', 'N/A')
+        priority = row.get('priority_category', 'MEDIUM')
     else:
         # Handle list-type street names
         location = row.get('identification.street_name', 'Unknown')
@@ -370,15 +370,31 @@ def render_hotspot_details_page():
             location = " / ".join(location)
             
         lat, lng = row.get('identification.latitude'), row.get('identification.longitude')
-        urgency_score = f"{row.get('scores.composite_score', 0) * 100:.1f}%"
+        score_val = row.get('scores.composite_score', 0) * 100
+        urgency_score = f"{score_val:.1f}%"
         event_type = row.get('sensor_data.event_type', 'N/A')
         reports = row.get('collision_reports.total_count', 0)
-        priority = "Top 30"
+        
+        # Determine priority based on score
+        if score_val >= 80:
+            priority = 'CRITICAL'
+        elif score_val >= 60:
+            priority = 'HIGH'
+        else:
+            priority = 'MEDIUM'
         
     # Transform event type for display
     if event_type and event_type != 'N/A':
         event_type = event_type.replace('_', ' ').title()
         event_type = transform_event_type_for_display(event_type)
+    
+    # Determine priority color
+    if priority == 'CRITICAL':
+        priority_color = '#DC2626'  # Red
+    elif priority == 'HIGH':
+        priority_color = '#F59E0B'  # Amber
+    else:
+        priority_color = '#3B82F6'  # Blue
 
     # Header
     st.markdown(f'<div class="detail-header">{hotspot_name}</div>', unsafe_allow_html=True)
@@ -423,7 +439,7 @@ def render_hotspot_details_page():
         st.markdown(f"""
         <div class="stat-box">
             <div class="stat-label">Priority Level</div>
-            <div class="stat-value">{priority}</div>
+            <div class="stat-value" style="color: {priority_color};">{priority}</div>
         </div>
         """, unsafe_allow_html=True)
     with s3:
@@ -468,18 +484,22 @@ def render_hotspot_details_page():
             with ac1:
                 st.markdown('<div class="analysis-subtitle">Key Safety Themes</div>', unsafe_allow_html=True)
                 if insights.get('themes'):
-                    themes_html = '<ul class="analysis-list">' + ''.join([f'<li>{t}</li>' for t in insights['themes']]) + '</ul>'
+                    # Display themes as horizontal boxes
+                    themes_html = '<div style="display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 2rem;">'
+                    for theme in insights['themes']:
+                        themes_html += f'<div style="background: #f3f4f6; border: 1px solid #e5e7eb; border-radius: 6px; padding: 10px 16px; font-size: 0.9rem; color: #374151;">{theme}</div>'
+                    themes_html += '</div>'
                     st.markdown(themes_html, unsafe_allow_html=True)
                 else:
                     st.markdown('<p style="color: #6b7280; font-style: italic;">No specific themes identified.</p>', unsafe_allow_html=True)
             
-            with ac2:
-                st.markdown('<div class="analysis-subtitle">Recommended Actions</div>', unsafe_allow_html=True)
-                if insights.get('recommendations'):
-                    recs_html = '<ul class="analysis-list">' + ''.join([f'<li>{r}</li>' for r in insights['recommendations']]) + '</ul>'
-                    st.markdown(recs_html, unsafe_allow_html=True)
-                else:
-                    st.markdown('<p style="color: #6b7280; font-style: italic;">No specific recommendations available.</p>', unsafe_allow_html=True)
+            # Full-width section for recommended actions below themes
+            st.markdown('<div class="analysis-subtitle">Recommended Actions</div>', unsafe_allow_html=True)
+            if insights.get('recommendations'):
+                recs_html = '<ul class="analysis-list">' + ''.join([f'<li>{r}</li>' for r in insights['recommendations']]) + '</ul>'
+                st.markdown(recs_html, unsafe_allow_html=True)
+            else:
+                st.markdown('<p style="color: #6b7280; font-style: italic;">No specific recommendations available.</p>', unsafe_allow_html=True)
                     
         except Exception as e:
             st.error(f"Analysis unavailable: {e}")
