@@ -95,7 +95,7 @@
       "sensor_only_rank": 33
     },
     "sensor_data": {
-      "event_type": "pothole",
+      "event_type": "Road Roughness",
       "event_count": 67,
       "median_severity": 9.0,
       "max_severity": 10,
@@ -174,7 +174,7 @@
       "sensor_only_rank": 35
     },
     "sensor_data": {
-      "event_type": "pothole",
+      "event_type": "Road Roughness",
       "event_count": 36,
       "median_severity": 10.0,
       "max_severity": 10,
@@ -255,7 +255,7 @@
       "sensor_only_rank": 61
     },
     "sensor_data": {
-      "event_type": "pothole",
+      "event_type": "Road Roughness",
       "event_count": 19,
       "median_severity": 10.0,
       "max_severity": 10,
@@ -334,7 +334,7 @@
       "sensor_only_rank": 1
     },
     "sensor_data": {
-      "event_type": "pothole",
+      "event_type": "Road Roughness",
       "event_count": 373,
       "median_severity": 7.0,
       "max_severity": 10,
@@ -481,7 +481,7 @@
       "sensor_only_rank": 174
     },
     "sensor_data": {
-      "event_type": "pothole",
+      "event_type": "Road Roughness",
       "event_count": 20,
       "median_severity": 9.0,
       "max_severity": 10,
@@ -556,7 +556,7 @@
       "sensor_only_rank": 25
     },
     "sensor_data": {
-      "event_type": "pothole",
+      "event_type": "Road Roughness",
       "event_count": 53,
       "median_severity": 10.0,
       "max_severity": 10,
@@ -778,7 +778,7 @@
       "sensor_only_rank": 81
     },
     "sensor_data": {
-      "event_type": "pothole",
+      "event_type": "Road Roughness",
       "event_count": 16,
       "median_severity": 10.0,
       "max_severity": 10,
@@ -853,7 +853,7 @@
       "sensor_only_rank": 149
     },
     "sensor_data": {
-      "event_type": "pothole",
+      "event_type": "Road Roughness",
       "event_count": 10,
       "median_severity": 10.0,
       "max_severity": 10,
@@ -930,7 +930,7 @@
       "sensor_only_rank": 31
     },
     "sensor_data": {
-      "event_type": "pothole",
+      "event_type": "Road Roughness",
       "event_count": 46,
       "median_severity": 10.0,
       "max_severity": 10,
@@ -1006,7 +1006,7 @@
       "sensor_only_rank": 8
     },
     "sensor_data": {
-      "event_type": "pothole",
+      "event_type": "Road Roughness",
       "event_count": 125,
       "median_severity": 10.0,
       "max_severity": 10,
@@ -1152,7 +1152,7 @@
       "sensor_only_rank": 194
     },
     "sensor_data": {
-      "event_type": "pothole",
+      "event_type": "Road Roughness",
       "event_count": 10,
       "median_severity": 8.5,
       "max_severity": 10,
@@ -1304,7 +1304,7 @@
       "sensor_only_rank": 12
     },
     "sensor_data": {
-      "event_type": "pothole",
+      "event_type": "Road Roughness",
       "event_count": 88,
       "median_severity": 10.0,
       "max_severity": 10,
@@ -1379,7 +1379,7 @@
       "sensor_only_rank": 73
     },
     "sensor_data": {
-      "event_type": "pothole",
+      "event_type": "Road Roughness",
       "event_count": 17,
       "median_severity": 10.0,
       "max_severity": 10,
@@ -1528,7 +1528,7 @@
       "sensor_only_rank": 14
     },
     "sensor_data": {
-      "event_type": "pothole",
+      "event_type": "Road Roughness",
       "event_count": 82,
       "median_severity": 10.0,
       "max_severity": 10,
@@ -1599,7 +1599,7 @@
       "sensor_only_rank": 227
     },
     "sensor_data": {
-      "event_type": "pothole",
+      "event_type": "Road Roughness",
       "event_count": 16,
       "median_severity": 7.0,
       "max_severity": 10,
@@ -1674,7 +1674,7 @@
       "sensor_only_rank": 45
     },
     "sensor_data": {
-      "event_type": "pothole",
+      "event_type": "Road Roughness",
       "event_count": 102,
       "median_severity": 7.0,
       "max_severity": 10,
@@ -1820,7 +1820,7 @@
       "sensor_only_rank": 198
     },
     "sensor_data": {
-      "event_type": "pothole",
+      "event_type": "Road Roughness",
       "event_count": 18,
       "median_severity": 8.0,
       "max_severity": 10,
@@ -1895,7 +1895,7 @@
       "sensor_only_rank": 149
     },
     "sensor_data": {
-      "event_type": "pothole",
+      "event_type": "Road Roughness",
       "event_count": 10,
       "median_severity": 10.0,
       "max_severity": 10,
@@ -1969,7 +1969,7 @@
       "sensor_only_rank": 101
     },
     "sensor_data": {
-      "event_type": "pothole",
+      "event_type": "Road Roughness",
       "event_count": 13,
       "median_severity": 10.0,
       "max_severity": 10,
@@ -2045,7 +2045,7 @@
       "sensor_only_rank": 40
     },
     "sensor_data": {
-      "event_type": "pothole",
+      "event_type": "Road Roughness",
       "event_count": 81,
       "median_severity": 8.0,
       "max_severity": 10,

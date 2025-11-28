@@ -221,6 +221,7 @@ def render_compact_hotspot_list(top_30_selected, corridor_selected):
         # Clean Event Type
         if event_type and event_type != 'N/A':
             event_type = event_type.replace('_', ' ').title()
+            event_type = transform_event_type_for_display(event_type)
             
         # Render Row
         col1, col2, col3, col4, col5, col6, col7, col8 = st.columns([0.7, 1.5, 0.8, 2, 1.5, 0.8, 0.8, 1])
@@ -250,6 +251,13 @@ def render_compact_hotspot_list(top_30_selected, corridor_selected):
                 st.rerun()
                 
         st.markdown("<hr style='margin: 0; border-color: #333;'>", unsafe_allow_html=True)
+
+def transform_event_type_for_display(event_type):
+    """Transform event type names for user-friendly display"""
+    if not event_type or event_type == 'N/A':
+        return event_type
+    # Replace 'Pothole' with 'Road Roughness'
+    return event_type.replace('Pothole', 'Road Roughness')
 
 def render_hotspot_details_page():
     """Render dedicated full-page view for hotspot analysis with professional styling"""
@@ -366,6 +374,11 @@ def render_hotspot_details_page():
         event_type = row.get('sensor_data.event_type', 'N/A')
         reports = row.get('collision_reports.total_count', 0)
         priority = "Top 30"
+        
+    # Transform event type for display
+    if event_type and event_type != 'N/A':
+        event_type = event_type.replace('_', ' ').title()
+        event_type = transform_event_type_for_display(event_type)
 
     # Header
     st.markdown(f'<div class="detail-header">{hotspot_name}</div>', unsafe_allow_html=True)
@@ -626,6 +639,7 @@ def create_popup_html(row, source):
     else:
         # Top 30
         event_type = row.get('sensor_data.event_type', 'Multiple Events')
+        event_type = transform_event_type_for_display(event_type)
         device_count = row.get('sensor_data.device_count', 'N/A')
         concern_score = row.get('scores.composite_score', 0)
         street_name = row.get('identification.street_name', 'Unknown Street')
