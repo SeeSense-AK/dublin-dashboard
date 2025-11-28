@@ -504,7 +504,43 @@ def render_hotspot_details_page():
         except Exception as e:
             st.error(f"Analysis unavailable: {e}")
             
-    st.markdown('</div>', unsafe_allow_html=True) # End analysis container
+    st.markdown('</div>', unsafe_allow_html=True)  # End analysis container
+    
+    # PDF Export Button
+    st.markdown("<br>", unsafe_allow_html=True)
+    col_pdf1, col_pdf2, col_pdf3 = st.columns([1, 1, 1])
+    
+    with col_pdf2:
+        if st.button("📄 Save as PDF", use_container_width=True, type="primary"):
+            try:
+                from src.hotspot_pdf import generate_hotspot_pdf
+                
+                # Prepare data for PDF
+                pdf_data = {
+                    'hotspot_name': hotspot_name,
+                    'location': location,
+                    'urgency_score': urgency_score,
+                    'priority': priority,
+                    'event_type': event_type,
+                    'reports': reports
+                }
+                
+                # Generate PDF with map
+                pdf_bytes = generate_hotspot_pdf(pdf_data, insights, lat=lat, lng=lng)
+                
+                # Offer download
+                st.download_button(
+                    label="⬇️ Download PDF",
+                    data=pdf_bytes,
+                    file_name=f"hotspot_{hotspot_name.replace(' ', '_').lower()}_{datetime.now().strftime('%Y%m%d')}.pdf",
+                    mime="application/pdf",
+                    use_container_width=True
+                )
+                st.success("PDF generated successfully!")
+                
+            except Exception as e:
+                st.error(f"Error generating PDF: {e}")
+    
     st.markdown("<br><br>", unsafe_allow_html=True)
 
 # ────────────────────────────────────────────────
