@@ -584,13 +584,24 @@ def render_hotspot_details_page():
         hotspot_data = row.to_dict()
         hotspot_data['source'] = source
         
+        # Data is now correctly accessed from csv_data object
+        
         try:
+            # Extract sample descriptions properly
             if source == 'top_30':
-                user_comments = row.get('narrative.sample_descriptions', [])
+                # Try multiple possible field names for sample descriptions
+                user_comments = (hotspot_data.get('sample_descriptions') or 
+                               hotspot_data.get('narrative.sample_descriptions') or 
+                               row.get('narrative.sample_descriptions', []))
+                
+                # Also add sample_descriptions directly to hotspot_data for AI to access
+                if 'sample_descriptions' not in hotspot_data and user_comments:
+                    hotspot_data['sample_descriptions'] = user_comments
             else:
                 user_comments = extract_user_comments(hotspot_data)
                 
             insights = generate_hotspot_insights(hotspot_data, user_comments)
+
             
             # Summary
             st.markdown(f'<p style="color: #374151; font-size: 1.05rem; line-height: 1.6;">{insights["summary"]}</p>', unsafe_allow_html=True)
@@ -612,13 +623,32 @@ def render_hotspot_details_page():
                 else:
                     st.markdown('<p style="color: #6b7280; font-style: italic;">No specific themes identified.</p>', unsafe_allow_html=True)
             
+            # Traffic Type and Seasonality sections (full width)
+            st.markdown("<hr style='border-color: #e5e7eb; margin: 2rem 0;'>", unsafe_allow_html=True)
+            
+            st.markdown('<div class="analysis-subtitle">Traffic Type Analysis</div>', unsafe_allow_html=True)
+            if insights.get('traffic_type'):
+                st.markdown(f'<p style="color: #374151; font-size: 0.95rem; line-height: 1.6;">{insights["traffic_type"]}</p>', unsafe_allow_html=True)
+            else:
+                st.markdown('<p style="color: #6b7280; font-style: italic;">Insufficient data for traffic type analysis.</p>', unsafe_allow_html=True)
+            
+            st.markdown("<br>", unsafe_allow_html=True)
+            
+            st.markdown('<div class="analysis-subtitle">Seasonality Analysis</div>', unsafe_allow_html=True)
+            if insights.get('seasonality'):
+                st.markdown(f'<p style="color: #374151; font-size: 0.95rem; line-height: 1.6;">{insights["seasonality"]}</p>', unsafe_allow_html=True)
+            else:
+                st.markdown('<p style="color: #6b7280; font-style: italic;">Insufficient data for seasonality analysis.</p>', unsafe_allow_html=True)
+            
             # Full-width section for recommended actions below themes
+            st.markdown("<hr style='border-color: #e5e7eb; margin: 2rem 0;'>", unsafe_allow_html=True)
             st.markdown('<div class="analysis-subtitle">Recommended Actions</div>', unsafe_allow_html=True)
             if insights.get('recommendations'):
                 recs_html = '<ul class="analysis-list">' + ''.join([f'<li>{r}</li>' for r in insights['recommendations']]) + '</ul>'
                 st.markdown(recs_html, unsafe_allow_html=True)
             else:
                 st.markdown('<p style="color: #6b7280; font-style: italic;">No specific recommendations available.</p>', unsafe_allow_html=True)
+
                     
         except Exception as e:
             st.error(f"Analysis unavailable: {e}")
@@ -703,35 +733,28 @@ def load_preprocessed_data():
         center_lat = sum(lats) / len(lats)
         center_lng = sum(lngs) / len(lngs)
         
-        # Calculate Normalized Score based on Priority
-        priority = props.get('priority_category', 'MEDIUM')
-        report_count = props.get('report_count', 0)
+        # Use avg_severity for scoring (0-100 scale)
+        avg_severity = props.get('avg_severity', 0)
         
-        if priority == 'CRITICAL':
-            base_score = 70
-        elif priority == 'HIGH':
-            base_score = 30
-        elif priority == 'MEDIUM':
-            base_score = 20
-        else:
-            base_score = 10
-            
-        # Add variation based on report count (max 9 points)
-        variation = min(9, report_count * 0.5)
-        normalized_score = base_score + variation
+        # Convert to numeric if it's a string
+        try:
+            severity_score = float(avg_severity)
+        except:
+            severity_score = 0
         
         corridors_data.append({
             'road_name': props.get('road_name', 'Unknown'),
             'center_lat': center_lat,
             'center_lng': center_lng,
-            'report_count': report_count,
-            'weighted_score': normalized_score, # Use normalized score
+            'report_count': props.get('report_count', 0),
+            'weighted_score': severity_score,  # Use avg_severity as the score
             'priority_rank': props.get('priority_rank', 999),
-            'priority_category': priority,
+            'priority_category': props.get('priority_category', 'MEDIUM'),
             'dominant_category': props.get('dominant_category', 'Unknown'),
             'all_comments': props.get('all_comments', ''),
             'maxspeed': props.get('maxspeed', 'N/A'),
             'lanes': props.get('lanes', 'N/A'),
+            'avg_severity': severity_score,  # Store original value as well
             'geometry': coords
         })
     
@@ -791,56 +814,65 @@ def get_color_by_score(score):
     else:
         return '#3B82F6'  # Blue
 
-def create_popup_html(row, source):
-    """Create HTML popup for hotspot markers"""
+def create_popup_html(row, source='top_30'):
+    """Create simplified HTML popup content."""
     
-    hotspot_name = row.get('hotspot_name', 'Hotspot')
-    
-    if source == 'corridor':
-        popup_html = f"""
-        <div class="popup-content">
-            <h4 class="popup-title">{hotspot_name}</h4>
-            <p><b>Road:</b> {row['road_name']}</p>
-            <p><b>Reports:</b> {row['report_count']}</p>
-            <p><b>Priority:</b> {row['priority_category']}</p>
-            <p><b>Issue Type:</b> {row['dominant_category']}</p>
-            <hr>
-            <a href="{STREET_VIEW_URL_TEMPLATE.format(lat=row['center_lat'], lng=row['center_lng'], heading=0)}" 
-               target="_blank" class="street-view-link">
-               View in Street View
-            </a>
-        </div>
-        """
-    else:
-        # Top 30
-        event_type = row.get('sensor_data.event_type', 'Multiple Events')
-        event_type = transform_event_type_for_display(event_type)
-        device_count = row.get('sensor_data.device_count', 'N/A')
-        concern_score = row.get('scores.composite_score', 0)
-        street_name = row.get('identification.street_name', 'Unknown Street')
-        if isinstance(street_name, list):
-            street_name = " / ".join(street_name)
+    # Extract basic info
+    if source == 'top_30':
+        location = row.get('identification.street_name', 'Unknown Location')
+        event_type = row.get('sensor_data.event_type', 'N/A')
+        raw_score = row.get('scores.composite_score', 0)
+        # Top 30 score is 0-1, convert to %
+        try:
+            score_val = float(raw_score) * 100
+        except:
+            score_val = 0
             
-        event_count = row.get('sensor_data.event_count', 'N/A')
-        collision_count = row.get('collision_reports.total_count', 0)
+        lat = row.get('identification.latitude')
+        lon = row.get('identification.longitude')
+    else:
+        # Corridor / Perception data
+        location = row.get('road_name', 'Unknown Location')
+        event_type = row.get('dominant_category', 'N/A')
+        raw_score = row.get('weighted_score', 0)
+        # Corridor score is already 0-100
+        try:
+            score_val = float(raw_score)
+        except:
+            score_val = 0
+            
+        lat = row.get('center_lat')
+        lon = row.get('center_lng')
         
-        popup_html = f"""
-        <div class="popup-content">
-            <h4 class="popup-title">{hotspot_name}</h4>
-            <p><b>Location:</b> {street_name}</p>
-            <p><b>Event Type:</b> {event_type}</p>
-            <p><b>Sensor Events:</b> {event_count}</p>
-            <p><b>Collisions:</b> {collision_count}</p>
-            <p><b>Score:</b> {concern_score:.3f}</p>
-            <hr>
-            <a href="{STREET_VIEW_URL_TEMPLATE.format(lat=row['identification.latitude'], lng=row['identification.longitude'], heading=0)}" 
-               target="_blank" class="street-view-link">
-               View in Street View
-            </a>
-        </div>
-        """
+    # Format score display
+    score_display = f"{score_val:.1f}%"
+
+    # Street View Link
+    street_view_url = f"https://www.google.com/maps/@?api=1&map_action=pano&viewpoint={lat},{lon}"
     
-    return popup_html
+    html = f"""
+    <div style="font-family: sans-serif; min-width: 200px;">
+        <h4 style="margin: 0 0 8px 0; color: #1f2937; font-size: 14px; font-weight: 600;">{location}</h4>
+        
+        <div style="margin-bottom: 4px;">
+            <span style="color: #6b7280; font-size: 12px;">Event Type:</span>
+            <span style="color: #111827; font-size: 12px; font-weight: 500;">{event_type}</span>
+        </div>
+        
+        <div style="margin-bottom: 12px;">
+            <span style="color: #6b7280; font-size: 12px;">Score:</span>
+            <span style="color: #ef4444; font-size: 12px; font-weight: 600;">{score_display}</span>
+        </div>
+        
+        <a href="{street_view_url}" target="_blank" 
+           style="display: inline-block; background-color: #3b82f6; color: white; 
+                  padding: 6px 12px; text-decoration: none; border-radius: 4px; 
+                  font-size: 12px; font-weight: 500;">
+            View Street View ↗
+        </a>
+    </div>
+    """
+    return html
 
 def create_hotspot_map(top_30_selected, corridor_selected, 
                        abnormal_events_df=None, show_heatmap=False):
@@ -1015,7 +1047,7 @@ def create_hotspot_map(top_30_selected, corridor_selected,
                 folium.Polygon(
                     locations=poly_coords,
                     popup=folium.Popup(popup_html, max_width=350),
-                    tooltip=f"{row['source_label']}: {row['identification.street_name']}",
+                    tooltip=f"{row['identification.street_name']}",
                     color=color,
                     fill=True,
                     fillColor=color,
@@ -1029,7 +1061,7 @@ def create_hotspot_map(top_30_selected, corridor_selected,
                 folium.PolyLine(
                     locations=line_coords,
                     popup=folium.Popup(popup_html, max_width=350),
-                    tooltip=f"{row['source_label']}: {row['identification.street_name']}",
+                    tooltip=f"{row['identification.street_name']}",
                     color=color,
                     weight=5,
                     opacity=0.8
@@ -1042,7 +1074,7 @@ def create_hotspot_map(top_30_selected, corridor_selected,
                     folium.PolyLine(
                         locations=line_coords,
                         popup=folium.Popup(popup_html, max_width=350),
-                        tooltip=f"{row['source_label']}: {row['identification.street_name']}",
+                        tooltip=f"{row['identification.street_name']}",
                         color=color,
                         weight=5,
                         opacity=0.8
@@ -1054,7 +1086,7 @@ def create_hotspot_map(top_30_selected, corridor_selected,
                 location=[row['identification.latitude'], row['identification.longitude']],
                 radius=8,
                 popup=folium.Popup(popup_html, max_width=350),
-                tooltip=f"{row['source_label']}: {row['identification.street_name']}",
+                tooltip=f"{row['identification.street_name']}",
                 color=color,
                 fill=True,
                 fillColor=color,
@@ -1073,7 +1105,7 @@ def create_hotspot_map(top_30_selected, corridor_selected,
         folium.Polygon(
             locations=coords_folium,
             popup=folium.Popup(popup_html, max_width=350),
-            tooltip=f"Corridor: {row['road_name']}",
+            tooltip=f"{row['road_name']}",
             color=color,
             fill=True,
             fillColor=color,
