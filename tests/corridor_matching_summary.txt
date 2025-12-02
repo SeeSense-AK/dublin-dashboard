@@ -1,0 +1,75 @@
+================================================================================
+CORRIDOR MATCHING SUMMARY
+================================================================================
+
+Analysis Date: 2025-12-02 14:34:41
+Matching Threshold: 0.95
+Fuzzy Matching: Disabled
+
+MATCHING STATISTICS
+--------------------------------------------------------------------------------
+Total hotspots processed: 50
+Full corridor matches (≥0.95): 4 (8.0%)
+Partial matches (≥0.5): 0 (0.0%)
+No matches: 46 (92.0%)
+Average match confidence: 0.11
+
+TOP 10 HIGHEST CONFIDENCE MATCHES
+--------------------------------------------------------------------------------
+
+#1: Grove Road / Harold's Cross Road Junction
+    Match confidence: 0.00
+    Match status: full_match
+
+#2: Inns Quay
+    Match confidence: 0.00
+    Match status: no_match
+
+#3: Western Way
+    Match confidence: 0.00
+    Match status: no_match
+
+#4: Parliament Street
+    Match confidence: 0.00
+    Match status: no_match
+
+#5: Clonliffe Road
+    Match confidence: 0.00
+    Match status: no_match
+
+#6: Terenure Road East
+    Match confidence: 0.00
+    Match status: no_match
+
+#7: New Street South
+    Match confidence: 0.00
+    Match status: no_match
+
+#8: Portland Row
+    Match confidence: 0.00
+    Match status: no_match
+
+#9: Merrion Road
+    Match confidence: 0.00
+    Match status: no_match
+
+#10: Cuffe Street
+    Match confidence: 0.00
+    Match status: no_match
+
+HOTSPOTS WITHOUT CORRIDOR MATCHES
+--------------------------------------------------------------------------------
+  - Inns Quay
+  - Western Way
+  - Parliament Street
+  - Clonliffe Road
+  - Terenure Road East
+  - New Street South
+  - Portland Row
+  - Merrion Road
+  - Cuffe Street
+  - Grand Canal Quay
+
+================================================================================
+END OF SUMMARY
+================================================================================

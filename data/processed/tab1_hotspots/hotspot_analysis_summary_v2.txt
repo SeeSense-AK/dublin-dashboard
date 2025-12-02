@@ -1,0 +1,104 @@
+================================================================================
+HOTSPOT ANALYSIS SUMMARY (WITH USER METRICS)
+================================================================================
+
+Analysis Date: 2025-12-02 12:47:28
+Matching Radius: 100m
+Data Source: /Users/abhishekkumbhar/Downloads/clusters_with_users.csv
+
+DATASET OVERVIEW
+--------------------------------------------------------------------------------
+Total sensor clusters: 115
+Clusters with collision validation: 62
+Validation rate: 53.9%
+Total collision reports matched: 179
+Total sensor events: 16362
+Total unique users: 534
+
+USER ENGAGEMENT METRICS
+--------------------------------------------------------------------------------
+Average users per cluster: 4.6
+Average events per user: 55.6
+Average repeat user percentage: 84.7%
+Clusters with >50% repeat users: 102
+
+TOP 50 HOTSPOTS
+--------------------------------------------------------------------------------
+Hotspots with fatalities: 2
+Hotspots with serious injuries: 7
+Hotspots with any collision reports: 43
+Total collision reports in top hotspots: 152
+Total unique users in top hotspots: 312
+
+TOP 10 HOTSPOTS
+--------------------------------------------------------------------------------
+
+#1: Grove Road
+    Composite Score: 1.000
+    Sensor: 74 events from 13 users (85% repeat users ⚠)
+    Citizen: 15 reports ⚠️ FATALITY
+    Themes: left-hook turning conflicts (2 mentions); red light violations (2 mentions); pedestrian conflicts (2 mentions)
+
+#2: Inns Quay
+    Composite Score: 0.882
+    Sensor: 83 events from 6 users (83% repeat users ⚠)
+    Citizen: 9 reports
+    Themes: pedestrian conflicts (2 mentions); left-hook turning conflicts (1 mentions); right-hook turning conflicts (1 mentions)
+
+#3: Western Way
+    Composite Score: 0.855
+    Sensor: 51 events from 3 users (100% repeat users ⚠)
+    Citizen: 9 reports
+    Themes: pedestrian conflicts (2 mentions); Luas/tram hazards (2 mentions); left-hook turning conflicts (1 mentions)
+
+#4: Parliament Street
+    Composite Score: 0.804
+    Sensor: 298 events from 9 users (78% repeat users ⚠)
+    Citizen: 4 reports ⚠️ FATALITY
+    Themes: left-hook turning conflicts (1 mentions); close passing/overtaking (1 mentions); taxi-related incidents (1 mentions)
+
+#5: Clonliffe Road
+    Composite Score: 0.757
+    Sensor: 113 events from 3 users (67% repeat users ⚠)
+    Citizen: 6 reports
+    Themes: right-hook turning conflicts (1 mentions); bus-related incidents (1 mentions)
+
+#6: Terenure Road East
+    Composite Score: 0.757
+    Sensor: 236 events from 8 users (88% repeat users ⚠)
+    Citizen: 4 reports ⚠️ SERIOUS INJURY
+    Themes: blocked cycle lanes (1 mentions); HGV conflicts (1 mentions); bus-related incidents (1 mentions)
+
+#7: New Street South
+    Composite Score: 0.752
+    Sensor: 106 events from 9 users (78% repeat users ⚠)
+    Citizen: 5 reports
+    Themes: red light violations (1 mentions); speeding (1 mentions); bus-related incidents (1 mentions)
+
+#8: Portland Row
+    Composite Score: 0.744
+    Sensor: 436 events from 3 users (67% repeat users ⚠)
+    Citizen: 5 reports
+    Themes: left-hook turning conflicts (2 mentions); red light violations (1 mentions); taxi-related incidents (1 mentions)
+
+#9: Merrion Road
+    Composite Score: 0.739
+    Sensor: 488 events from 6 users (83% repeat users ⚠)
+    Citizen: 4 reports
+    Themes: pedestrian conflicts (2 mentions); red light violations (1 mentions); junction design issues (1 mentions)
+
+#10: Cuffe Street
+    Composite Score: 0.729
+    Sensor: 174 events from 9 users (78% repeat users ⚠)
+    Citizen: 5 reports
+    Themes: bus-related incidents (1 mentions)
+
+USER ENGAGEMENT IN TOP 10
+--------------------------------------------------------------------------------
+  Average users: 6.9
+  Average repeat user %: 80.5%
+  Average events per user: 39.5
+
+================================================================================
+END OF SUMMARY
+================================================================================

@@ -845,47 +845,6 @@ def create_abnormal_events_map(df, road_segments_df, show_cycleways=False):
     dublin_center = [53.3498, -6.2603]
     m = folium.Map(location=dublin_center, zoom_start=12, tiles='CartoDB positron')
     
-    # Add custom JavaScript for dynamic polygon sizing
-    dynamic_sizing_js = """
-    <script>
-    function updatePolygonSizes() {
-        var map = window[Object.keys(window).find(key => key.startsWith('map_'))];
-        if (!map) return;
-        
-        var zoom = map.getZoom();
-        var scaleFactor = Math.pow(2, (12 - zoom)) * 0.5; // Base scale factor
-        
-        map.eachLayer(function(layer) {
-            if (layer instanceof L.Polygon) {
-                var baseWeight = layer.options.baseWeight || 3;
-                var baseFillOpacity = layer.options.baseFillOpacity || 0.3;
-                var baseOpacity = layer.options.baseOpacity || 0.8;
-                
-                // Adjust weight and opacity based on zoom
-                var newWeight = Math.max(1, baseWeight * scaleFactor);
-                var newFillOpacity = Math.min(0.6, baseFillOpacity + (scaleFactor - 1) * 0.1);
-                var newOpacity = Math.min(1, baseOpacity + (scaleFactor - 1) * 0.1);
-                
-                layer.setStyle({
-                    weight: newWeight,
-                    fillOpacity: newFillOpacity,
-                    opacity: newOpacity
-                });
-            }
-        });
-    }
-    
-    // Add event listener when map is ready
-    setTimeout(function() {
-        var map = window[Object.keys(window).find(key => key.startsWith('map_'))];
-        if (map) {
-            map.on('zoomend', updatePolygonSizes);
-            updatePolygonSizes(); // Initial sizing
-        }
-    }, 1000);
-    </script>
-    """
-    
     routes_added = 0
     
     # Add cycleways using ultra-efficient GeoJSON method
@@ -993,7 +952,7 @@ def create_abnormal_events_map(df, road_segments_df, show_cycleways=False):
                     # Handle Polygon geometry with buffer-based smoothing and dynamic sizing
                     smoothed_geom = smooth_polygon(geometry, factor=0.0001)
                     coords = [[point[1], point[0]] for point in smoothed_geom.exterior.coords]
-                    polygon = folium.Polygon(
+                    folium.Polygon(
                         locations=coords,
                         color=get_color_for_route(color),
                         weight=3,
@@ -1003,14 +962,7 @@ def create_abnormal_events_map(df, road_segments_df, show_cycleways=False):
                         fillOpacity=0.3,
                         popup=folium.Popup(popup_html, max_width=400),
                         tooltip=street_name
-                    )
-                    # Add custom properties for dynamic sizing
-                    polygon.options.update({
-                        'baseWeight': 3,
-                        'baseOpacity': 0.8,
-                        'baseFillOpacity': 0.3
-                    })
-                    polygon.add_to(m)
+                    ).add_to(m)
             
             else:
                 # Fallback method using raw coordinates
@@ -1054,7 +1006,7 @@ def create_abnormal_events_map(df, road_segments_df, show_cycleways=False):
                             # Fallback to original coordinates if smoothing fails
                             coords = [[point[1], point[0]] for point in outer_ring]
                         
-                        polygon = folium.Polygon(
+                        folium.Polygon(
                             locations=coords,
                             color=get_color_for_route(color),
                             weight=3,
@@ -1064,14 +1016,7 @@ def create_abnormal_events_map(df, road_segments_df, show_cycleways=False):
                             fillOpacity=0.3,
                             popup=folium.Popup(popup_html, max_width=400),
                             tooltip=street_name
-                        )
-                        # Add custom properties for dynamic sizing
-                        polygon.options.update({
-                            'baseWeight': 3,
-                            'baseOpacity': 0.8,
-                            'baseFillOpacity': 0.3
-                        })
-                        polygon.add_to(m)
+                        ).add_to(m)
         
         routes_added += 1
     
@@ -1105,8 +1050,83 @@ def create_abnormal_events_map(df, road_segments_df, show_cycleways=False):
         """
         m.get_root().html.add_child(folium.Element(legend_html))
         
-        # Add the dynamic sizing JavaScript
-        m.get_root().html.add_child(folium.Element(dynamic_sizing_js))
+        # Add dynamic polygon scaling using MacroElement
+        from branca.element import MacroElement, Template
+        
+        template = """
+        {% macro script(this, kwargs) %}
+        <script>
+        (function() {
+            console.log('[Polygon Scaling] Initializing via MacroElement...');
+            var polygonBaseStyles = {};
+            var polygonCounter = 0;
+            
+            function updatePolygonSizes() {
+                console.log('[Polygon Scaling] updatePolygonSizes called');
+                
+                var map = {{this._parent.get_name()}};
+                if (!map) {
+                    console.error('[Polygon Scaling] Map not found!');
+                    return;
+                }
+                
+                var zoom = map.getZoom();
+                var scaleFactor = Math.pow(2, (12 - zoom)) * 0.5;
+                console.log('[Polygon Scaling] Zoom:', zoom, 'Scale Factor:', scaleFactor);
+                
+                var polygonCount = 0;
+                map.eachLayer(function(layer) {
+                    if (layer instanceof L.Polygon) {
+                        polygonCount++;
+                        
+                        if (!layer._polyScaleId) {
+                            layer._polyScaleId = 'poly_' + polygonCounter++;
+                            polygonBaseStyles[layer._polyScaleId] = {
+                                weight: layer.options.weight || 3,
+                                fillOpacity: layer.options.fillOpacity || 0.3,
+                                opacity: layer.options.opacity || 0.8
+                            };
+                            console.log('[Polygon Scaling] Stored base styles for', layer._polyScaleId, polygonBaseStyles[layer._polyScaleId]);
+                        }
+                        
+                        var baseStyles = polygonBaseStyles[layer._polyScaleId];
+                        if (baseStyles) {
+                            var newWeight = Math.max(1, baseStyles.weight * scaleFactor);
+                            var newFillOpacity = Math.min(0.6, baseStyles.fillOpacity + (scaleFactor - 1) * 0.1);
+                            var newOpacity = Math.min(1, baseStyles.opacity + (scaleFactor - 1) * 0.1);
+                            
+                            layer.setStyle({
+                                weight: newWeight,
+                                fillOpacity: newFillOpacity,
+                                opacity: newOpacity
+                            });
+                            
+                            if (polygonCount === 1) {
+                                console.log('[Polygon Scaling] Applied:', {newWeight: newWeight, newFillOpacity: newFillOpacity, newOpacity: newOpacity});
+                            }
+                        }
+                    }
+                });
+                
+                console.log('[Polygon Scaling] Total polygons processed:', polygonCount);
+            }
+            
+            // Attach to map
+            {{this._parent.get_name()}}.on('zoomend', updatePolygonSizes);
+            
+            // Initial sizing after map loads
+            {{this._parent.get_name()}}.whenReady(function() {
+                console.log('[Polygon Scaling] Map ready, applying initial sizing');
+                setTimeout(updatePolygonSizes, 100);
+            });
+        })();
+        </script>
+        {% endmacro %}
+        """
+        
+        macro = MacroElement()
+        macro._template = Template(template)
+        m.get_root().add_child(macro)
     
     return m, routes_added
 

@@ -1,0 +1,1531 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "rank": 1,
+        "street_name": "Grove Road / Harold's Cross Road Junction",
+        "cluster_id": 25,
+        "composite_score": 1.0,
+        "collision_total_count": 15,
+        "has_fatality": true,
+        "has_serious_injury": false,
+        "match_confidence": 0.0,
+        "match_status": "full_match",
+        "corridor_road_name": null,
+        "corridor_length": null,
+        "corridor_report_count": null,
+        "corridor_priority": null
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              -6.275879171182311,
+              53.329274161414844
+            ],
+            [
+              -6.2756660421999015,
+              53.329234324446105
+            ],
+            [
+              -6.275488705871879,
+              53.329454884757126
+            ],
+            [
+              -6.275342281380034,
+              53.329464601044435
+            ],
+            [
+              -6.275073836478867,
+              53.329469459187294
+            ],
+            [
+              -6.275047805457888,
+              53.32957245168211
+            ],
+            [
+              -6.275218634031631,
+              53.329593827451845
+            ],
+            [
+              -6.275365058523505,
+              53.32962880596074
+            ],
+            [
+              -6.275379700971996,
+              53.32967155743302
+            ],
+            [
+              -6.275617234036218,
+              53.3296929331531
+            ],
+            [
+              -6.275640011179689,
+              53.32963657895871
+            ],
+            [
+              -6.275872663427236,
+              53.32961908971126
+            ],
+            [
+              -6.275927979345994,
+              53.32942573588278
+            ],
+            [
+              -6.275828736079433,
+              53.329415047957156
+            ],
+            [
+              -6.275812466691775,
+              53.329382984164624
+            ],
+            [
+              -6.275814093630942,
+              53.329355778502844
+            ],
+            [
+              -6.275879171182311,
+              53.329274161414844
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "rank": 2,
+        "street_name": "Inns Quay",
+        "cluster_id": 48,
+        "composite_score": 0.8819197891573335,
+        "collision_total_count": 9,
+        "has_fatality": false,
+        "has_serious_injury": false,
+        "match_confidence": 0.0,
+        "match_status": "no_match",
+        "corridor_road_name": null,
+        "corridor_length": null,
+        "corridor_report_count": null,
+        "corridor_priority": null
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -6.275399385,
+          53.34583443
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "rank": 3,
+        "street_name": "Western Way",
+        "cluster_id": 42,
+        "composite_score": 0.8550461601306668,
+        "collision_total_count": 9,
+        "has_fatality": false,
+        "has_serious_injury": false,
+        "match_confidence": 0.0,
+        "match_status": "no_match",
+        "corridor_road_name": null,
+        "corridor_length": null,
+        "corridor_report_count": null,
+        "corridor_priority": null
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -6.273122492,
+          53.35435183
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "rank": 4,
+        "street_name": "Parliament Street",
+        "cluster_id": 17,
+        "composite_score": 0.8038976398213332,
+        "collision_total_count": 4,
+        "has_fatality": true,
+        "has_serious_injury": false,
+        "match_confidence": 0.0,
+        "match_status": "no_match",
+        "corridor_road_name": null,
+        "corridor_length": null,
+        "corridor_report_count": null,
+        "corridor_priority": null
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -6.267426471,
+          53.34472725
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "rank": 5,
+        "street_name": "Clonliffe Road",
+        "cluster_id": 58,
+        "composite_score": 0.7571346533920001,
+        "collision_total_count": 6,
+        "has_fatality": false,
+        "has_serious_injury": false,
+        "match_confidence": 0.0,
+        "match_status": "no_match",
+        "corridor_road_name": null,
+        "corridor_length": null,
+        "corridor_report_count": null,
+        "corridor_priority": null
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -6.257682306,
+          53.36351663
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "rank": 6,
+        "street_name": "Terenure Road East",
+        "cluster_id": 6,
+        "composite_score": 0.75704420904,
+        "collision_total_count": 4,
+        "has_fatality": false,
+        "has_serious_injury": true,
+        "match_confidence": 0.0,
+        "match_status": "no_match",
+        "corridor_road_name": null,
+        "corridor_length": null,
+        "corridor_report_count": null,
+        "corridor_priority": null
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -6.2834127,
+          53.3099081
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "rank": 7,
+        "street_name": "New Street South",
+        "cluster_id": 7,
+        "composite_score": 0.752085,
+        "collision_total_count": 5,
+        "has_fatality": false,
+        "has_serious_injury": false,
+        "match_confidence": 0.0,
+        "match_status": "no_match",
+        "corridor_road_name": null,
+        "corridor_length": null,
+        "corridor_report_count": null,
+        "corridor_priority": null
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -6.2726489,
+          53.3388548
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "rank": 8,
+        "street_name": "Portland Row",
+        "cluster_id": 19,
+        "composite_score": 0.7441650000000002,
+        "collision_total_count": 5,
+        "has_fatality": false,
+        "has_serious_injury": false,
+        "match_confidence": 0.0,
+        "match_status": "no_match",
+        "corridor_road_name": null,
+        "corridor_length": null,
+        "corridor_report_count": null,
+        "corridor_priority": null
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -6.24743893,
+          53.35521023
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "rank": 9,
+        "street_name": "Merrion Road",
+        "cluster_id": 21,
+        "composite_score": 0.7394999999999999,
+        "collision_total_count": 4,
+        "has_fatality": false,
+        "has_serious_injury": false,
+        "match_confidence": 0.0,
+        "match_status": "no_match",
+        "corridor_road_name": null,
+        "corridor_length": null,
+        "corridor_report_count": null,
+        "corridor_priority": null
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -6.224734989,
+          53.3268274
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "rank": 10,
+        "street_name": "Cuffe Street",
+        "cluster_id": 16,
+        "composite_score": 0.729494003832,
+        "collision_total_count": 5,
+        "has_fatality": false,
+        "has_serious_injury": false,
+        "match_confidence": 0.0,
+        "match_status": "no_match",
+        "corridor_road_name": null,
+        "corridor_length": null,
+        "corridor_report_count": null,
+        "corridor_priority": null
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -6.2657243,
+          53.3375796
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "rank": 11,
+        "street_name": "Grand Canal Quay",
+        "cluster_id": 47,
+        "composite_score": 0.7221575,
+        "collision_total_count": 4,
+        "has_fatality": false,
+        "has_serious_injury": true,
+        "match_confidence": 0.0,
+        "match_status": "no_match",
+        "corridor_road_name": null,
+        "corridor_length": null,
+        "corridor_report_count": null,
+        "corridor_priority": null
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -6.2393909,
+          53.3391338
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "rank": 12,
+        "street_name": "Sandford Road",
+        "cluster_id": 90,
+        "composite_score": 0.7212324561386668,
+        "collision_total_count": 5,
+        "has_fatality": false,
+        "has_serious_injury": false,
+        "match_confidence": 0.0,
+        "match_status": "no_match",
+        "corridor_road_name": null,
+        "corridor_length": null,
+        "corridor_report_count": null,
+        "corridor_priority": null
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -6.242130415,
+          53.31862261
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "rank": 13,
+        "street_name": "Samuel Beckett Bridge",
+        "cluster_id": 18,
+        "composite_score": 0.71875,
+        "collision_total_count": 2,
+        "has_fatality": false,
+        "has_serious_injury": true,
+        "match_confidence": 0.0,
+        "match_status": "no_match",
+        "corridor_road_name": null,
+        "corridor_length": null,
+        "corridor_report_count": null,
+        "corridor_priority": null
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -6.241113826,
+          53.34751161
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "rank": 14,
+        "street_name": "Shelbourne Road",
+        "cluster_id": 31,
+        "composite_score": 0.712325,
+        "collision_total_count": 4,
+        "has_fatality": false,
+        "has_serious_injury": false,
+        "match_confidence": 0.0,
+        "match_status": "no_match",
+        "corridor_road_name": null,
+        "corridor_length": null,
+        "corridor_report_count": null,
+        "corridor_priority": null
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -6.232053289,
+          53.3296446
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "rank": 15,
+        "street_name": "Ranelagh",
+        "cluster_id": 85,
+        "composite_score": 0.6909888333333333,
+        "collision_total_count": 5,
+        "has_fatality": false,
+        "has_serious_injury": false,
+        "match_confidence": 0.0,
+        "match_status": "no_match",
+        "corridor_road_name": null,
+        "corridor_length": null,
+        "corridor_report_count": null,
+        "corridor_priority": null
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -6.2544427,
+          53.3251819
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "rank": 16,
+        "street_name": "South Great George's Street",
+        "cluster_id": 84,
+        "composite_score": 0.6871936250202298,
+        "collision_total_count": 5,
+        "has_fatality": false,
+        "has_serious_injury": false,
+        "match_confidence": 0.0,
+        "match_status": "no_match",
+        "corridor_road_name": null,
+        "corridor_length": null,
+        "corridor_report_count": null,
+        "corridor_priority": null
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -6.264440792,
+          53.34386314
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "rank": 17,
+        "street_name": "Fitzwilliam Place / Leeson Street Lower Junction",
+        "cluster_id": 38,
+        "composite_score": 0.6818125,
+        "collision_total_count": 4,
+        "has_fatality": false,
+        "has_serious_injury": false,
+        "match_confidence": 0.0,
+        "match_status": "full_match",
+        "corridor_road_name": null,
+        "corridor_length": null,
+        "corridor_report_count": null,
+        "corridor_priority": null
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              -6.253537100192375,
+              53.33252239901012
+            ],
+            [
+              -6.2534112181523085,
+              53.332407607697434
+            ],
+            [
+              -6.253361035447085,
+              53.33243605159126
+            ],
+            [
+              -6.253319358285324,
+              53.33239490952428
+            ],
+            [
+              -6.253070145868293,
+              53.332490399692944
+            ],
+            [
+              -6.253158603518017,
+              53.332582842099214
+            ],
+            [
+              -6.253056536999367,
+              53.33267731599969
+            ],
+            [
+              -6.253237705070092,
+              53.33283426411421
+            ],
+            [
+              -6.2532691755801295,
+              53.3327982016537
+            ],
+            [
+              -6.25331170329676,
+              53.332786011519005
+            ],
+            [
+              -6.253359334338853,
+              53.332797185809085
+            ],
+            [
+              -6.25338485096853,
+              53.3328225819121
+            ],
+            [
+              -6.2536587294611365,
+              53.33272099741026
+            ],
+            [
+              -6.253485216378948,
+              53.3325584617038
+            ],
+            [
+              -6.253537100192375,
+              53.33252239901012
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "rank": 18,
+        "street_name": "Camden Street Upper",
+        "cluster_id": 41,
+        "composite_score": 0.661895423496,
+        "collision_total_count": 3,
+        "has_fatality": false,
+        "has_serious_injury": true,
+        "match_confidence": 0.0,
+        "match_status": "no_match",
+        "corridor_road_name": null,
+        "corridor_length": null,
+        "corridor_report_count": null,
+        "corridor_priority": null
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -6.26496797,
+          53.33268696
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "rank": 19,
+        "street_name": "Dolphin Road",
+        "cluster_id": 35,
+        "composite_score": 0.6543376634000001,
+        "collision_total_count": 5,
+        "has_fatality": false,
+        "has_serious_injury": false,
+        "match_confidence": 0.0,
+        "match_status": "no_match",
+        "corridor_road_name": null,
+        "corridor_length": null,
+        "corridor_report_count": null,
+        "corridor_priority": null
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -6.3062645,
+          53.3365116
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "rank": 20,
+        "street_name": "Stillorgan Road",
+        "cluster_id": 55,
+        "composite_score": 0.652925,
+        "collision_total_count": 3,
+        "has_fatality": false,
+        "has_serious_injury": false,
+        "match_confidence": 0.0,
+        "match_status": "no_match",
+        "corridor_road_name": null,
+        "corridor_length": null,
+        "corridor_report_count": null,
+        "corridor_priority": null
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -6.218017983,
+          53.3089715
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "rank": 21,
+        "street_name": "Kilmacud Road Upper",
+        "cluster_id": 0,
+        "composite_score": 0.6505625,
+        "collision_total_count": 1,
+        "has_fatality": false,
+        "has_serious_injury": false,
+        "match_confidence": 0.0,
+        "match_status": "no_match",
+        "corridor_road_name": null,
+        "corridor_length": null,
+        "corridor_report_count": null,
+        "corridor_priority": null
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -6.225574644,
+          53.28670396
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "rank": 22,
+        "street_name": "Charlemont Street",
+        "cluster_id": 92,
+        "composite_score": 0.6474112158453333,
+        "collision_total_count": 4,
+        "has_fatality": false,
+        "has_serious_injury": false,
+        "match_confidence": 0.0,
+        "match_status": "no_match",
+        "corridor_road_name": null,
+        "corridor_length": null,
+        "corridor_report_count": null,
+        "corridor_priority": null
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -6.2602717,
+          53.3305292
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "rank": 23,
+        "street_name": "Jones's Road",
+        "cluster_id": 54,
+        "composite_score": 0.6305999999999999,
+        "collision_total_count": 0,
+        "has_fatality": false,
+        "has_serious_injury": false,
+        "match_confidence": 0.0,
+        "match_status": "no_match",
+        "corridor_road_name": null,
+        "corridor_length": null,
+        "corridor_report_count": null,
+        "corridor_priority": null
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -6.252497735,
+          53.36218355
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "rank": 24,
+        "street_name": "Charlemont Street",
+        "cluster_id": 83,
+        "composite_score": 0.6295023717946666,
+        "collision_total_count": 2,
+        "has_fatality": false,
+        "has_serious_injury": true,
+        "match_confidence": 0.0,
+        "match_status": "no_match",
+        "corridor_road_name": null,
+        "corridor_length": null,
+        "corridor_report_count": null,
+        "corridor_priority": null
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -6.263388529,
+          53.3326799
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "rank": 25,
+        "street_name": "Pearse Street",
+        "cluster_id": 57,
+        "composite_score": 0.6264500000000001,
+        "collision_total_count": 2,
+        "has_fatality": false,
+        "has_serious_injury": false,
+        "match_confidence": 0.0,
+        "match_status": "no_match",
+        "corridor_road_name": null,
+        "corridor_length": null,
+        "corridor_report_count": null,
+        "corridor_priority": null
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -6.241096545,
+          53.34267124
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "rank": 26,
+        "street_name": "Mount Anville Road",
+        "cluster_id": 4,
+        "composite_score": 0.626300507248,
+        "collision_total_count": 2,
+        "has_fatality": false,
+        "has_serious_injury": false,
+        "match_confidence": 0.0,
+        "match_status": "no_match",
+        "corridor_road_name": null,
+        "corridor_length": null,
+        "corridor_report_count": null,
+        "corridor_priority": null
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -6.2293996,
+          53.2928099
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "rank": 27,
+        "street_name": "Beresford Place",
+        "cluster_id": 49,
+        "composite_score": 0.6223699275337972,
+        "collision_total_count": 5,
+        "has_fatality": false,
+        "has_serious_injury": false,
+        "match_confidence": 0.0,
+        "match_status": "no_match",
+        "corridor_road_name": null,
+        "corridor_length": null,
+        "corridor_report_count": null,
+        "corridor_priority": null
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -6.254958928,
+          53.34831913
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "rank": 28,
+        "street_name": "Jones's Road",
+        "cluster_id": 69,
+        "composite_score": 0.6214305952373335,
+        "collision_total_count": 1,
+        "has_fatality": false,
+        "has_serious_injury": false,
+        "match_confidence": 0.0,
+        "match_status": "no_match",
+        "corridor_road_name": null,
+        "corridor_length": null,
+        "corridor_report_count": null,
+        "corridor_priority": null
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -6.253309347,
+          53.36072813
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "rank": 29,
+        "street_name": "Forbes Street",
+        "cluster_id": 98,
+        "composite_score": 0.6145305555546666,
+        "collision_total_count": 2,
+        "has_fatality": false,
+        "has_serious_injury": true,
+        "match_confidence": 0.0,
+        "match_status": "no_match",
+        "corridor_road_name": null,
+        "corridor_length": null,
+        "corridor_report_count": null,
+        "corridor_priority": null
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -6.238379263,
+          53.34439921
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "rank": 30,
+        "street_name": "Church Street",
+        "cluster_id": 8,
+        "composite_score": 0.605781808944,
+        "collision_total_count": 4,
+        "has_fatality": false,
+        "has_serious_injury": false,
+        "match_confidence": 0.0,
+        "match_status": "no_match",
+        "corridor_road_name": null,
+        "corridor_length": null,
+        "corridor_report_count": null,
+        "corridor_priority": null
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -6.274780038,
+          53.34808698
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "rank": 31,
+        "street_name": "Burton Hall Road",
+        "cluster_id": 68,
+        "composite_score": 0.6032290123466667,
+        "collision_total_count": 1,
+        "has_fatality": false,
+        "has_serious_injury": false,
+        "match_confidence": 0.0,
+        "match_status": "full_match",
+        "corridor_road_name": null,
+        "corridor_length": null,
+        "corridor_report_count": null,
+        "corridor_priority": null
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              -6.204390017202201,
+              53.27373957584737
+            ],
+            [
+              -6.204323203123039,
+              53.27372226230409
+            ],
+            [
+              -6.204214073459582,
+              53.27382614345876
+            ],
+            [
+              -6.204091580981526,
+              53.273862102261035
+            ],
+            [
+              -6.203911182967005,
+              53.27383679792166
+            ],
+            [
+              -6.203837687479563,
+              53.2738008390981
+            ],
+            [
+              -6.2037174221369185,
+              53.27375822119407
+            ],
+            [
+              -6.20360606533805,
+              53.273718266870105
+            ],
+            [
+              -6.203463528635012,
+              53.27385411141853
+            ],
+            [
+              -6.203695150777577,
+              53.273935351579524
+            ],
+            [
+              -6.20377087340043,
+              53.27398596012631
+            ],
+            [
+              -6.203846596023283,
+              53.274076522639604
+            ],
+            [
+              -6.203868867383733,
+              53.27414178080227
+            ],
+            [
+              -6.203831006072278,
+              53.27420703886497
+            ],
+            [
+              -6.2041428051085745,
+              53.27429094194238
+            ],
+            [
+              -6.204182893556464,
+              53.27423234298519
+            ],
+            [
+              -6.204343247347026,
+              53.274205707068774
+            ],
+            [
+              -6.204454604145894,
+              53.27422701580332
+            ],
+            [
+              -6.204552598128174,
+              53.27425897888497
+            ],
+            [
+              -6.204677317743716,
+              53.27414710799471
+            ],
+            [
+              -6.204581550895824,
+              53.274085845240194
+            ],
+            [
+              -6.204508055409406,
+              53.27401392798183
+            ],
+            [
+              -6.204483556913601,
+              53.27394067879766
+            ],
+            [
+              -6.204508055409406,
+              53.27383546611395
+            ],
+            [
+              -6.204548143856272,
+              53.273770207483665
+            ],
+            [
+              -6.204390017202201,
+              53.27373957584737
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "rank": 32,
+        "street_name": "Russell Street",
+        "cluster_id": 12,
+        "composite_score": 0.5994150000000001,
+        "collision_total_count": 0,
+        "has_fatality": false,
+        "has_serious_injury": false,
+        "match_confidence": 0.0,
+        "match_status": "no_match",
+        "corridor_road_name": null,
+        "corridor_length": null,
+        "corridor_report_count": null,
+        "corridor_priority": null
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -6.254531563,
+          53.35861169
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "rank": 33,
+        "street_name": "Templeogue Road",
+        "cluster_id": 28,
+        "composite_score": 0.5980683608053332,
+        "collision_total_count": 3,
+        "has_fatality": false,
+        "has_serious_injury": false,
+        "match_confidence": 0.0,
+        "match_status": "no_match",
+        "corridor_road_name": null,
+        "corridor_length": null,
+        "corridor_report_count": null,
+        "corridor_priority": null
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -6.2852626,
+          53.3091462
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "rank": 34,
+        "street_name": "Central Park",
+        "cluster_id": 66,
+        "composite_score": 0.5954975,
+        "collision_total_count": 0,
+        "has_fatality": false,
+        "has_serious_injury": false,
+        "match_confidence": 0.0,
+        "match_status": "no_match",
+        "corridor_road_name": null,
+        "corridor_length": null,
+        "corridor_report_count": null,
+        "corridor_priority": null
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -6.2041848,
+          53.2711396
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "rank": 35,
+        "street_name": "Benildus Avenue / Blackthorn Drive Junction",
+        "cluster_id": 106,
+        "composite_score": 0.5908007971451308,
+        "collision_total_count": 1,
+        "has_fatality": false,
+        "has_serious_injury": false,
+        "match_confidence": 0.0,
+        "match_status": "full_match",
+        "corridor_road_name": null,
+        "corridor_length": null,
+        "corridor_report_count": null,
+        "corridor_priority": null
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              -6.214795315735614,
+              53.2800621782084
+            ],
+            [
+              -6.21460884994147,
+              53.28023697768228
+            ],
+            [
+              -6.213899471654031,
+              53.2799891038367
+            ],
+            [
+              -6.213607735994316,
+              53.28029389665889
+            ],
+            [
+              -6.213957818785559,
+              53.28042609527898
+            ],
+            [
+              -6.21491901101092,
+              53.280749245740594
+            ],
+            [
+              -6.215170824948871,
+              53.28060052338864
+            ],
+            [
+              -6.214900585601185,
+              53.280497702694646
+            ],
+            [
+              -6.2148852310923814,
+              53.28039304566238
+            ],
+            [
+              -6.215121690521499,
+              53.28019291132591
+            ],
+            [
+              -6.214795315735614,
+              53.2800621782084
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "rank": 36,
+        "street_name": "Dundrum Bypass",
+        "cluster_id": 65,
+        "composite_score": 0.586157570424,
+        "collision_total_count": 2,
+        "has_fatality": false,
+        "has_serious_injury": false,
+        "match_confidence": 0.0,
+        "match_status": "no_match",
+        "corridor_road_name": null,
+        "corridor_length": null,
+        "corridor_report_count": null,
+        "corridor_priority": null
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -6.246219735,
+          53.29316276
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "rank": 37,
+        "street_name": "Cuffe Street",
+        "cluster_id": 9,
+        "composite_score": 0.5832348039226668,
+        "collision_total_count": 1,
+        "has_fatality": false,
+        "has_serious_injury": false,
+        "match_confidence": 0.0,
+        "match_status": "no_match",
+        "corridor_road_name": null,
+        "corridor_length": null,
+        "corridor_report_count": null,
+        "corridor_priority": null
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -6.262619775,
+          53.33763889
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "rank": 38,
+        "street_name": "Carmanhall Road",
+        "cluster_id": 50,
+        "composite_score": 0.5771745415653334,
+        "collision_total_count": 0,
+        "has_fatality": false,
+        "has_serious_injury": false,
+        "match_confidence": 0.0,
+        "match_status": "no_match",
+        "corridor_road_name": null,
+        "corridor_length": null,
+        "corridor_report_count": null,
+        "corridor_priority": null
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -6.2104233,
+          53.2773088
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "rank": 39,
+        "street_name": "Custom House Quay",
+        "cluster_id": 97,
+        "composite_score": 0.5762625,
+        "collision_total_count": 1,
+        "has_fatality": false,
+        "has_serious_injury": false,
+        "match_confidence": 0.0,
+        "match_status": "no_match",
+        "corridor_road_name": null,
+        "corridor_length": null,
+        "corridor_report_count": null,
+        "corridor_priority": null
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -6.251421,
+          53.3483092
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "rank": 40,
+        "street_name": "Rock Road",
+        "cluster_id": 103,
+        "composite_score": 0.57235436508,
+        "collision_total_count": 3,
+        "has_fatality": false,
+        "has_serious_injury": false,
+        "match_confidence": 0.0,
+        "match_status": "no_match",
+        "corridor_road_name": null,
+        "corridor_length": null,
+        "corridor_report_count": null,
+        "corridor_priority": null
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -6.196281,
+          53.3090028
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "rank": 41,
+        "street_name": "Terenure Road East",
+        "cluster_id": 2,
+        "composite_score": 0.5704137987013334,
+        "collision_total_count": 1,
+        "has_fatality": false,
+        "has_serious_injury": false,
+        "match_confidence": 0.0,
+        "match_status": "no_match",
+        "corridor_road_name": null,
+        "corridor_length": null,
+        "corridor_report_count": null,
+        "corridor_priority": null
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -6.2820443,
+          53.310318
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "rank": 42,
+        "street_name": "Stillorgan Road",
+        "cluster_id": 81,
+        "composite_score": 0.569938978496,
+        "collision_total_count": 2,
+        "has_fatality": false,
+        "has_serious_injury": false,
+        "match_confidence": 0.0,
+        "match_status": "no_match",
+        "corridor_road_name": null,
+        "corridor_length": null,
+        "corridor_report_count": null,
+        "corridor_priority": null
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -6.209097774,
+          53.30379129
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "rank": 43,
+        "street_name": "Stillorgan Road",
+        "cluster_id": 56,
+        "composite_score": 0.5662146666666666,
+        "collision_total_count": 0,
+        "has_fatality": false,
+        "has_serious_injury": false,
+        "match_confidence": 0.0,
+        "match_status": "no_match",
+        "corridor_road_name": null,
+        "corridor_length": null,
+        "corridor_report_count": null,
+        "corridor_priority": null
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -6.215138664,
+          53.30766127
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "rank": 44,
+        "street_name": "Merrion Road",
+        "cluster_id": 23,
+        "composite_score": 0.5659092857146667,
+        "collision_total_count": 1,
+        "has_fatality": false,
+        "has_serious_injury": false,
+        "match_confidence": 0.0,
+        "match_status": "no_match",
+        "corridor_road_name": null,
+        "corridor_length": null,
+        "corridor_report_count": null,
+        "corridor_priority": null
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -6.2123884,
+          53.3186284
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "rank": 45,
+        "street_name": "Foster's Avenue",
+        "cluster_id": 20,
+        "composite_score": 0.5627375,
+        "collision_total_count": 0,
+        "has_fatality": false,
+        "has_serious_injury": false,
+        "match_confidence": 0.0,
+        "match_status": "no_match",
+        "corridor_road_name": null,
+        "corridor_length": null,
+        "corridor_report_count": null,
+        "corridor_priority": null
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -6.2261668,
+          53.3104924
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "rank": 46,
+        "street_name": "Portland Row",
+        "cluster_id": 40,
+        "composite_score": 0.5591635159013333,
+        "collision_total_count": 3,
+        "has_fatality": false,
+        "has_serious_injury": false,
+        "match_confidence": 0.0,
+        "match_status": "no_match",
+        "corridor_road_name": null,
+        "corridor_length": null,
+        "corridor_report_count": null,
+        "corridor_priority": null
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -6.249079122,
+          53.35657458
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "rank": 47,
+        "street_name": "St. Stephen's Green",
+        "cluster_id": 44,
+        "composite_score": 0.5546372222213333,
+        "collision_total_count": 2,
+        "has_fatality": false,
+        "has_serious_injury": true,
+        "match_confidence": 0.0,
+        "match_status": "no_match",
+        "corridor_road_name": null,
+        "corridor_length": null,
+        "corridor_report_count": null,
+        "corridor_priority": null
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -6.257478791,
+          53.33619403
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "rank": 48,
+        "street_name": "Stillorgan Road",
+        "cluster_id": 110,
+        "composite_score": 0.5541022222213333,
+        "collision_total_count": 0,
+        "has_fatality": false,
+        "has_serious_injury": false,
+        "match_confidence": 0.0,
+        "match_status": "no_match",
+        "corridor_road_name": null,
+        "corridor_length": null,
+        "corridor_report_count": null,
+        "corridor_priority": null
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -6.205437914,
+          53.30033666
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "rank": 49,
+        "street_name": "Taney Road",
+        "cluster_id": 34,
+        "composite_score": 0.5540385458826667,
+        "collision_total_count": 1,
+        "has_fatality": false,
+        "has_serious_injury": false,
+        "match_confidence": 0.0,
+        "match_status": "no_match",
+        "corridor_road_name": null,
+        "corridor_length": null,
+        "corridor_report_count": null,
+        "corridor_priority": null
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -6.232175597,
+          53.29192555
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "rank": 50,
+        "street_name": "Merrion Road",
+        "cluster_id": 45,
+        "composite_score": 0.5538792748933333,
+        "collision_total_count": 1,
+        "has_fatality": false,
+        "has_serious_injury": false,
+        "match_confidence": 0.0,
+        "match_status": "no_match",
+        "corridor_road_name": null,
+        "corridor_length": null,
+        "corridor_report_count": null,
+        "corridor_priority": null
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -6.215664751,
+          53.32051879
+        ]
+      }
+    }
+  ]
+}

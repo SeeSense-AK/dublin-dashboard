@@ -12,6 +12,7 @@ from folium.plugins import HeatMap
 from streamlit_folium import folium_static
 from pathlib import Path
 from datetime import datetime, timedelta
+from branca.element import MacroElement, Template  
 
 # Import your original utilities and functions
 try:
@@ -305,6 +306,52 @@ def render_hotspot_details_page():
         font-weight: 700;
         color: #111827;
     }
+    .tooltip-container {
+        position: relative;
+        display: inline-block;
+    }
+    .info-icon {
+        display: inline-block;
+        margin-left: 6px;
+        color: #9ca3af;
+        cursor: help;
+        font-size: 0.9rem;
+    }
+    .tooltip-text {
+        visibility: hidden;
+        width: 280px;
+        background-color: #1f2937;
+        color: #fff;
+        text-align: left;
+        border-radius: 6px;
+        padding: 12px;
+        position: absolute;
+        z-index: 1000;
+        bottom: 125%;
+        left: 50%;
+        margin-left: -140px;
+        opacity: 0;
+        transition: opacity 0.3s;
+        font-size: 0.75rem;
+        line-height: 1.4;
+        text-transform: none;
+        letter-spacing: normal;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+    }
+    .tooltip-text::after {
+        content: "";
+        position: absolute;
+        top: 100%;
+        left: 50%;
+        margin-left: -5px;
+        border-width: 5px;
+        border-style: solid;
+        border-color: #1f2937 transparent transparent transparent;
+    }
+    .tooltip-container:hover .tooltip-text {
+        visibility: visible;
+        opacity: 1;
+    }
     .analysis-container {
         background-color: #f9fafb;
         border: 1px solid #e5e7eb;
@@ -406,7 +453,67 @@ def render_hotspot_details_page():
     with col_map:
         try:
             m = folium.Map(location=[lat, lng], zoom_start=16, tiles='CartoDB positron')
-            folium.Marker([lat, lng], popup=hotspot_name).add_to(m)
+            
+            # Check for geometry (Top 30 with corridor match)
+            has_geometry = False
+            if source == 'top_30':
+                geom_type = row.get('corridor_data.geometry.geometry_type')
+                coords = row.get('corridor_data.geometry.coordinates')
+                
+                if geom_type and isinstance(coords, list) and len(coords) > 0:
+                    has_geometry = True
+                    if geom_type == 'Polygon':
+                        # Polygon: [[[lon, lat], ...]] - Extract exterior ring
+                        poly_coords = [(p[1], p[0]) for p in coords[0]]
+                        folium.Polygon(
+                            locations=poly_coords,
+                            popup=hotspot_name,
+                            color=priority_color,
+                            fill=True,
+                            fillColor=priority_color,
+                            fillOpacity=0.4,
+                            weight=3
+                        ).add_to(m)
+                    elif geom_type == 'LineString':
+                        # LineString: [[lon, lat], ...]
+                        line_coords = [(p[1], p[0]) for p in coords]
+                        folium.PolyLine(
+                            locations=line_coords,
+                            popup=hotspot_name,
+                            color=priority_color,
+                            weight=5,
+                            opacity=0.8
+                        ).add_to(m)
+                    elif geom_type == 'MultiLineString':
+                        # MultiLineString: [[[lon, lat], ...], ...]
+                        for line in coords:
+                            line_coords = [(p[1], p[0]) for p in line]
+                            folium.PolyLine(
+                                locations=line_coords,
+                                popup=hotspot_name,
+                                color=priority_color,
+                                weight=5,
+                                opacity=0.8
+                            ).add_to(m)
+            elif source == 'corridor':
+                # Corridor source - draw polygon from geometry
+                has_geometry = True
+                coords_folium = [(coord[1], coord[0]) for coord in row['geometry']]
+                folium.Polygon(
+                    locations=coords_folium,
+                    popup=hotspot_name,
+                    color=priority_color,
+                    fill=True,
+                    fillColor=priority_color,
+                    fillOpacity=0.4,
+                    weight=3
+                ).add_to(m)
+
+            # Only add point marker if no geometry exists
+            # Do NOT display point coordinate if using polygon coordinates
+            if not has_geometry:
+                folium.Marker([lat, lng], popup=hotspot_name).add_to(m)
+            
             folium_static(m, height=300)
         except Exception as e:
             st.error(f"Could not render map: {e}")
@@ -431,14 +538,26 @@ def render_hotspot_details_page():
     with s1:
         st.markdown(f"""
         <div class="stat-box">
-            <div class="stat-label">Urgency Score</div>
+            <div class="stat-label">
+                <span class="tooltip-container">
+                    Urgency Score
+                    <span class="info-icon">ℹ️</span>
+                    <span class="tooltip-text">A composite score (0-100) indicating the severity of safety risks based on event frequency, type, and user reports.</span>
+                </span>
+            </div>
             <div class="stat-value">{urgency_score}</div>
         </div>
         """, unsafe_allow_html=True)
     with s2:
         st.markdown(f"""
         <div class="stat-box">
-            <div class="stat-label">Priority Level</div>
+            <div class="stat-label">
+                <span class="tooltip-container">
+                    Priority Level
+                    <span class="info-icon">ℹ️</span>
+                    <span class="tooltip-text">CRITICAL: Score ≥ 80%<br>HIGH: Score 60-79%<br>MEDIUM: Score < 60%</span>
+                </span>
+            </div>
             <div class="stat-value" style="color: {priority_color};">{priority}</div>
         </div>
         """, unsafe_allow_html=True)
@@ -553,12 +672,12 @@ def load_preprocessed_data():
     
     # Load Top 30 Hotspots (JSON)
     try:
-        with open(data_dir / "top_30_hotspots.json", 'r') as f:
+        with open(data_dir / "lights-hotspots.json", 'r') as f:
             top_30_data = json.load(f)
         # Normalize nested JSON to flat DataFrame
         top_30_df = pd.json_normalize(top_30_data)
     except FileNotFoundError:
-        st.error("top_30_hotspots.json not found. Please check data directory.")
+        st.error("lights-hotspots.json not found. Please check data directory.")
         top_30_df = pd.DataFrame()
 
     # Load corridor hotspots (P2)
@@ -751,22 +870,197 @@ def create_hotspot_map(top_30_selected, corridor_selected,
             gradient={0.4: 'blue', 0.6: 'yellow', 0.8: 'orange', 1: 'red'}
         ).add_to(m)
     
+    # Add JavaScript for dynamic scaling
+    template = """
+    {% macro script(this, kwargs) %}
+    <script>
+    console.log('[Dynamic Scaling] Script loaded!');
+    
+    // Store original styles
+    var polygonStyles = {};
+    var polylineStyles = {};
+    var circleStyles = {};
+    
+    function updateAllScales() {
+        console.log('[Dynamic Scaling] updateAllScales called');
+        
+        var map = {{this._parent.get_name()}};
+        if (!map) {
+            console.error('[Dynamic Scaling] Map not found!');
+            return;
+        }
+        
+        var zoom = map.getZoom();
+        // AGGRESSIVE SCALING: Multiply by 2.0 instead of 0.5 for much bigger difference
+        var scaleFactor = Math.pow(2, (12 - zoom)) * 2.0;
+        console.log('[Dynamic Scaling] Zoom:', zoom, 'ScaleFactor:', scaleFactor);
+        
+        var polygonCount = 0;
+        var polylineCount = 0;
+        var circleCount = 0;
+        
+        // Update all polygons
+        map.eachLayer(function(layer) {
+            if (layer instanceof L.Polygon) {
+                polygonCount++;
+                
+                if (!layer._scaleId) {
+                    layer._scaleId = 'poly_' + Date.now() + Math.random();
+                    polygonStyles[layer._scaleId] = {
+                        weight: layer.options.weight || 3,
+                        fillOpacity: layer.options.fillOpacity || 0.4,
+                        opacity: layer.options.opacity || 0.8
+                    };
+                    console.log('[Dynamic Scaling] Stored polygon base:', polygonStyles[layer._scaleId]);
+                }
+                
+                var base = polygonStyles[layer._scaleId];
+                if (base) {
+                    var newWeight = Math.max(1, base.weight * scaleFactor);
+                    var newFillOpacity = Math.min(0.8, base.fillOpacity + (scaleFactor - 1) * 0.15);
+                    var newOpacity = Math.min(1, base.opacity + (scaleFactor - 1) * 0.15);
+                    
+                    layer.setStyle({
+                        weight: newWeight,
+                        fillOpacity: newFillOpacity,
+                        opacity: newOpacity
+                    });
+                    
+                    if (polygonCount === 1) {
+                        console.log('[Dynamic Scaling] Applied to polygon - weight:', newWeight, 'fillOpacity:', newFillOpacity);
+                    }
+                }
+            }
+            else if (layer instanceof L.Polyline) {
+                polylineCount++;
+                
+                if (!layer._scaleId) {
+                    layer._scaleId = 'line_' + Date.now() + Math.random();
+                    polylineStyles[layer._scaleId] = {
+                        weight: layer.options.weight || 5,
+                        opacity: layer.options.opacity || 0.8
+                    };
+                }
+                
+                var base = polylineStyles[layer._scaleId];
+                if (base) {
+                    var newWeight = Math.max(2, base.weight * scaleFactor);
+                    var newOpacity = Math.min(1, base.opacity + (scaleFactor - 1) * 0.15);
+                    
+                    layer.setStyle({
+                        weight: newWeight,
+                        opacity: newOpacity
+                    });
+                }
+            }
+            else if (layer instanceof L.CircleMarker) {
+                circleCount++;
+                
+                if (!layer._scaleId) {
+                    layer._scaleId = 'circle_' + Date.now() + Math.random();
+                    circleStyles[layer._scaleId] = {
+                        radius: layer.options.radius || 8
+                    };
+                }
+                
+                var base = circleStyles[layer._scaleId];
+                if (base) {
+                    var newRadius = Math.max(4, base.radius * scaleFactor);
+                    layer.setRadius(newRadius);
+                }
+            }
+        });
+        
+        console.log('[Dynamic Scaling] Processed - Polygons:', polygonCount, 'Polylines:', polylineCount, 'Circles:', circleCount);
+    }
+    
+    // Initialize on map load
+    {{this._parent.get_name()}}.whenReady(function() {
+        console.log('[Dynamic Scaling] Map ready, initializing...');
+        setTimeout(updateAllScales, 100);
+    });
+    
+    // Update on zoom
+    {{this._parent.get_name()}}.on('zoomend', function() {
+        console.log('[Dynamic Scaling] Zoom ended, updating scales...');
+        updateAllScales();
+    });
+    
+    console.log('[Dynamic Scaling] Event listeners attached');
+    </script>
+    {% endmacro %}
+    """
+    
+    # Add the JavaScript to the map
+    macro = MacroElement()
+    macro._template = Template(template)
+    m.get_root().add_child(macro)
+    
     # Add Top 30 hotspots
     for idx, row in top_30_selected.iterrows():
         color = get_color_by_score(row.get('scores.composite_score', 0) * 100)
         popup_html = create_popup_html(row, 'top_30')
         
-        folium.CircleMarker(
-            location=[row['identification.latitude'], row['identification.longitude']],
-            radius=8,
-            popup=folium.Popup(popup_html, max_width=350),
-            tooltip=f"{row['source_label']}: {row['identification.street_name']}",
-            color=color,
-            fill=True,
-            fillColor=color,
-            fillOpacity=0.7,
-            weight=2
-        ).add_to(m)
+        # Check for geometry (from corridor matching)
+        has_geometry = False
+        geom_type = row.get('corridor_data.geometry.geometry_type')
+        coords = row.get('corridor_data.geometry.coordinates')
+        
+        if geom_type and isinstance(coords, list) and len(coords) > 0:
+            has_geometry = True
+            
+            if geom_type == 'Polygon':
+                # Polygon: [[[lon, lat], ...]]
+                poly_coords = [(p[1], p[0]) for p in coords[0]]
+                folium.Polygon(
+                    locations=poly_coords,
+                    popup=folium.Popup(popup_html, max_width=350),
+                    tooltip=f"{row['source_label']}: {row['identification.street_name']}",
+                    color=color,
+                    fill=True,
+                    fillColor=color,
+                    fillOpacity=0.4,
+                    weight=3
+                ).add_to(m)
+                
+            elif geom_type == 'LineString':
+                # LineString: [[lon, lat], ...]
+                line_coords = [(p[1], p[0]) for p in coords]
+                folium.PolyLine(
+                    locations=line_coords,
+                    popup=folium.Popup(popup_html, max_width=350),
+                    tooltip=f"{row['source_label']}: {row['identification.street_name']}",
+                    color=color,
+                    weight=5,
+                    opacity=0.8
+                ).add_to(m)
+                
+            elif geom_type == 'MultiLineString':
+                # MultiLineString: [[[lon, lat], ...], ...]
+                for line in coords:
+                    line_coords = [(p[1], p[0]) for p in line]
+                    folium.PolyLine(
+                        locations=line_coords,
+                        popup=folium.Popup(popup_html, max_width=350),
+                        tooltip=f"{row['source_label']}: {row['identification.street_name']}",
+                        color=color,
+                        weight=5,
+                        opacity=0.8
+                    ).add_to(m)
+        
+        # Only add point marker if no geometry exists
+        if not has_geometry:
+            folium.CircleMarker(
+                location=[row['identification.latitude'], row['identification.longitude']],
+                radius=8,
+                popup=folium.Popup(popup_html, max_width=350),
+                tooltip=f"{row['source_label']}: {row['identification.street_name']}",
+                color=color,
+                fill=True,
+                fillColor=color,
+                fillOpacity=0.7,
+                weight=2
+            ).add_to(m)
     
     # Add corridor hotspots (as polygons)
     for idx, row in corridor_selected.iterrows():
@@ -785,19 +1079,6 @@ def create_hotspot_map(top_30_selected, corridor_selected,
             fillColor=color,
             fillOpacity=0.4,
             weight=3
-        ).add_to(m)
-        
-        # Add center marker for easier identification
-        folium.CircleMarker(
-            location=[row['center_lat'], row['center_lng']],
-            radius=6,
-            popup=folium.Popup(popup_html, max_width=350),
-            tooltip=f"Corridor: {row['road_name']}",
-            color=color,
-            fill=True,
-            fillColor=color,
-            fillOpacity=0.8,
-            weight=2
         ).add_to(m)
     
     return m

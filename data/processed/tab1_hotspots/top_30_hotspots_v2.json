@@ -1,0 +1,3998 @@
+[
+  {
+    "rank": 1,
+    "identification": {
+      "cluster_id": 25,
+      "street_name": "Grove Road / Harold's Cross Road Junction",
+      "latitude": 53.32950981,
+      "longitude": -6.275483924
+    },
+    "scores": {
+      "composite_score": 1.0,
+      "sensor_concern_score": 0.6884905405422223,
+      "composite_rank": 1,
+      "sensor_only_rank": 27
+    },
+    "sensor_data": {
+      "size": 74,
+      "unique_users": 13,
+      "events_per_user": 5.7,
+      "repeat_users": 11,
+      "repeat_user_percentage": 84.6,
+      "hazard_type": "mixed_braking_swerve_roughness",
+      "event_type": "mixed",
+      "braking_events": 19,
+      "swerve_events": 30,
+      "roughness_events": 41,
+      "median_severity": 4.0,
+      "max_severity": 8,
+      "avg_acceleration": 38.40540540666667,
+      "max_acceleration": 88.0,
+      "peak_events": 53,
+      "offpeak_events": 21,
+      "device_count": 13
+    },
+    "collision_reports": {
+      "total_count": 15,
+      "breakdown": {
+        "near_miss": 7,
+        "collision": 5,
+        "hazard": 3
+      },
+      "causes": {
+        "infrastructure": 5,
+        "driver_car": 7,
+        "driver_hgv": 1,
+        "driver_bus": 0
+      },
+      "outcomes": {
+        "no_injuries": 12,
+        "minor_injuries": 2,
+        "serious_injuries": 0,
+        "fatalities": 1
+      },
+      "severity": {
+        "average": 2.966666666666667,
+        "maximum": 20.0
+      },
+      "date_range": {
+        "start": "2009-01-14",
+        "end": "2025-09-11"
+      }
+    },
+    "flags": {
+      "has_fatality": true,
+      "has_serious_injury": false,
+      "has_collision_reports": true,
+      "is_validated": true
+    },
+    "narrative": {
+      "theme_summary": "left-hook turning conflicts (2 mentions); red light violations (2 mentions); pedestrian conflicts (2 mentions)",
+      "common_themes": {
+        "left_hook": 2,
+        "right_hook": 1,
+        "close_pass": 1,
+        "red_light": 2,
+        "pedestrian_conflict": 2,
+        "cycle_lane_blocked": 1,
+        "junction_design": 1,
+        "speed": 1,
+        "hgv": 1,
+        "taxi": 1,
+        "bus": 1,
+        "luas": 1
+      },
+      "sample_descriptions": [
+        "Collision between cyclist and HGV\n",
+        "Cyclist ran red light and hit another cyclist",
+        "Driver used Bus Lane to skip traffic and suddenly turned into cul-de-sac without indicating or checking mirrors ",
+        "Driver veered onto cycle lane without looking and hit me",
+        "Car moved left into filter lane not noticing that I was cycling in the cycle lane. Hit me as I tried to suddenly break. I fell off my bike. ",
+        "Van turns left, refusing to give way to cyclists continuing straight. Attempted to cut off cyclists number of times and blocked cycle lane. ",
+        "Car driver travelling east turning right at junction across traffic straight at cyclist full on both brakes.",
+        "Car trying to turn right. I was cycling straight on following the canal. Car was turning. Only by braking fully avoiding a collision."
+      ]
+    }
+  },
+  {
+    "rank": 2,
+    "identification": {
+      "cluster_id": 48,
+      "street_name": "Inns Quay",
+      "latitude": 53.34583443,
+      "longitude": -6.275399385
+    },
+    "scores": {
+      "composite_score": 0.8819197891573335,
+      "sensor_concern_score": 0.6776788152622223,
+      "composite_rank": 2,
+      "sensor_only_rank": 33
+    },
+    "sensor_data": {
+      "size": 83,
+      "unique_users": 6,
+      "events_per_user": 13.8,
+      "repeat_users": 5,
+      "repeat_user_percentage": 83.3,
+      "hazard_type": "mixed_braking_swerve_roughness",
+      "event_type": "mixed",
+      "braking_events": 41,
+      "swerve_events": 23,
+      "roughness_events": 21,
+      "median_severity": 4.0,
+      "max_severity": 8,
+      "avg_acceleration": 34.59036144666666,
+      "max_acceleration": 88.0,
+      "peak_events": 72,
+      "offpeak_events": 11,
+      "device_count": 6
+    },
+    "collision_reports": {
+      "total_count": 9,
+      "breakdown": {
+        "near_miss": 6,
+        "collision": 3,
+        "hazard": 0
+      },
+      "causes": {
+        "infrastructure": 5,
+        "driver_car": 2,
+        "driver_hgv": 0,
+        "driver_bus": 0
+      },
+      "outcomes": {
+        "no_injuries": 8,
+        "minor_injuries": 1,
+        "serious_injuries": 0,
+        "fatalities": 0
+      },
+      "severity": {
+        "average": 1.7777777777777777,
+        "maximum": 6.0
+      },
+      "date_range": {
+        "start": "2022-05-04",
+        "end": "2024-10-07"
+      }
+    },
+    "flags": {
+      "has_fatality": false,
+      "has_serious_injury": false,
+      "has_collision_reports": true,
+      "is_validated": true
+    },
+    "narrative": {
+      "theme_summary": "pedestrian conflicts (2 mentions); left-hook turning conflicts (1 mentions); right-hook turning conflicts (1 mentions)",
+      "common_themes": {
+        "left_hook": 1,
+        "right_hook": 1,
+        "pedestrian_conflict": 2,
+        "junction_design": 1,
+        "taxi": 1,
+        "bus": 1,
+        "luas": 1
+      },
+      "sample_descriptions": [
+        "Unsure of details as I arrived on the scene, but injured cyclist being tended to by gardai & firemen.",
+        "Car turned right without checking bike lane on their right as I was going straight, resulting in collision.",
+        "Passed a young woman on my commute standing on the footpath with a buckled front wheel. She was uninjured but shook. ",
+        "Cycle lane moves from building side of the street to riverside when crossing the junction heading east. ",
+        "There is no sign here to say the cycle lane is ending. It is very easy to end up in the bus lane, if you didn't know to wait for the lights",
+        "Cycle track passes left to right at this point.  Driver stopped in ASL.  Moved on green signal for bicycles.  Almost collided with cyclists.",
+        "Have had a number of near misses, but 2 are most serious, one being with a taxi, and the other with a bus company.",
+        "Bikes not adhering to pedestrian lights. 3 separate incidents of nearly being hit by a cyclist when crossing the street.  "
+      ]
+    }
+  },
+  {
+    "rank": 3,
+    "identification": {
+      "cluster_id": 42,
+      "street_name": "Western Way",
+      "latitude": 53.35435183,
+      "longitude": -6.273122492
+    },
+    "scores": {
+      "composite_score": 0.8550461601306668,
+      "sensor_concern_score": 0.6358894335511112,
+      "composite_rank": 3,
+      "sensor_only_rank": 57
+    },
+    "sensor_data": {
+      "size": 51,
+      "unique_users": 3,
+      "events_per_user": 17.0,
+      "repeat_users": 3,
+      "repeat_user_percentage": 100.0,
+      "hazard_type": "mixed_braking_roughness",
+      "event_type": "mixed",
+      "braking_events": 41,
+      "swerve_events": 4,
+      "roughness_events": 14,
+      "median_severity": 4.0,
+      "max_severity": 8,
+      "avg_acceleration": 38.10457516333333,
+      "max_acceleration": 82.0,
+      "peak_events": 48,
+      "offpeak_events": 3,
+      "device_count": 3
+    },
+    "collision_reports": {
+      "total_count": 9,
+      "breakdown": {
+        "near_miss": 4,
+        "collision": 1,
+        "hazard": 4
+      },
+      "causes": {
+        "infrastructure": 3,
+        "driver_car": 3,
+        "driver_hgv": 1,
+        "driver_bus": 0
+      },
+      "outcomes": {
+        "no_injuries": 8,
+        "minor_injuries": 1,
+        "serious_injuries": 0,
+        "fatalities": 0
+      },
+      "severity": {
+        "average": 1.3333333333333333,
+        "maximum": 6.0
+      },
+      "date_range": {
+        "start": "2024-02-21",
+        "end": "2024-09-18"
+      }
+    },
+    "flags": {
+      "has_fatality": false,
+      "has_serious_injury": false,
+      "has_collision_reports": true,
+      "is_validated": true
+    },
+    "narrative": {
+      "theme_summary": "pedestrian conflicts (2 mentions); Luas/tram hazards (2 mentions); left-hook turning conflicts (1 mentions)",
+      "common_themes": {
+        "left_hook": 1,
+        "close_pass": 1,
+        "red_light": 1,
+        "pedestrian_conflict": 2,
+        "bus": 1,
+        "luas": 2
+      },
+      "sample_descriptions": [
+        "I witnessed what looked like a big Deliveroo bike knocked out on the side of the world; guards had cordoned off the area. ",
+        "Bike nearly hit by cars on a number of occasions at the southern end of Broadstone plaza.",
+        "Cyclist and car were in bus lane at red light. Car dangerously overtook the cyclist without giving adequate space.",
+        "Cars did not stop at pedestrian crossing during green light. Individual on an eScooter also failed to stop, went through green lights.",
+        "Vehicles turning squeeze past, before you can take the middle of the cycle box ",
+        "This bike gutter shares the lane with buses turning left on a tight corner. Lights are poorly timed and busses will honk at cyclists to move",
+        "Impossible to move to right incoming lane to access Grangegorman. Aggressive behaviour of road vehicles. ",
+        "White van illegally in the bus lane performed an aggressive overtake where there was not enough space to do so."
+      ]
+    }
+  },
+  {
+    "rank": 4,
+    "identification": {
+      "cluster_id": 17,
+      "street_name": "Parliament Street",
+      "latitude": 53.34472725,
+      "longitude": -6.267426471
+    },
+    "scores": {
+      "composite_score": 0.8038976398213332,
+      "sensor_concern_score": 0.7182043997022222,
+      "composite_rank": 4,
+      "sensor_only_rank": 18
+    },
+    "sensor_data": {
+      "size": 298,
+      "unique_users": 9,
+      "events_per_user": 33.1,
+      "repeat_users": 7,
+      "repeat_user_percentage": 77.8,
+      "hazard_type": "mixed_braking_swerve",
+      "event_type": "mixed",
+      "braking_events": 79,
+      "swerve_events": 200,
+      "roughness_events": 69,
+      "median_severity": 4.0,
+      "max_severity": 10,
+      "avg_acceleration": 39.07829977666667,
+      "max_acceleration": 105.0,
+      "peak_events": 199,
+      "offpeak_events": 99,
+      "device_count": 9
+    },
+    "collision_reports": {
+      "total_count": 4,
+      "breakdown": {
+        "near_miss": 3,
+        "collision": 1,
+        "hazard": 0
+      },
+      "causes": {
+        "infrastructure": 0,
+        "driver_car": 4,
+        "driver_hgv": 0,
+        "driver_bus": 0
+      },
+      "outcomes": {
+        "no_injuries": 3,
+        "minor_injuries": 0,
+        "serious_injuries": 0,
+        "fatalities": 1
+      },
+      "severity": {
+        "average": 5.75,
+        "maximum": 20.0
+      },
+      "date_range": {
+        "start": "2022-05-01",
+        "end": "2024-09-23"
+      }
+    },
+    "flags": {
+      "has_fatality": true,
+      "has_serious_injury": false,
+      "has_collision_reports": true,
+      "is_validated": true
+    },
+    "narrative": {
+      "theme_summary": "left-hook turning conflicts (1 mentions); close passing/overtaking (1 mentions); taxi-related incidents (1 mentions)",
+      "common_themes": {
+        "left_hook": 1,
+        "close_pass": 1,
+        "taxi": 1,
+        "bus": 1
+      },
+      "sample_descriptions": [
+        "Cyclist in his 70s died in a collision in involving car driver",
+        "Close pass from 2 taxis in bus lane. Passing without sufficient width.",
+        "Taxi turning left, late indicator. ",
+        "Multiple near misses with cars, usually taxis, cutting across to turn left suddenly without indicating or looking around"
+      ]
+    }
+  },
+  {
+    "rank": 5,
+    "identification": {
+      "cluster_id": 58,
+      "street_name": "Clonliffe Road",
+      "latitude": 53.36351663,
+      "longitude": -6.257682306
+    },
+    "scores": {
+      "composite_score": 0.7571346533920001,
+      "sensor_concern_score": 0.6638285889866667,
+      "composite_rank": 5,
+      "sensor_only_rank": 45
+    },
+    "sensor_data": {
+      "size": 113,
+      "unique_users": 3,
+      "events_per_user": 37.7,
+      "repeat_users": 2,
+      "repeat_user_percentage": 66.7,
+      "hazard_type": "mixed_braking_roughness",
+      "event_type": "mixed",
+      "braking_events": 68,
+      "swerve_events": 4,
+      "roughness_events": 66,
+      "median_severity": 6.0,
+      "max_severity": 10,
+      "avg_acceleration": 42.16519174,
+      "max_acceleration": 106.0,
+      "peak_events": 92,
+      "offpeak_events": 21,
+      "device_count": 3
+    },
+    "collision_reports": {
+      "total_count": 6,
+      "breakdown": {
+        "near_miss": 4,
+        "collision": 2,
+        "hazard": 0
+      },
+      "causes": {
+        "infrastructure": 1,
+        "driver_car": 1,
+        "driver_hgv": 0,
+        "driver_bus": 3
+      },
+      "outcomes": {
+        "no_injuries": 5,
+        "minor_injuries": 1,
+        "serious_injuries": 0,
+        "fatalities": 0
+      },
+      "severity": {
+        "average": 2.0,
+        "maximum": 6.0
+      },
+      "date_range": {
+        "start": "2022-01-03",
+        "end": "2025-03-06"
+      }
+    },
+    "flags": {
+      "has_fatality": false,
+      "has_serious_injury": false,
+      "has_collision_reports": true,
+      "is_validated": true
+    },
+    "narrative": {
+      "theme_summary": "right-hook turning conflicts (1 mentions); bus-related incidents (1 mentions)",
+      "common_themes": {
+        "right_hook": 1,
+        "bus": 1
+      },
+      "sample_descriptions": [
+        "Bike crashed into back of car. Cyclist head hit back window of car smashing it. ",
+        "Car turning right onto St Anne’s Road couldn’t see me and clipped bike ",
+        "Bus came extremely close to me heading towards Binns bridge. Came in front of me then and cut me off from travelling forward.",
+        "NIMBY driver overtook 3 cyclists, forcing oncoming moped rider into very left edge of the road. Traffic was stopped ahead.",
+        "Bus driver aggressively driving into dedicated cycle path.",
+        "33 bus drove in on top of me. Reported incident "
+      ]
+    }
+  },
+  {
+    "rank": 6,
+    "identification": {
+      "cluster_id": 6,
+      "street_name": "Terenure Road East",
+      "latitude": 53.3099081,
+      "longitude": -6.2834127
+    },
+    "scores": {
+      "composite_score": 0.75704420904,
+      "sensor_concern_score": 0.7443236817333333,
+      "composite_rank": 6,
+      "sensor_only_rank": 9
+    },
+    "sensor_data": {
+      "size": 236,
+      "unique_users": 8,
+      "events_per_user": 29.5,
+      "repeat_users": 7,
+      "repeat_user_percentage": 87.5,
+      "hazard_type": "mixed_braking_swerve_roughness",
+      "event_type": "mixed",
+      "braking_events": 125,
+      "swerve_events": 90,
+      "roughness_events": 74,
+      "median_severity": 6.0,
+      "max_severity": 10,
+      "avg_acceleration": 40.0240113,
+      "max_acceleration": 100.0,
+      "peak_events": 218,
+      "offpeak_events": 18,
+      "device_count": 8
+    },
+    "collision_reports": {
+      "total_count": 4,
+      "breakdown": {
+        "near_miss": 0,
+        "collision": 3,
+        "hazard": 1
+      },
+      "causes": {
+        "infrastructure": 0,
+        "driver_car": 1,
+        "driver_hgv": 2,
+        "driver_bus": 0
+      },
+      "outcomes": {
+        "no_injuries": 2,
+        "minor_injuries": 1,
+        "serious_injuries": 1,
+        "fatalities": 0
+      },
+      "severity": {
+        "average": 4.625,
+        "maximum": 10.0
+      },
+      "date_range": {
+        "start": "2024-02-22",
+        "end": "2024-05-13"
+      }
+    },
+    "flags": {
+      "has_fatality": false,
+      "has_serious_injury": true,
+      "has_collision_reports": true,
+      "is_validated": true
+    },
+    "narrative": {
+      "theme_summary": "blocked cycle lanes (1 mentions); HGV conflicts (1 mentions); bus-related incidents (1 mentions)",
+      "common_themes": {
+        "cycle_lane_blocked": 1,
+        "hgv": 1,
+        "bus": 1
+      },
+      "sample_descriptions": [
+        "Truck with work machine in tow hit cyclist",
+        "Van waiting beyond stop line turns left without indicating into cyclist going straight",
+        "Car turned into a cyclist who was going straight ahead, man came off his bike but seemed to be injured",
+        "Vehicles parked in southbound bus lane every day during evening rush hour operation hours"
+      ]
+    }
+  },
+  {
+    "rank": 7,
+    "identification": {
+      "cluster_id": 7,
+      "street_name": "New Street South",
+      "latitude": 53.3388548,
+      "longitude": -6.2726489
+    },
+    "scores": {
+      "composite_score": 0.752085,
+      "sensor_concern_score": 0.7188500000000001,
+      "composite_rank": 7,
+      "sensor_only_rank": 17
+    },
+    "sensor_data": {
+      "size": 106,
+      "unique_users": 9,
+      "events_per_user": 11.8,
+      "repeat_users": 7,
+      "repeat_user_percentage": 77.8,
+      "hazard_type": "mixed_braking_swerve_roughness",
+      "event_type": "mixed",
+      "braking_events": 34,
+      "swerve_events": 59,
+      "roughness_events": 42,
+      "median_severity": 4.0,
+      "max_severity": 10,
+      "avg_acceleration": 37.937106916666664,
+      "max_acceleration": 115.0,
+      "peak_events": 77,
+      "offpeak_events": 29,
+      "device_count": 9
+    },
+    "collision_reports": {
+      "total_count": 5,
+      "breakdown": {
+        "near_miss": 0,
+        "collision": 2,
+        "hazard": 3
+      },
+      "causes": {
+        "infrastructure": 2,
+        "driver_car": 3,
+        "driver_hgv": 0,
+        "driver_bus": 0
+      },
+      "outcomes": {
+        "no_injuries": 3,
+        "minor_injuries": 2,
+        "serious_injuries": 0,
+        "fatalities": 0
+      },
+      "severity": {
+        "average": 2.7,
+        "maximum": 6.0
+      },
+      "date_range": {
+        "start": "2013-04-27",
+        "end": "2025-04-03"
+      }
+    },
+    "flags": {
+      "has_fatality": false,
+      "has_serious_injury": false,
+      "has_collision_reports": true,
+      "is_validated": true
+    },
+    "narrative": {
+      "theme_summary": "red light violations (1 mentions); speeding (1 mentions); bus-related incidents (1 mentions)",
+      "common_themes": {
+        "red_light": 1,
+        "speed": 1,
+        "bus": 1
+      },
+      "sample_descriptions": [
+        "Driver pulled out of parking space without looking, I swerved to avoid but hit the back of another car instead.",
+        "Driver indicated to turn left, went straight through red light at speed, knocked me down and drove away ",
+        "Problematic signal for northbound traffic: simultaneous red light and green arrow for straight ahead. Drivers regularly turn left on it.",
+        "Road narrows and cars are squeezed into bike lane at this point, especially large vehicles.",
+        "Cars frequently drive in the bus lane."
+      ]
+    }
+  },
+  {
+    "rank": 8,
+    "identification": {
+      "cluster_id": 19,
+      "street_name": "Portland Row",
+      "latitude": 53.35521023,
+      "longitude": -6.24743893
+    },
+    "scores": {
+      "composite_score": 0.7441650000000002,
+      "sensor_concern_score": 0.6870250000000001,
+      "composite_rank": 8,
+      "sensor_only_rank": 29
+    },
+    "sensor_data": {
+      "size": 436,
+      "unique_users": 3,
+      "events_per_user": 145.3,
+      "repeat_users": 2,
+      "repeat_user_percentage": 66.7,
+      "hazard_type": "roughness",
+      "event_type": "roughness",
+      "braking_events": 94,
+      "swerve_events": 30,
+      "roughness_events": 405,
+      "median_severity": 6.0,
+      "max_severity": 10,
+      "avg_acceleration": 43.08486238333333,
+      "max_acceleration": 107.0,
+      "peak_events": 402,
+      "offpeak_events": 34,
+      "device_count": 3
+    },
+    "collision_reports": {
+      "total_count": 5,
+      "breakdown": {
+        "near_miss": 3,
+        "collision": 2,
+        "hazard": 0
+      },
+      "causes": {
+        "infrastructure": 0,
+        "driver_car": 4,
+        "driver_hgv": 1,
+        "driver_bus": 0
+      },
+      "outcomes": {
+        "no_injuries": 4,
+        "minor_injuries": 1,
+        "serious_injuries": 0,
+        "fatalities": 0
+      },
+      "severity": {
+        "average": 2.2,
+        "maximum": 6.0
+      },
+      "date_range": {
+        "start": "2024-02-28",
+        "end": "2025-03-19"
+      }
+    },
+    "flags": {
+      "has_fatality": false,
+      "has_serious_injury": false,
+      "has_collision_reports": true,
+      "is_validated": true
+    },
+    "narrative": {
+      "theme_summary": "left-hook turning conflicts (2 mentions); red light violations (1 mentions); taxi-related incidents (1 mentions)",
+      "common_themes": {
+        "left_hook": 2,
+        "red_light": 1,
+        "taxi": 1,
+        "bus": 1
+      },
+      "sample_descriptions": [
+        "Car illegally turned left across cycle lane on orange arrow. Bike crashed",
+        "Van decides to swoop into the left without a turn signal and the cyclist just beside it was hit. No injuries fortunately.",
+        "Car turning left cut the corner on a red light and nearly collided with me.",
+        "Taxi driver turned left on red filter light",
+        "Car turning left (from bus lane) onto Seville Place from North Strand Road without looking. "
+      ]
+    }
+  },
+  {
+    "rank": 9,
+    "identification": {
+      "cluster_id": 21,
+      "street_name": "Merrion Road",
+      "latitude": 53.3268274,
+      "longitude": -6.224734989
+    },
+    "scores": {
+      "composite_score": 0.7394999999999999,
+      "sensor_concern_score": 0.8154750000000001,
+      "composite_rank": 9,
+      "sensor_only_rank": 3
+    },
+    "sensor_data": {
+      "size": 488,
+      "unique_users": 6,
+      "events_per_user": 81.3,
+      "repeat_users": 5,
+      "repeat_user_percentage": 83.3,
+      "hazard_type": "mixed_braking_swerve_roughness",
+      "event_type": "mixed",
+      "braking_events": 129,
+      "swerve_events": 196,
+      "roughness_events": 307,
+      "median_severity": 6.0,
+      "max_severity": 10,
+      "avg_acceleration": 45.052595626666665,
+      "max_acceleration": 119.0,
+      "peak_events": 429,
+      "offpeak_events": 59,
+      "device_count": 6
+    },
+    "collision_reports": {
+      "total_count": 4,
+      "breakdown": {
+        "near_miss": 3,
+        "collision": 0,
+        "hazard": 1
+      },
+      "causes": {
+        "infrastructure": 1,
+        "driver_car": 2,
+        "driver_hgv": 1,
+        "driver_bus": 0
+      },
+      "outcomes": {
+        "no_injuries": 4,
+        "minor_injuries": 0,
+        "serious_injuries": 0,
+        "fatalities": 0
+      },
+      "severity": {
+        "average": 0.875,
+        "maximum": 1.0
+      },
+      "date_range": {
+        "start": "2024-11-26",
+        "end": "2025-06-10"
+      }
+    },
+    "flags": {
+      "has_fatality": false,
+      "has_serious_injury": false,
+      "has_collision_reports": true,
+      "is_validated": true
+    },
+    "narrative": {
+      "theme_summary": "pedestrian conflicts (2 mentions); red light violations (1 mentions); junction design issues (1 mentions)",
+      "common_themes": {
+        "red_light": 1,
+        "pedestrian_conflict": 2,
+        "junction_design": 1,
+        "speed": 1,
+        "taxi": 1
+      },
+      "sample_descriptions": [
+        "Taxi driver passing too close and at speed",
+        "Taxi driver cutting right in front of me, narrowly missing me",
+        "Almost hit by van running red light",
+        "Complicated junction with no pedestrian crossing infrastructure running north / south on either side of street. "
+      ]
+    }
+  },
+  {
+    "rank": 10,
+    "identification": {
+      "cluster_id": 16,
+      "street_name": "Cuffe Street",
+      "latitude": 53.3375796,
+      "longitude": -6.2657243
+    },
+    "scores": {
+      "composite_score": 0.729494003832,
+      "sensor_concern_score": 0.67694833972,
+      "composite_rank": 10,
+      "sensor_only_rank": 34
+    },
+    "sensor_data": {
+      "size": 174,
+      "unique_users": 9,
+      "events_per_user": 19.3,
+      "repeat_users": 7,
+      "repeat_user_percentage": 77.8,
+      "hazard_type": "mixed_braking_swerve",
+      "event_type": "mixed",
+      "braking_events": 105,
+      "swerve_events": 56,
+      "roughness_events": 40,
+      "median_severity": 4.0,
+      "max_severity": 10,
+      "avg_acceleration": 34.82375479,
+      "max_acceleration": 101.0,
+      "peak_events": 129,
+      "offpeak_events": 45,
+      "device_count": 9
+    },
+    "collision_reports": {
+      "total_count": 5,
+      "breakdown": {
+        "near_miss": 4,
+        "collision": 1,
+        "hazard": 0
+      },
+      "causes": {
+        "infrastructure": 1,
+        "driver_car": 3,
+        "driver_hgv": 0,
+        "driver_bus": 1
+      },
+      "outcomes": {
+        "no_injuries": 5,
+        "minor_injuries": 0,
+        "serious_injuries": 0,
+        "fatalities": 0
+      },
+      "severity": {
+        "average": 1.2,
+        "maximum": 2.0
+      },
+      "date_range": {
+        "start": "2024-04-04",
+        "end": "2025-08-26"
+      }
+    },
+    "flags": {
+      "has_fatality": false,
+      "has_serious_injury": false,
+      "has_collision_reports": true,
+      "is_validated": true
+    },
+    "narrative": {
+      "theme_summary": "bus-related incidents (1 mentions)",
+      "common_themes": {
+        "bus": 1
+      },
+      "sample_descriptions": [
+        "SUV moving into left lane to turn left onto Aungier St, passing through the cycle lane without looking or indicating,  side of car hit bike.",
+        "I was cycling down Wexford St (North direction) and the Dublin Bus driver ahead of me started to veer into the Cycle Lane as I was passing",
+        "Bus pulled in across cycle lane on arriving to lights. Bus in front had stayed in car lane but bus following pulled across cycle lane.",
+        "Car in left lane moved into cycle lane to get around car in Yellow box suddenly with no warning. ",
+        "Van drifted to the left into the cycling lane so I had to break hard to stop and avoid a collision."
+      ]
+    }
+  },
+  {
+    "rank": 11,
+    "identification": {
+      "cluster_id": 47,
+      "street_name": "Grand Canal Quay",
+      "latitude": 53.3391338,
+      "longitude": -6.2393909
+    },
+    "scores": {
+      "composite_score": 0.7221575,
+      "sensor_concern_score": 0.68445,
+      "composite_rank": 11,
+      "sensor_only_rank": 31
+    },
+    "sensor_data": {
+      "size": 237,
+      "unique_users": 13,
+      "events_per_user": 18.2,
+      "repeat_users": 11,
+      "repeat_user_percentage": 84.6,
+      "hazard_type": "mixed_braking_swerve_roughness",
+      "event_type": "mixed",
+      "braking_events": 68,
+      "swerve_events": 76,
+      "roughness_events": 168,
+      "median_severity": 6.0,
+      "max_severity": 10,
+      "avg_acceleration": 45.803094236666674,
+      "max_acceleration": 109.0,
+      "peak_events": 118,
+      "offpeak_events": 119,
+      "device_count": 13
+    },
+    "collision_reports": {
+      "total_count": 4,
+      "breakdown": {
+        "near_miss": 1,
+        "collision": 2,
+        "hazard": 1
+      },
+      "causes": {
+        "infrastructure": 2,
+        "driver_car": 1,
+        "driver_hgv": 0,
+        "driver_bus": 0
+      },
+      "outcomes": {
+        "no_injuries": 2,
+        "minor_injuries": 1,
+        "serious_injuries": 1,
+        "fatalities": 0
+      },
+      "severity": {
+        "average": 4.375,
+        "maximum": 10.0
+      },
+      "date_range": {
+        "start": "2013-01-01",
+        "end": "2024-02-20"
+      }
+    },
+    "flags": {
+      "has_fatality": false,
+      "has_serious_injury": true,
+      "has_collision_reports": true,
+      "is_validated": true
+    },
+    "narrative": {
+      "theme_summary": "pedestrian conflicts (1 mentions)",
+      "common_themes": {
+        "pedestrian_conflict": 1
+      },
+      "sample_descriptions": [
+        "Car pulled out in front of me on wet, cobblestoned road. Braked, losing control of bike. I fell off; broke 2 bones in my foot.",
+        "Pedestrian crossed road without looking as I turned into the street.  I braked to avoid but the wet surface & cobbles meant that I fell off",
+        "Car goes straight when using a left only filter, while I am going straight. Near miss of collision.",
+        "Really poor surface (cobbles)"
+      ]
+    }
+  },
+  {
+    "rank": 12,
+    "identification": {
+      "cluster_id": 90,
+      "street_name": "Sandford Road",
+      "latitude": 53.31862261,
+      "longitude": -6.242130415
+    },
+    "scores": {
+      "composite_score": 0.7212324561386668,
+      "sensor_concern_score": 0.6703040935644445,
+      "composite_rank": 12,
+      "sensor_only_rank": 40
+    },
+    "sensor_data": {
+      "size": 76,
+      "unique_users": 6,
+      "events_per_user": 12.7,
+      "repeat_users": 6,
+      "repeat_user_percentage": 100.0,
+      "hazard_type": "mixed_braking_roughness",
+      "event_type": "mixed",
+      "braking_events": 54,
+      "swerve_events": 15,
+      "roughness_events": 20,
+      "median_severity": 4.0,
+      "max_severity": 10,
+      "avg_acceleration": 37.978070173333336,
+      "max_acceleration": 101.0,
+      "peak_events": 63,
+      "offpeak_events": 13,
+      "device_count": 6
+    },
+    "collision_reports": {
+      "total_count": 5,
+      "breakdown": {
+        "near_miss": 1,
+        "collision": 2,
+        "hazard": 2
+      },
+      "causes": {
+        "infrastructure": 2,
+        "driver_car": 2,
+        "driver_hgv": 0,
+        "driver_bus": 0
+      },
+      "outcomes": {
+        "no_injuries": 3,
+        "minor_injuries": 2,
+        "serious_injuries": 0,
+        "fatalities": 0
+      },
+      "severity": {
+        "average": 2.8,
+        "maximum": 6.0
+      },
+      "date_range": {
+        "start": "2024-02-28",
+        "end": "2024-11-08"
+      }
+    },
+    "flags": {
+      "has_fatality": false,
+      "has_serious_injury": false,
+      "has_collision_reports": true,
+      "is_validated": true
+    },
+    "narrative": {
+      "theme_summary": "pedestrian conflicts (2 mentions); red light violations (1 mentions); road surface issues (1 mentions)",
+      "common_themes": {
+        "red_light": 1,
+        "pothole": 1,
+        "pedestrian_conflict": 2,
+        "bus": 1
+      },
+      "sample_descriptions": [
+        "Driver coming from Milltown Road wasn't paying attention and drive side on into a cyclist on Sandford Road",
+        "Woman hit by car that didn't yield to primary road. ",
+        "Delivery cyclist almost got hit by the bus, when crossing the road on the red light",
+        "No safe pedestrian crossing",
+        "Very narrow protected cycle lane with poor surface (potholes and standing water). Hazardous road section with high bicycle volume."
+      ]
+    }
+  },
+  {
+    "rank": 13,
+    "identification": {
+      "cluster_id": 18,
+      "street_name": "Samuel Beckett Bridge",
+      "latitude": 53.34751161,
+      "longitude": -6.241113826
+    },
+    "scores": {
+      "composite_score": 0.71875,
+      "sensor_concern_score": 0.8350000000000001,
+      "composite_rank": 13,
+      "sensor_only_rank": 2
+    },
+    "sensor_data": {
+      "size": 740,
+      "unique_users": 5,
+      "events_per_user": 148.0,
+      "repeat_users": 4,
+      "repeat_user_percentage": 80.0,
+      "hazard_type": "mixed_braking_roughness",
+      "event_type": "mixed",
+      "braking_events": 600,
+      "swerve_events": 77,
+      "roughness_events": 403,
+      "median_severity": 6.0,
+      "max_severity": 10,
+      "avg_acceleration": 45.959459460000005,
+      "max_acceleration": 112.0,
+      "peak_events": 703,
+      "offpeak_events": 37,
+      "device_count": 5
+    },
+    "collision_reports": {
+      "total_count": 2,
+      "breakdown": {
+        "near_miss": 1,
+        "collision": 1,
+        "hazard": 0
+      },
+      "causes": {
+        "infrastructure": 0,
+        "driver_car": 1,
+        "driver_hgv": 0,
+        "driver_bus": 0
+      },
+      "outcomes": {
+        "no_injuries": 1,
+        "minor_injuries": 0,
+        "serious_injuries": 1,
+        "fatalities": 0
+      },
+      "severity": {
+        "average": 5.5,
+        "maximum": 10.0
+      },
+      "date_range": {
+        "start": "2019-11-21",
+        "end": "2024-03-07"
+      }
+    },
+    "flags": {
+      "has_fatality": false,
+      "has_serious_injury": true,
+      "has_collision_reports": true,
+      "is_validated": true
+    },
+    "narrative": {
+      "theme_summary": "left-hook turning conflicts (1 mentions)",
+      "common_themes": {
+        "left_hook": 1
+      },
+      "sample_descriptions": [
+        "Fell off my bike",
+        "Driver making illegal left turn from North Wall Quay onto bridge. Nearly collided with me as I was cycling straight ahead to the city centre"
+      ]
+    }
+  },
+  {
+    "rank": 14,
+    "identification": {
+      "cluster_id": 31,
+      "street_name": "Shelbourne Road",
+      "latitude": 53.3296446,
+      "longitude": -6.232053289
+    },
+    "scores": {
+      "composite_score": 0.712325,
+      "sensor_concern_score": 0.71775,
+      "composite_rank": 14,
+      "sensor_only_rank": 19
+    },
+    "sensor_data": {
+      "size": 130,
+      "unique_users": 4,
+      "events_per_user": 32.5,
+      "repeat_users": 3,
+      "repeat_user_percentage": 75.0,
+      "hazard_type": "mixed_braking_swerve_roughness",
+      "event_type": "mixed",
+      "braking_events": 40,
+      "swerve_events": 59,
+      "roughness_events": 70,
+      "median_severity": 6.0,
+      "max_severity": 10,
+      "avg_acceleration": 41.83076923,
+      "max_acceleration": 117.0,
+      "peak_events": 119,
+      "offpeak_events": 11,
+      "device_count": 4
+    },
+    "collision_reports": {
+      "total_count": 4,
+      "breakdown": {
+        "near_miss": 0,
+        "collision": 3,
+        "hazard": 1
+      },
+      "causes": {
+        "infrastructure": 1,
+        "driver_car": 2,
+        "driver_hgv": 0,
+        "driver_bus": 0
+      },
+      "outcomes": {
+        "no_injuries": 1,
+        "minor_injuries": 3,
+        "serious_injuries": 0,
+        "fatalities": 0
+      },
+      "severity": {
+        "average": 4.625,
+        "maximum": 6.0
+      },
+      "date_range": {
+        "start": "2007-09-01",
+        "end": "2025-03-28"
+      }
+    },
+    "flags": {
+      "has_fatality": false,
+      "has_serious_injury": false,
+      "has_collision_reports": true,
+      "is_validated": true
+    },
+    "narrative": {
+      "theme_summary": "left-hook turning conflicts (1 mentions); junction design issues (1 mentions); HGV conflicts (1 mentions)",
+      "common_themes": {
+        "left_hook": 1,
+        "junction_design": 1,
+        "hgv": 1
+      },
+      "sample_descriptions": [
+        "Struck from rear/side by car and knocked off bike onto the road",
+        "Left hook by car who turned down Herbert Park.  I was heading for Elgin Road, passed at rolys, and had to break hard to avoid the car",
+        "Motorbike crossed into my path in the bike lane, collided, went over handlebars, landed on my back and head",
+        "Dangerous junction design for cyclists"
+      ]
+    }
+  },
+  {
+    "rank": 15,
+    "identification": {
+      "cluster_id": 85,
+      "street_name": "Ranelagh",
+      "latitude": 53.3251819,
+      "longitude": -6.2544427
+    },
+    "scores": {
+      "composite_score": 0.6909888333333333,
+      "sensor_concern_score": 0.6179605555555555,
+      "composite_rank": 15,
+      "sensor_only_rank": 68
+    },
+    "sensor_data": {
+      "size": 75,
+      "unique_users": 12,
+      "events_per_user": 6.2,
+      "repeat_users": 9,
+      "repeat_user_percentage": 75.0,
+      "hazard_type": "mixed_braking_swerve_roughness",
+      "event_type": "mixed",
+      "braking_events": 42,
+      "swerve_events": 29,
+      "roughness_events": 21,
+      "median_severity": 4.0,
+      "max_severity": 6,
+      "avg_acceleration": 36.626666666666665,
+      "max_acceleration": 78.0,
+      "peak_events": 44,
+      "offpeak_events": 31,
+      "device_count": 12
+    },
+    "collision_reports": {
+      "total_count": 5,
+      "breakdown": {
+        "near_miss": 4,
+        "collision": 1,
+        "hazard": 0
+      },
+      "causes": {
+        "infrastructure": 2,
+        "driver_car": 3,
+        "driver_hgv": 0,
+        "driver_bus": 0
+      },
+      "outcomes": {
+        "no_injuries": 5,
+        "minor_injuries": 0,
+        "serious_injuries": 0,
+        "fatalities": 0
+      },
+      "severity": {
+        "average": 1.2,
+        "maximum": 2.0
+      },
+      "date_range": {
+        "start": "2021-05-01",
+        "end": "2025-07-21"
+      }
+    },
+    "flags": {
+      "has_fatality": false,
+      "has_serious_injury": false,
+      "has_collision_reports": true,
+      "is_validated": true
+    },
+    "narrative": {
+      "theme_summary": "left-hook turning conflicts (1 mentions); junction design issues (1 mentions); taxi-related incidents (1 mentions)",
+      "common_themes": {
+        "left_hook": 1,
+        "junction_design": 1,
+        "taxi": 1
+      },
+      "sample_descriptions": [
+        "Collision between two bikes at the point where the bikelane doglegs sharply. ",
+        "Vehicles turning left on to Cullenswood Road from Ranelagh routinely cut off cyclists heading straight. Happened again this morning. ",
+        "Driver swerved into bike lane and nearly collided with cyclist",
+        "Taxi turn right at junction almost hit cyclist approaching from opposite direction heading straight with green light. ",
+        "Taxi running the yellow light cut off a cyclist who had to brake to avoid being hit."
+      ]
+    }
+  },
+  {
+    "rank": 16,
+    "identification": {
+      "cluster_id": 84,
+      "street_name": "South Great George's Street",
+      "latitude": 53.34386314,
+      "longitude": -6.264440792
+    },
+    "scores": {
+      "composite_score": 0.6871936250202298,
+      "sensor_concern_score": 0.6140935417003832,
+      "composite_rank": 16,
+      "sensor_only_rank": 70
+    },
+    "sensor_data": {
+      "size": 73,
+      "unique_users": 5,
+      "events_per_user": 14.6,
+      "repeat_users": 4,
+      "repeat_user_percentage": 80.0,
+      "hazard_type": "mixed_braking_roughness",
+      "event_type": "mixed",
+      "braking_events": 47,
+      "swerve_events": 14,
+      "roughness_events": 21,
+      "median_severity": 4.0,
+      "max_severity": 8,
+      "avg_acceleration": 36.59817351666667,
+      "max_acceleration": 98.0,
+      "peak_events": 45,
+      "offpeak_events": 28,
+      "device_count": 5
+    },
+    "collision_reports": {
+      "total_count": 5,
+      "breakdown": {
+        "near_miss": 2,
+        "collision": 2,
+        "hazard": 1
+      },
+      "causes": {
+        "infrastructure": 1,
+        "driver_car": 2,
+        "driver_hgv": 0,
+        "driver_bus": 1
+      },
+      "outcomes": {
+        "no_injuries": 5,
+        "minor_injuries": 0,
+        "serious_injuries": 0,
+        "fatalities": 0
+      },
+      "severity": {
+        "average": 1.3,
+        "maximum": 2.0
+      },
+      "date_range": {
+        "start": "2015-08-24",
+        "end": "2025-03-14"
+      }
+    },
+    "flags": {
+      "has_fatality": false,
+      "has_serious_injury": false,
+      "has_collision_reports": true,
+      "is_validated": true
+    },
+    "narrative": {
+      "theme_summary": "right-hook turning conflicts (1 mentions); red light violations (1 mentions); pedestrian conflicts (1 mentions)",
+      "common_themes": {
+        "right_hook": 1,
+        "red_light": 1,
+        "pedestrian_conflict": 1,
+        "hgv": 1,
+        "taxi": 1,
+        "bus": 1
+      },
+      "sample_descriptions": [
+        "Car was pulled into loading bay obscured by a parked truck. Car pulled out to do a u-turn suddenly. ",
+        "Cycling close to path taxi accelerated from behind me towards lights. Mirror of taxi clipped my rucksack. I was sent flying forward. ",
+        "Bus was thundering down on top of me. Much too close to my bicycle but I didn’t know it was there and slowed my bike. Just missed being hit.",
+        "Electric cyclist ran a red light, near-miss collision with pedestrian ",
+        "Cyclists mix with pedestrians because there is no right turn allowed here to go south however it is a common commuting corridor. "
+      ]
+    }
+  },
+  {
+    "rank": 17,
+    "identification": {
+      "cluster_id": 38,
+      "street_name": "Fitzwilliam Place / Leeson Street Lower Junction",
+      "latitude": 53.33267299,
+      "longitude": -6.253457303
+    },
+    "scores": {
+      "composite_score": 0.6818125,
+      "sensor_concern_score": 0.6697500000000001,
+      "composite_rank": 17,
+      "sensor_only_rank": 43
+    },
+    "sensor_data": {
+      "size": 79,
+      "unique_users": 5,
+      "events_per_user": 15.8,
+      "repeat_users": 4,
+      "repeat_user_percentage": 80.0,
+      "hazard_type": "mixed_braking_roughness",
+      "event_type": "mixed",
+      "braking_events": 27,
+      "swerve_events": 2,
+      "roughness_events": 70,
+      "median_severity": 6.0,
+      "max_severity": 10,
+      "avg_acceleration": 44.088607593333336,
+      "max_acceleration": 113.0,
+      "peak_events": 74,
+      "offpeak_events": 5,
+      "device_count": 5
+    },
+    "collision_reports": {
+      "total_count": 4,
+      "breakdown": {
+        "near_miss": 2,
+        "collision": 1,
+        "hazard": 1
+      },
+      "causes": {
+        "infrastructure": 2,
+        "driver_car": 1,
+        "driver_hgv": 0,
+        "driver_bus": 0
+      },
+      "outcomes": {
+        "no_injuries": 2,
+        "minor_injuries": 2,
+        "serious_injuries": 0,
+        "fatalities": 0
+      },
+      "severity": {
+        "average": 2.375,
+        "maximum": 6.0
+      },
+      "date_range": {
+        "start": "2018-06-01",
+        "end": "2024-09-23"
+      }
+    },
+    "flags": {
+      "has_fatality": false,
+      "has_serious_injury": false,
+      "has_collision_reports": true,
+      "is_validated": true
+    },
+    "narrative": {
+      "theme_summary": "pedestrian conflicts (2 mentions); red light violations (1 mentions); visibility problems (1 mentions)",
+      "common_themes": {
+        "red_light": 1,
+        "poor_visibility": 1,
+        "pedestrian_conflict": 2,
+        "taxi": 1
+      },
+      "sample_descriptions": [
+        "Pedestrian walked out into bike path without looking. Braked and went into back of audi to avoid him. Damaged my front bumper and hand.",
+        "Cycle path disappears meeting pedestrians at a narrow blind corner",
+        "Vehicles regularly break this red light, appears many don't notice it.",
+        "Taxi cut left across a lane and through bicycle lane without indicating "
+      ]
+    }
+  },
+  {
+    "rank": 18,
+    "identification": {
+      "cluster_id": 41,
+      "street_name": "Camden Street Upper",
+      "latitude": 53.33268696,
+      "longitude": -6.26496797
+    },
+    "scores": {
+      "composite_score": 0.661895423496,
+      "sensor_concern_score": 0.6726798724933334,
+      "composite_rank": 18,
+      "sensor_only_rank": 37
+    },
+    "sensor_data": {
+      "size": 61,
+      "unique_users": 5,
+      "events_per_user": 12.2,
+      "repeat_users": 5,
+      "repeat_user_percentage": 100.0,
+      "hazard_type": "mixed_braking_roughness",
+      "event_type": "mixed",
+      "braking_events": 49,
+      "swerve_events": 6,
+      "roughness_events": 24,
+      "median_severity": 6.0,
+      "max_severity": 10,
+      "avg_acceleration": 42.32240437,
+      "max_acceleration": 102.0,
+      "peak_events": 49,
+      "offpeak_events": 12,
+      "device_count": 5
+    },
+    "collision_reports": {
+      "total_count": 3,
+      "breakdown": {
+        "near_miss": 0,
+        "collision": 3,
+        "hazard": 0
+      },
+      "causes": {
+        "infrastructure": 2,
+        "driver_car": 0,
+        "driver_hgv": 0,
+        "driver_bus": 0
+      },
+      "outcomes": {
+        "no_injuries": 0,
+        "minor_injuries": 2,
+        "serious_injuries": 1,
+        "fatalities": 0
+      },
+      "severity": {
+        "average": 7.333333333333333,
+        "maximum": 10.0
+      },
+      "date_range": {
+        "start": "2017-09-29",
+        "end": "2022-01-06"
+      }
+    },
+    "flags": {
+      "has_fatality": false,
+      "has_serious_injury": true,
+      "has_collision_reports": true,
+      "is_validated": true
+    },
+    "narrative": {
+      "theme_summary": "car door incidents (2 mentions); left-hook turning conflicts (1 mentions); road surface issues (1 mentions)",
+      "common_themes": {
+        "left_hook": 1,
+        "dooring": 2,
+        "pothole": 1,
+        "hgv": 1,
+        "taxi": 1
+      },
+      "sample_descriptions": [
+        "Collision between cyclist and HGV",
+        "The bike went from under me as I was turning left on a wet road with a poor road surface",
+        "Hit by a car door opened by a taxi passenger"
+      ]
+    }
+  },
+  {
+    "rank": 19,
+    "identification": {
+      "cluster_id": 35,
+      "street_name": "Dolphin Road",
+      "latitude": 53.3365116,
+      "longitude": -6.3062645
+    },
+    "scores": {
+      "composite_score": 0.6543376634000001,
+      "sensor_concern_score": 0.5607086056666667,
+      "composite_rank": 19,
+      "sensor_only_rank": 89
+    },
+    "sensor_data": {
+      "size": 51,
+      "unique_users": 5,
+      "events_per_user": 10.2,
+      "repeat_users": 5,
+      "repeat_user_percentage": 100.0,
+      "hazard_type": "mixed_braking_roughness",
+      "event_type": "mixed",
+      "braking_events": 19,
+      "swerve_events": 0,
+      "roughness_events": 38,
+      "median_severity": 6.0,
+      "max_severity": 10,
+      "avg_acceleration": 40.718954249999996,
+      "max_acceleration": 109.0,
+      "peak_events": 16,
+      "offpeak_events": 35,
+      "device_count": 5
+    },
+    "collision_reports": {
+      "total_count": 5,
+      "breakdown": {
+        "near_miss": 3,
+        "collision": 1,
+        "hazard": 1
+      },
+      "causes": {
+        "infrastructure": 1,
+        "driver_car": 3,
+        "driver_hgv": 0,
+        "driver_bus": 0
+      },
+      "outcomes": {
+        "no_injuries": 5,
+        "minor_injuries": 0,
+        "serious_injuries": 0,
+        "fatalities": 0
+      },
+      "severity": {
+        "average": 1.1,
+        "maximum": 2.0
+      },
+      "date_range": {
+        "start": "2023-02-28",
+        "end": "2025-01-29"
+      }
+    },
+    "flags": {
+      "has_fatality": false,
+      "has_serious_injury": false,
+      "has_collision_reports": true,
+      "is_validated": true
+    },
+    "narrative": {
+      "theme_summary": "right-hook turning conflicts (1 mentions); pedestrian conflicts (1 mentions); speeding (1 mentions)",
+      "common_themes": {
+        "right_hook": 1,
+        "pedestrian_conflict": 1,
+        "speed": 1,
+        "luas": 1
+      },
+      "sample_descriptions": [
+        "Reports of collision between Luas and person on bicycle with a child on carrier",
+        "Many times, vehicles travelling from Suir Rd to Dolphin Rd turn left without indicating, nearly hitting me,as I go straight to Slievnamon",
+        "Car broke light to turn left onto suir road , nearly hitting luas and running green pedestrian light. Was walking my daughter in buggy",
+        "Car turning right at high speed from Suir Rd overlooked me going straight from Slievenamon Rd into Suir Rd. Close call.",
+        "New build outs of pavements have caused a dangerous pinch point for cyclists. "
+      ]
+    }
+  },
+  {
+    "rank": 20,
+    "identification": {
+      "cluster_id": 55,
+      "street_name": "Stillorgan Road",
+      "latitude": 53.3089715,
+      "longitude": -6.218017983
+    },
+    "scores": {
+      "composite_score": 0.652925,
+      "sensor_concern_score": 0.7225,
+      "composite_rank": 20,
+      "sensor_only_rank": 16
+    },
+    "sensor_data": {
+      "size": 246,
+      "unique_users": 1,
+      "events_per_user": 246.0,
+      "repeat_users": 1,
+      "repeat_user_percentage": 100.0,
+      "hazard_type": "mixed_braking_roughness",
+      "event_type": "mixed",
+      "braking_events": 101,
+      "swerve_events": 12,
+      "roughness_events": 173,
+      "median_severity": 6.0,
+      "max_severity": 10,
+      "avg_acceleration": 40.9200542,
+      "max_acceleration": 117.0,
+      "peak_events": 217,
+      "offpeak_events": 29,
+      "device_count": 1
+    },
+    "collision_reports": {
+      "total_count": 3,
+      "breakdown": {
+        "near_miss": 2,
+        "collision": 0,
+        "hazard": 1
+      },
+      "causes": {
+        "infrastructure": 1,
+        "driver_car": 0,
+        "driver_hgv": 2,
+        "driver_bus": 0
+      },
+      "outcomes": {
+        "no_injuries": 3,
+        "minor_injuries": 0,
+        "serious_injuries": 0,
+        "fatalities": 0
+      },
+      "severity": {
+        "average": 0.8333333333333334,
+        "maximum": 1.0
+      },
+      "date_range": {
+        "start": "2024-10-29",
+        "end": "2024-11-01"
+      }
+    },
+    "flags": {
+      "has_fatality": false,
+      "has_serious_injury": false,
+      "has_collision_reports": true,
+      "is_validated": true
+    },
+    "narrative": {
+      "theme_summary": "left-hook turning conflicts (2 mentions); pedestrian conflicts (1 mentions); speeding (1 mentions)",
+      "common_themes": {
+        "left_hook": 2,
+        "pedestrian_conflict": 1,
+        "speed": 1,
+        "hgv": 1
+      },
+      "sample_descriptions": [
+        "Left turning waste collection truck turned left on red across cyclist continuing straight on green sequence",
+        "I was cycling in the cycle lane at steady speed. Car about 3m ahead turned left in front of me, cutting me off.",
+        "New bike lane on UCD flyover makes the road more dangerous for cyclists and pedestrians "
+      ]
+    }
+  },
+  {
+    "rank": 21,
+    "identification": {
+      "cluster_id": 0,
+      "street_name": "Kilmacud Road Upper",
+      "latitude": 53.28670396,
+      "longitude": -6.225574644
+    },
+    "scores": {
+      "composite_score": 0.6505625,
+      "sensor_concern_score": 0.8013107769422223,
+      "composite_rank": 21,
+      "sensor_only_rank": 4
+    },
+    "sensor_data": {
+      "size": 399,
+      "unique_users": 28,
+      "events_per_user": 14.2,
+      "repeat_users": 21,
+      "repeat_user_percentage": 75.0,
+      "hazard_type": "mixed_braking_swerve_roughness",
+      "event_type": "mixed",
+      "braking_events": 162,
+      "swerve_events": 200,
+      "roughness_events": 133,
+      "median_severity": 6.0,
+      "max_severity": 10,
+      "avg_acceleration": 41.233082706666664,
+      "max_acceleration": 103.0,
+      "peak_events": 325,
+      "offpeak_events": 74,
+      "device_count": 28
+    },
+    "collision_reports": {
+      "total_count": 1,
+      "breakdown": {
+        "near_miss": 1,
+        "collision": 0,
+        "hazard": 0
+      },
+      "causes": {
+        "infrastructure": 0,
+        "driver_car": 0,
+        "driver_hgv": 0,
+        "driver_bus": 0
+      },
+      "outcomes": {
+        "no_injuries": 1,
+        "minor_injuries": 0,
+        "serious_injuries": 0,
+        "fatalities": 0
+      },
+      "severity": {
+        "average": 1.0,
+        "maximum": 1.0
+      },
+      "date_range": {
+        "start": "2024-02-27",
+        "end": "2024-02-27"
+      }
+    },
+    "flags": {
+      "has_fatality": false,
+      "has_serious_injury": false,
+      "has_collision_reports": true,
+      "is_validated": true
+    },
+    "narrative": {
+      "theme_summary": "red light violations (1 mentions)",
+      "common_themes": {
+        "red_light": 1
+      },
+      "sample_descriptions": [
+        "Electric bike broke the red light and just missed another bike cycling on the path on the Drumartin Link Road"
+      ]
+    }
+  },
+  {
+    "rank": 22,
+    "identification": {
+      "cluster_id": 92,
+      "street_name": "Charlemont Street",
+      "latitude": 53.3305292,
+      "longitude": -6.2602717
+    },
+    "scores": {
+      "composite_score": 0.6474112158453333,
+      "sensor_concern_score": 0.6128728597422223,
+      "composite_rank": 22,
+      "sensor_only_rank": 72
+    },
+    "sensor_data": {
+      "size": 61,
+      "unique_users": 7,
+      "events_per_user": 8.7,
+      "repeat_users": 5,
+      "repeat_user_percentage": 71.4,
+      "hazard_type": "mixed_braking_swerve",
+      "event_type": "mixed",
+      "braking_events": 23,
+      "swerve_events": 36,
+      "roughness_events": 5,
+      "median_severity": 4.0,
+      "max_severity": 8,
+      "avg_acceleration": 33.054644806666666,
+      "max_acceleration": 81.0,
+      "peak_events": 43,
+      "offpeak_events": 18,
+      "device_count": 7
+    },
+    "collision_reports": {
+      "total_count": 4,
+      "breakdown": {
+        "near_miss": 1,
+        "collision": 1,
+        "hazard": 2
+      },
+      "causes": {
+        "infrastructure": 0,
+        "driver_car": 2,
+        "driver_hgv": 1,
+        "driver_bus": 0
+      },
+      "outcomes": {
+        "no_injuries": 3,
+        "minor_injuries": 1,
+        "serious_injuries": 0,
+        "fatalities": 0
+      },
+      "severity": {
+        "average": 2.0,
+        "maximum": 6.0
+      },
+      "date_range": {
+        "start": "2023-12-20",
+        "end": "2025-02-20"
+      }
+    },
+    "flags": {
+      "has_fatality": false,
+      "has_serious_injury": false,
+      "has_collision_reports": true,
+      "is_validated": true
+    },
+    "narrative": {
+      "theme_summary": "left-hook turning conflicts (1 mentions); HGV conflicts (1 mentions); taxi-related incidents (1 mentions)",
+      "common_themes": {
+        "left_hook": 1,
+        "hgv": 1,
+        "taxi": 1
+      },
+      "sample_descriptions": [
+        "Collision between cyclist turning with no indication/lights, another cyclist and oncoming car",
+        "Taxi pulling out to turn right onto Ranelagh Rd failed to see me, forcing me to swerve to avoid a collision.",
+        "Southbound truck turned left without indicating across commuting cyclists heading towards Ranelagh.  ",
+        "Persistent cycle lane blocking due to driver behaviour and poorly sequenced lights"
+      ]
+    }
+  },
+  {
+    "rank": 23,
+    "identification": {
+      "cluster_id": 54,
+      "street_name": "Jones's Road",
+      "latitude": 53.36218355,
+      "longitude": -6.252497735
+    },
+    "scores": {
+      "composite_score": 0.6305999999999999,
+      "sensor_concern_score": 0.8380250000000001,
+      "composite_rank": 23,
+      "sensor_only_rank": 1
+    },
+    "sensor_data": {
+      "size": 803,
+      "unique_users": 3,
+      "events_per_user": 267.7,
+      "repeat_users": 2,
+      "repeat_user_percentage": 66.7,
+      "hazard_type": "mixed_braking_roughness",
+      "event_type": "mixed",
+      "braking_events": 248,
+      "swerve_events": 146,
+      "roughness_events": 738,
+      "median_severity": 6.0,
+      "max_severity": 10,
+      "avg_acceleration": 48.81735159666667,
+      "max_acceleration": 115.0,
+      "peak_events": 762,
+      "offpeak_events": 41,
+      "device_count": 3
+    },
+    "collision_reports": {
+      "total_count": 0,
+      "breakdown": {
+        "near_miss": 0,
+        "collision": 0,
+        "hazard": 0
+      },
+      "causes": {
+        "infrastructure": 0,
+        "driver_car": 0,
+        "driver_hgv": 0,
+        "driver_bus": 0
+      },
+      "outcomes": {
+        "no_injuries": 0,
+        "minor_injuries": 0,
+        "serious_injuries": 0,
+        "fatalities": 0
+      },
+      "severity": {
+        "average": 0.0,
+        "maximum": 0.0
+      },
+      "date_range": {
+        "start": null,
+        "end": null
+      }
+    },
+    "flags": {
+      "has_fatality": false,
+      "has_serious_injury": false,
+      "has_collision_reports": false,
+      "is_validated": false
+    },
+    "narrative": {
+      "theme_summary": "",
+      "common_themes": {},
+      "sample_descriptions": []
+    }
+  },
+  {
+    "rank": 24,
+    "identification": {
+      "cluster_id": 83,
+      "street_name": "Charlemont Street",
+      "latitude": 53.3326799,
+      "longitude": -6.263388529
+    },
+    "scores": {
+      "composite_score": 0.6295023717946666,
+      "sensor_concern_score": 0.6937747863244444,
+      "composite_rank": 24,
+      "sensor_only_rank": 23
+    },
+    "sensor_data": {
+      "size": 65,
+      "unique_users": 4,
+      "events_per_user": 16.2,
+      "repeat_users": 4,
+      "repeat_user_percentage": 100.0,
+      "hazard_type": "mixed_braking_swerve_roughness",
+      "event_type": "mixed",
+      "braking_events": 28,
+      "swerve_events": 23,
+      "roughness_events": 23,
+      "median_severity": 4.0,
+      "max_severity": 8,
+      "avg_acceleration": 39.14358974333334,
+      "max_acceleration": 91.0,
+      "peak_events": 56,
+      "offpeak_events": 9,
+      "device_count": 4
+    },
+    "collision_reports": {
+      "total_count": 2,
+      "breakdown": {
+        "near_miss": 0,
+        "collision": 2,
+        "hazard": 0
+      },
+      "causes": {
+        "infrastructure": 1,
+        "driver_car": 0,
+        "driver_hgv": 0,
+        "driver_bus": 0
+      },
+      "outcomes": {
+        "no_injuries": 0,
+        "minor_injuries": 1,
+        "serious_injuries": 1,
+        "fatalities": 0
+      },
+      "severity": {
+        "average": 8.0,
+        "maximum": 10.0
+      },
+      "date_range": {
+        "start": "2017-09-29",
+        "end": "2022-01-06"
+      }
+    },
+    "flags": {
+      "has_fatality": false,
+      "has_serious_injury": true,
+      "has_collision_reports": true,
+      "is_validated": true
+    },
+    "narrative": {
+      "theme_summary": "car door incidents (2 mentions); HGV conflicts (1 mentions); taxi-related incidents (1 mentions)",
+      "common_themes": {
+        "dooring": 2,
+        "hgv": 1,
+        "taxi": 1
+      },
+      "sample_descriptions": [
+        "Collision between cyclist and HGV",
+        "Hit by a car door opened by a taxi passenger"
+      ]
+    }
+  },
+  {
+    "rank": 25,
+    "identification": {
+      "cluster_id": 57,
+      "street_name": "Pearse Street",
+      "latitude": 53.34267124,
+      "longitude": -6.241096545
+    },
+    "scores": {
+      "composite_score": 0.6264500000000001,
+      "sensor_concern_score": 0.727,
+      "composite_rank": 25,
+      "sensor_only_rank": 14
+    },
+    "sensor_data": {
+      "size": 252,
+      "unique_users": 4,
+      "events_per_user": 63.0,
+      "repeat_users": 4,
+      "repeat_user_percentage": 100.0,
+      "hazard_type": "mixed_braking_roughness",
+      "event_type": "mixed",
+      "braking_events": 211,
+      "swerve_events": 24,
+      "roughness_events": 146,
+      "median_severity": 6.0,
+      "max_severity": 10,
+      "avg_acceleration": 48.02248677,
+      "max_acceleration": 110.0,
+      "peak_events": 223,
+      "offpeak_events": 29,
+      "device_count": 4
+    },
+    "collision_reports": {
+      "total_count": 2,
+      "breakdown": {
+        "near_miss": 1,
+        "collision": 0,
+        "hazard": 1
+      },
+      "causes": {
+        "infrastructure": 1,
+        "driver_car": 1,
+        "driver_hgv": 0,
+        "driver_bus": 0
+      },
+      "outcomes": {
+        "no_injuries": 2,
+        "minor_injuries": 0,
+        "serious_injuries": 0,
+        "fatalities": 0
+      },
+      "severity": {
+        "average": 0.75,
+        "maximum": 1.0
+      },
+      "date_range": {
+        "start": "2025-06-10",
+        "end": "2025-06-10"
+      }
+    },
+    "flags": {
+      "has_fatality": false,
+      "has_serious_injury": false,
+      "has_collision_reports": true,
+      "is_validated": true
+    },
+    "narrative": {
+      "theme_summary": "junction design issues (1 mentions)",
+      "common_themes": {
+        "junction_design": 1
+      },
+      "sample_descriptions": [
+        "Driver veered into me and clipped my handlebar with his mirror",
+        "Poorly designed junction/light sequence for cycling"
+      ]
+    }
+  },
+  {
+    "rank": 26,
+    "identification": {
+      "cluster_id": 4,
+      "street_name": "Mount Anville Road",
+      "latitude": 53.2928099,
+      "longitude": -6.2293996
+    },
+    "scores": {
+      "composite_score": 0.626300507248,
+      "sensor_concern_score": 0.7250008454133333,
+      "composite_rank": 26,
+      "sensor_only_rank": 15
+    },
+    "sensor_data": {
+      "size": 184,
+      "unique_users": 22,
+      "events_per_user": 8.4,
+      "repeat_users": 16,
+      "repeat_user_percentage": 72.7,
+      "hazard_type": "mixed_braking_swerve_roughness",
+      "event_type": "mixed",
+      "braking_events": 92,
+      "swerve_events": 71,
+      "roughness_events": 62,
+      "median_severity": 4.0,
+      "max_severity": 8,
+      "avg_acceleration": 38.10688406,
+      "max_acceleration": 95.0,
+      "peak_events": 134,
+      "offpeak_events": 50,
+      "device_count": 22
+    },
+    "collision_reports": {
+      "total_count": 2,
+      "breakdown": {
+        "near_miss": 2,
+        "collision": 0,
+        "hazard": 0
+      },
+      "causes": {
+        "infrastructure": 0,
+        "driver_car": 2,
+        "driver_hgv": 0,
+        "driver_bus": 0
+      },
+      "outcomes": {
+        "no_injuries": 2,
+        "minor_injuries": 0,
+        "serious_injuries": 0,
+        "fatalities": 0
+      },
+      "severity": {
+        "average": 1.0,
+        "maximum": 1.0
+      },
+      "date_range": {
+        "start": "2018-03-13",
+        "end": "2023-09-20"
+      }
+    },
+    "flags": {
+      "has_fatality": false,
+      "has_serious_injury": false,
+      "has_collision_reports": true,
+      "is_validated": true
+    },
+    "narrative": {
+      "theme_summary": "No common themes identified",
+      "common_themes": {},
+      "sample_descriptions": [
+        "Car pulled right across me to go into an entrance. Braked in time and avoided collision",
+        "Car went to pull out in front of me on a slip road while I’m cycling up hill. Didn’t see me until the nearly crashed into me."
+      ]
+    }
+  },
+  {
+    "rank": 27,
+    "identification": {
+      "cluster_id": 49,
+      "street_name": "Beresford Place",
+      "latitude": 53.34831913,
+      "longitude": -6.254958928
+    },
+    "scores": {
+      "composite_score": 0.6223699275337972,
+      "sensor_concern_score": 0.5817415458896619,
+      "composite_rank": 27,
+      "sensor_only_rank": 81
+    },
+    "sensor_data": {
+      "size": 46,
+      "unique_users": 8,
+      "events_per_user": 5.8,
+      "repeat_users": 8,
+      "repeat_user_percentage": 100.0,
+      "hazard_type": "mixed_swerve_roughness",
+      "event_type": "mixed",
+      "braking_events": 5,
+      "swerve_events": 28,
+      "roughness_events": 21,
+      "median_severity": 4.0,
+      "max_severity": 10,
+      "avg_acceleration": 37.48550724333334,
+      "max_acceleration": 108.0,
+      "peak_events": 24,
+      "offpeak_events": 22,
+      "device_count": 8
+    },
+    "collision_reports": {
+      "total_count": 5,
+      "breakdown": {
+        "near_miss": 4,
+        "collision": 0,
+        "hazard": 1
+      },
+      "causes": {
+        "infrastructure": 1,
+        "driver_car": 2,
+        "driver_hgv": 0,
+        "driver_bus": 2
+      },
+      "outcomes": {
+        "no_injuries": 5,
+        "minor_injuries": 0,
+        "serious_injuries": 0,
+        "fatalities": 0
+      },
+      "severity": {
+        "average": 0.9,
+        "maximum": 1.0
+      },
+      "date_range": {
+        "start": "2023-11-08",
+        "end": "2025-03-10"
+      }
+    },
+    "flags": {
+      "has_fatality": false,
+      "has_serious_injury": false,
+      "has_collision_reports": true,
+      "is_validated": true
+    },
+    "narrative": {
+      "theme_summary": "left-hook turning conflicts (2 mentions); pedestrian conflicts (1 mentions); taxi-related incidents (1 mentions)",
+      "common_themes": {
+        "left_hook": 2,
+        "pedestrian_conflict": 1,
+        "taxi": 1,
+        "bus": 1
+      },
+      "sample_descriptions": [
+        "Driver made a near pass, passing between me and a bus in the adjacent lane.",
+        "Taxi driver turned left on me as I was cycling straight and slightly ahead of him. Near miss. Then proceeded to lean on his horn.",
+        "Bus driver made a left turn across a moving stream of cyclists who had priority due to travelling straight. ",
+        "Dublin bus driver pulled directly out into me on painted cycle lane from bus stop, ignoring my right of way and coming extremely close ",
+        "Can't press button for cyclist light without crossing the stop line, very poor design"
+      ]
+    }
+  },
+  {
+    "rank": 28,
+    "identification": {
+      "cluster_id": 69,
+      "street_name": "Jones's Road",
+      "latitude": 53.36072813,
+      "longitude": -6.253309347
+    },
+    "scores": {
+      "composite_score": 0.6214305952373335,
+      "sensor_concern_score": 0.7569468253955557,
+      "composite_rank": 28,
+      "sensor_only_rank": 7
+    },
+    "sensor_data": {
+      "size": 455,
+      "unique_users": 1,
+      "events_per_user": 455.0,
+      "repeat_users": 1,
+      "repeat_user_percentage": 100.0,
+      "hazard_type": "mixed_braking_roughness",
+      "event_type": "mixed",
+      "braking_events": 307,
+      "swerve_events": 51,
+      "roughness_events": 197,
+      "median_severity": 6.0,
+      "max_severity": 8,
+      "avg_acceleration": 44.64761904666667,
+      "max_acceleration": 92.0,
+      "peak_events": 433,
+      "offpeak_events": 22,
+      "device_count": 1
+    },
+    "collision_reports": {
+      "total_count": 1,
+      "breakdown": {
+        "near_miss": 0,
+        "collision": 0,
+        "hazard": 1
+      },
+      "causes": {
+        "infrastructure": 1,
+        "driver_car": 0,
+        "driver_hgv": 0,
+        "driver_bus": 0
+      },
+      "outcomes": {
+        "no_injuries": 0,
+        "minor_injuries": 1,
+        "serious_injuries": 0,
+        "fatalities": 0
+      },
+      "severity": {
+        "average": 1.5,
+        "maximum": 1.5
+      },
+      "date_range": {
+        "start": "2024-03-12",
+        "end": "2024-03-12"
+      }
+    },
+    "flags": {
+      "has_fatality": false,
+      "has_serious_injury": false,
+      "has_collision_reports": true,
+      "is_validated": true
+    },
+    "narrative": {
+      "theme_summary": "road surface issues (1 mentions)",
+      "common_themes": {
+        "pothole": 1
+      },
+      "sample_descriptions": [
+        "New road works have created a camouflaged concrete dip which can look like a flat painted road surface at night. I just crashed here "
+      ]
+    }
+  },
+  {
+    "rank": 29,
+    "identification": {
+      "cluster_id": 98,
+      "street_name": "Forbes Street",
+      "latitude": 53.34439921,
+      "longitude": -6.238379263
+    },
+    "scores": {
+      "composite_score": 0.6145305555546666,
+      "sensor_concern_score": 0.6678842592577778,
+      "composite_rank": 29,
+      "sensor_only_rank": 44
+    },
+    "sensor_data": {
+      "size": 96,
+      "unique_users": 1,
+      "events_per_user": 96.0,
+      "repeat_users": 1,
+      "repeat_user_percentage": 100.0,
+      "hazard_type": "mixed_braking_roughness",
+      "event_type": "mixed",
+      "braking_events": 49,
+      "swerve_events": 5,
+      "roughness_events": 84,
+      "median_severity": 6.0,
+      "max_severity": 8,
+      "avg_acceleration": 46.16319444333334,
+      "max_acceleration": 91.0,
+      "peak_events": 90,
+      "offpeak_events": 6,
+      "device_count": 1
+    },
+    "collision_reports": {
+      "total_count": 2,
+      "breakdown": {
+        "near_miss": 1,
+        "collision": 1,
+        "hazard": 0
+      },
+      "causes": {
+        "infrastructure": 1,
+        "driver_car": 0,
+        "driver_hgv": 0,
+        "driver_bus": 0
+      },
+      "outcomes": {
+        "no_injuries": 1,
+        "minor_injuries": 0,
+        "serious_injuries": 1,
+        "fatalities": 0
+      },
+      "severity": {
+        "average": 5.5,
+        "maximum": 10.0
+      },
+      "date_range": {
+        "start": "2024-04-23",
+        "end": "2024-04-23"
+      }
+    },
+    "flags": {
+      "has_fatality": false,
+      "has_serious_injury": true,
+      "has_collision_reports": true,
+      "is_validated": true
+    },
+    "narrative": {
+      "theme_summary": "No common themes identified",
+      "common_themes": {},
+      "sample_descriptions": [
+        "Collision with another cyclist.",
+        "Regularly cut off by drivers "
+      ]
+    }
+  },
+  {
+    "rank": 30,
+    "identification": {
+      "cluster_id": 8,
+      "street_name": "Church Street",
+      "latitude": 53.34808698,
+      "longitude": -6.274780038
+    },
+    "scores": {
+      "composite_score": 0.605781808944,
+      "sensor_concern_score": 0.6064071815733334,
+      "composite_rank": 30,
+      "sensor_only_rank": 75
+    },
+    "sensor_data": {
+      "size": 41,
+      "unique_users": 2,
+      "events_per_user": 20.5,
+      "repeat_users": 2,
+      "repeat_user_percentage": 100.0,
+      "hazard_type": "mixed_braking_swerve",
+      "event_type": "mixed",
+      "braking_events": 26,
+      "swerve_events": 15,
+      "roughness_events": 0,
+      "median_severity": 4.0,
+      "max_severity": 6,
+      "avg_acceleration": 30.61788618,
+      "max_acceleration": 70.0,
+      "peak_events": 35,
+      "offpeak_events": 6,
+      "device_count": 2
+    },
+    "collision_reports": {
+      "total_count": 4,
+      "breakdown": {
+        "near_miss": 2,
+        "collision": 0,
+        "hazard": 2
+      },
+      "causes": {
+        "infrastructure": 2,
+        "driver_car": 2,
+        "driver_hgv": 0,
+        "driver_bus": 0
+      },
+      "outcomes": {
+        "no_injuries": 4,
+        "minor_injuries": 0,
+        "serious_injuries": 0,
+        "fatalities": 0
+      },
+      "severity": {
+        "average": 0.75,
+        "maximum": 1.0
+      },
+      "date_range": {
+        "start": "2024-02-13",
+        "end": "2025-05-13"
+      }
+    },
+    "flags": {
+      "has_fatality": false,
+      "has_serious_injury": false,
+      "has_collision_reports": true,
+      "is_validated": true
+    },
+    "narrative": {
+      "theme_summary": "close passing/overtaking (1 mentions)",
+      "common_themes": {
+        "close_pass": 1
+      },
+      "sample_descriptions": [
+        "As I proceeded in the bike lane down towards the quays an oncoming vehicle attempted to turn across my path.",
+        "Car driver performing dangerous overtaking on a narrow cobbled street.",
+        "Motorists do not observe cycle lane right of way when cycling north. ",
+        "Mary's Lane has a dropped kerb, but there is no traffic island and no point where the lights let you cross, despite being a desire line."
+      ]
+    }
+  },
+  {
+    "rank": 31,
+    "identification": {
+      "cluster_id": 68,
+      "street_name": "Burton Hall Road",
+      "latitude": 53.27401278,
+      "longitude": -6.204137578
+    },
+    "scores": {
+      "composite_score": 0.6032290123466667,
+      "sensor_concern_score": 0.7301316872444444,
+      "composite_rank": 31,
+      "sensor_only_rank": 13
+    },
+    "sensor_data": {
+      "size": 324,
+      "unique_users": 15,
+      "events_per_user": 21.6,
+      "repeat_users": 12,
+      "repeat_user_percentage": 80.0,
+      "hazard_type": "mixed_braking_roughness",
+      "event_type": "mixed",
+      "braking_events": 131,
+      "swerve_events": 57,
+      "roughness_events": 181,
+      "median_severity": 4.0,
+      "max_severity": 10,
+      "avg_acceleration": 39.848765433333334,
+      "max_acceleration": 102.0,
+      "peak_events": 270,
+      "offpeak_events": 54,
+      "device_count": 15
+    },
+    "collision_reports": {
+      "total_count": 1,
+      "breakdown": {
+        "near_miss": 0,
+        "collision": 0,
+        "hazard": 1
+      },
+      "causes": {
+        "infrastructure": 0,
+        "driver_car": 1,
+        "driver_hgv": 0,
+        "driver_bus": 0
+      },
+      "outcomes": {
+        "no_injuries": 1,
+        "minor_injuries": 0,
+        "serious_injuries": 0,
+        "fatalities": 0
+      },
+      "severity": {
+        "average": 0.5,
+        "maximum": 0.5
+      },
+      "date_range": {
+        "start": "2024-06-20",
+        "end": "2024-06-20"
+      }
+    },
+    "flags": {
+      "has_fatality": false,
+      "has_serious_injury": false,
+      "has_collision_reports": true,
+      "is_validated": true
+    },
+    "narrative": {
+      "theme_summary": "red light violations (1 mentions)",
+      "common_themes": {
+        "red_light": 1
+      },
+      "sample_descriptions": [
+        "A large vehicle drove through a red light without considering a stop."
+      ]
+    }
+  },
+  {
+    "rank": 32,
+    "identification": {
+      "cluster_id": 12,
+      "street_name": "Russell Street",
+      "latitude": 53.35861169,
+      "longitude": -6.254531563
+    },
+    "scores": {
+      "composite_score": 0.5994150000000001,
+      "sensor_concern_score": 0.7660250000000001,
+      "composite_rank": 32,
+      "sensor_only_rank": 5
+    },
+    "sensor_data": {
+      "size": 512,
+      "unique_users": 3,
+      "events_per_user": 170.7,
+      "repeat_users": 2,
+      "repeat_user_percentage": 66.7,
+      "hazard_type": "mixed_braking_roughness",
+      "event_type": "mixed",
+      "braking_events": 314,
+      "swerve_events": 68,
+      "roughness_events": 369,
+      "median_severity": 6.0,
+      "max_severity": 10,
+      "avg_acceleration": 46.97395833666667,
+      "max_acceleration": 111.0,
+      "peak_events": 478,
+      "offpeak_events": 34,
+      "device_count": 3
+    },
+    "collision_reports": {
+      "total_count": 0,
+      "breakdown": {
+        "near_miss": 0,
+        "collision": 0,
+        "hazard": 0
+      },
+      "causes": {
+        "infrastructure": 0,
+        "driver_car": 0,
+        "driver_hgv": 0,
+        "driver_bus": 0
+      },
+      "outcomes": {
+        "no_injuries": 0,
+        "minor_injuries": 0,
+        "serious_injuries": 0,
+        "fatalities": 0
+      },
+      "severity": {
+        "average": 0.0,
+        "maximum": 0.0
+      },
+      "date_range": {
+        "start": null,
+        "end": null
+      }
+    },
+    "flags": {
+      "has_fatality": false,
+      "has_serious_injury": false,
+      "has_collision_reports": false,
+      "is_validated": false
+    },
+    "narrative": {
+      "theme_summary": "",
+      "common_themes": {},
+      "sample_descriptions": []
+    }
+  },
+  {
+    "rank": 33,
+    "identification": {
+      "cluster_id": 28,
+      "street_name": "Templeogue Road",
+      "latitude": 53.3091462,
+      "longitude": -6.2852626
+    },
+    "scores": {
+      "composite_score": 0.5980683608053332,
+      "sensor_concern_score": 0.5950931013422223,
+      "composite_rank": 33,
+      "sensor_only_rank": 80
+    },
+    "sensor_data": {
+      "size": 91,
+      "unique_users": 3,
+      "events_per_user": 30.3,
+      "repeat_users": 3,
+      "repeat_user_percentage": 100.0,
+      "hazard_type": "roughness",
+      "event_type": "roughness",
+      "braking_events": 14,
+      "swerve_events": 5,
+      "roughness_events": 87,
+      "median_severity": 6.0,
+      "max_severity": 8,
+      "avg_acceleration": 43.007326006666666,
+      "max_acceleration": 84.0,
+      "peak_events": 85,
+      "offpeak_events": 6,
+      "device_count": 3
+    },
+    "collision_reports": {
+      "total_count": 3,
+      "breakdown": {
+        "near_miss": 1,
+        "collision": 1,
+        "hazard": 1
+      },
+      "causes": {
+        "infrastructure": 1,
+        "driver_car": 2,
+        "driver_hgv": 0,
+        "driver_bus": 0
+      },
+      "outcomes": {
+        "no_injuries": 2,
+        "minor_injuries": 1,
+        "serious_injuries": 0,
+        "fatalities": 0
+      },
+      "severity": {
+        "average": 2.5,
+        "maximum": 6.0
+      },
+      "date_range": {
+        "start": "2024-05-13",
+        "end": "2025-03-06"
+      }
+    },
+    "flags": {
+      "has_fatality": false,
+      "has_serious_injury": false,
+      "has_collision_reports": true,
+      "is_validated": true
+    },
+    "narrative": {
+      "theme_summary": "pedestrian conflicts (2 mentions); red light violations (1 mentions); HGV conflicts (1 mentions)",
+      "common_themes": {
+        "red_light": 1,
+        "pedestrian_conflict": 2,
+        "hgv": 1,
+        "bus": 1
+      },
+      "sample_descriptions": [
+        "Male cyclist treated by ambulance crew for head injury. Large SUV pulled in with hazards on, presumed the driver struck the cyclist.",
+        "Cars going through red light at pedestrian crossing ",
+        "Very uneven surface in southbound cycle lane coinciding with bus stop"
+      ]
+    }
+  },
+  {
+    "rank": 34,
+    "identification": {
+      "cluster_id": 66,
+      "street_name": "Central Park",
+      "latitude": 53.2711396,
+      "longitude": -6.2041848
+    },
+    "scores": {
+      "composite_score": 0.5954975,
+      "sensor_concern_score": 0.7639750000000001,
+      "composite_rank": 34,
+      "sensor_only_rank": 6
+    },
+    "sensor_data": {
+      "size": 387,
+      "unique_users": 13,
+      "events_per_user": 29.8,
+      "repeat_users": 12,
+      "repeat_user_percentage": 92.3,
+      "hazard_type": "mixed_braking_swerve",
+      "event_type": "mixed",
+      "braking_events": 231,
+      "swerve_events": 203,
+      "roughness_events": 56,
+      "median_severity": 4.0,
+      "max_severity": 10,
+      "avg_acceleration": 39.10335917333333,
+      "max_acceleration": 124.0,
+      "peak_events": 376,
+      "offpeak_events": 11,
+      "device_count": 13
+    },
+    "collision_reports": {
+      "total_count": 0,
+      "breakdown": {
+        "near_miss": 0,
+        "collision": 0,
+        "hazard": 0
+      },
+      "causes": {
+        "infrastructure": 0,
+        "driver_car": 0,
+        "driver_hgv": 0,
+        "driver_bus": 0
+      },
+      "outcomes": {
+        "no_injuries": 0,
+        "minor_injuries": 0,
+        "serious_injuries": 0,
+        "fatalities": 0
+      },
+      "severity": {
+        "average": 0.0,
+        "maximum": 0.0
+      },
+      "date_range": {
+        "start": null,
+        "end": null
+      }
+    },
+    "flags": {
+      "has_fatality": false,
+      "has_serious_injury": false,
+      "has_collision_reports": false,
+      "is_validated": false
+    },
+    "narrative": {
+      "theme_summary": "",
+      "common_themes": {},
+      "sample_descriptions": []
+    }
+  },
+  {
+    "rank": 35,
+    "identification": {
+      "cluster_id": 106,
+      "street_name": "Benildus Avenue / Blackthorn Drive Junction",
+      "latitude": 53.2794184,
+      "longitude": -6.2139249
+    },
+    "scores": {
+      "composite_score": 0.5908007971451308,
+      "sensor_concern_score": 0.6892096619085513,
+      "composite_rank": 35,
+      "sensor_only_rank": 25
+    },
+    "sensor_data": {
+      "size": 482,
+      "unique_users": 1,
+      "events_per_user": 482.0,
+      "repeat_users": 1,
+      "repeat_user_percentage": 100.0,
+      "hazard_type": "mixed_swerve_roughness",
+      "event_type": "mixed",
+      "braking_events": 2,
+      "swerve_events": 482,
+      "roughness_events": 186,
+      "median_severity": 6.0,
+      "max_severity": 6,
+      "avg_acceleration": 41.24481327633334,
+      "max_acceleration": 78.0,
+      "peak_events": 296,
+      "offpeak_events": 186,
+      "device_count": 1
+    },
+    "collision_reports": {
+      "total_count": 1,
+      "breakdown": {
+        "near_miss": 0,
+        "collision": 1,
+        "hazard": 0
+      },
+      "causes": {
+        "infrastructure": 0,
+        "driver_car": 1,
+        "driver_hgv": 0,
+        "driver_bus": 0
+      },
+      "outcomes": {
+        "no_injuries": 1,
+        "minor_injuries": 0,
+        "serious_injuries": 0,
+        "fatalities": 0
+      },
+      "severity": {
+        "average": 2.0,
+        "maximum": 2.0
+      },
+      "date_range": {
+        "start": "2025-01-24",
+        "end": "2025-01-24"
+      }
+    },
+    "flags": {
+      "has_fatality": false,
+      "has_serious_injury": false,
+      "has_collision_reports": true,
+      "is_validated": true
+    },
+    "narrative": {
+      "theme_summary": "right-hook turning conflicts (1 mentions); Luas/tram hazards (1 mentions)",
+      "common_themes": {
+        "right_hook": 1,
+        "luas": 1
+      },
+      "sample_descriptions": [
+        "Car turning right out of Luas car park collided with cyclist heading for Benildis avenue."
+      ]
+    }
+  },
+  {
+    "rank": 36,
+    "identification": {
+      "cluster_id": 65,
+      "street_name": "Dundrum Bypass",
+      "latitude": 53.29316276,
+      "longitude": -6.246219735
+    },
+    "scores": {
+      "composite_score": 0.586157570424,
+      "sensor_concern_score": 0.6698251173733334,
+      "composite_rank": 36,
+      "sensor_only_rank": 42
+    },
+    "sensor_data": {
+      "size": 71,
+      "unique_users": 8,
+      "events_per_user": 8.9,
+      "repeat_users": 8,
+      "repeat_user_percentage": 100.0,
+      "hazard_type": "mixed_braking_roughness",
+      "event_type": "mixed",
+      "braking_events": 20,
+      "swerve_events": 11,
+      "roughness_events": 51,
+      "median_severity": 6.0,
+      "max_severity": 8,
+      "avg_acceleration": 41.05633803,
+      "max_acceleration": 97.0,
+      "peak_events": 59,
+      "offpeak_events": 12,
+      "device_count": 8
+    },
+    "collision_reports": {
+      "total_count": 2,
+      "breakdown": {
+        "near_miss": 2,
+        "collision": 0,
+        "hazard": 0
+      },
+      "causes": {
+        "infrastructure": 0,
+        "driver_car": 2,
+        "driver_hgv": 0,
+        "driver_bus": 0
+      },
+      "outcomes": {
+        "no_injuries": 2,
+        "minor_injuries": 0,
+        "serious_injuries": 0,
+        "fatalities": 0
+      },
+      "severity": {
+        "average": 1.0,
+        "maximum": 1.0
+      },
+      "date_range": {
+        "start": "2024-03-05",
+        "end": "2024-03-12"
+      }
+    },
+    "flags": {
+      "has_fatality": false,
+      "has_serious_injury": false,
+      "has_collision_reports": true,
+      "is_validated": true
+    },
+    "narrative": {
+      "theme_summary": "left-hook turning conflicts (1 mentions); right-hook turning conflicts (1 mentions); red light violations (1 mentions)",
+      "common_themes": {
+        "left_hook": 1,
+        "right_hook": 1,
+        "red_light": 1,
+        "junction_design": 1
+      },
+      "sample_descriptions": [
+        "My 2 children and I were in the cycle lane going straight, car turned left and narrowly missed my son, my son had to brake hard to avoid ",
+        "Driver broke red light turning right from dundrum Rd to churchtown Rd, I was cycling straight through junction from bypass to dundrum rd"
+      ]
+    }
+  },
+  {
+    "rank": 37,
+    "identification": {
+      "cluster_id": 9,
+      "street_name": "Cuffe Street",
+      "latitude": 53.33763889,
+      "longitude": -6.262619775
+    },
+    "scores": {
+      "composite_score": 0.5832348039226668,
+      "sensor_concern_score": 0.6990163398711112,
+      "composite_rank": 37,
+      "sensor_only_rank": 22
+    },
+    "sensor_data": {
+      "size": 102,
+      "unique_users": 5,
+      "events_per_user": 20.4,
+      "repeat_users": 4,
+      "repeat_user_percentage": 80.0,
+      "hazard_type": "mixed_braking_swerve_roughness",
+      "event_type": "mixed",
+      "braking_events": 39,
+      "swerve_events": 47,
+      "roughness_events": 40,
+      "median_severity": 4.0,
+      "max_severity": 8,
+      "avg_acceleration": 38.637254903333336,
+      "max_acceleration": 99.0,
+      "peak_events": 75,
+      "offpeak_events": 27,
+      "device_count": 5
+    },
+    "collision_reports": {
+      "total_count": 1,
+      "breakdown": {
+        "near_miss": 0,
+        "collision": 1,
+        "hazard": 0
+      },
+      "causes": {
+        "infrastructure": 0,
+        "driver_car": 1,
+        "driver_hgv": 0,
+        "driver_bus": 0
+      },
+      "outcomes": {
+        "no_injuries": 0,
+        "minor_injuries": 1,
+        "serious_injuries": 0,
+        "fatalities": 0
+      },
+      "severity": {
+        "average": 6.0,
+        "maximum": 6.0
+      },
+      "date_range": {
+        "start": "2023-01-11",
+        "end": "2023-01-11"
+      }
+    },
+    "flags": {
+      "has_fatality": false,
+      "has_serious_injury": false,
+      "has_collision_reports": true,
+      "is_validated": true
+    },
+    "narrative": {
+      "theme_summary": "car door incidents (1 mentions)",
+      "common_themes": {
+        "dooring": 1
+      },
+      "sample_descriptions": [
+        "Injured my shoulder from collision with car passenger door; car going straight. Cycle lane runs between L-turn and straight lane."
+      ]
+    }
+  },
+  {
+    "rank": 38,
+    "identification": {
+      "cluster_id": 50,
+      "street_name": "Carmanhall Road",
+      "latitude": 53.2773088,
+      "longitude": -6.2104233
+    },
+    "scores": {
+      "composite_score": 0.5771745415653334,
+      "sensor_concern_score": 0.7337284026088889,
+      "composite_rank": 38,
+      "sensor_only_rank": 10
+    },
+    "sensor_data": {
+      "size": 409,
+      "unique_users": 8,
+      "events_per_user": 51.1,
+      "repeat_users": 8,
+      "repeat_user_percentage": 100.0,
+      "hazard_type": "mixed_braking_swerve",
+      "event_type": "mixed",
+      "braking_events": 223,
+      "swerve_events": 345,
+      "roughness_events": 14,
+      "median_severity": 6.0,
+      "max_severity": 8,
+      "avg_acceleration": 40.60880195666667,
+      "max_acceleration": 82.0,
+      "peak_events": 375,
+      "offpeak_events": 34,
+      "device_count": 8
+    },
+    "collision_reports": {
+      "total_count": 0,
+      "breakdown": {
+        "near_miss": 0,
+        "collision": 0,
+        "hazard": 0
+      },
+      "causes": {
+        "infrastructure": 0,
+        "driver_car": 0,
+        "driver_hgv": 0,
+        "driver_bus": 0
+      },
+      "outcomes": {
+        "no_injuries": 0,
+        "minor_injuries": 0,
+        "serious_injuries": 0,
+        "fatalities": 0
+      },
+      "severity": {
+        "average": 0.0,
+        "maximum": 0.0
+      },
+      "date_range": {
+        "start": null,
+        "end": null
+      }
+    },
+    "flags": {
+      "has_fatality": false,
+      "has_serious_injury": false,
+      "has_collision_reports": false,
+      "is_validated": false
+    },
+    "narrative": {
+      "theme_summary": "",
+      "common_themes": {},
+      "sample_descriptions": []
+    }
+  },
+  {
+    "rank": 39,
+    "identification": {
+      "cluster_id": 97,
+      "street_name": "Custom House Quay",
+      "latitude": 53.3483092,
+      "longitude": -6.251421
+    },
+    "scores": {
+      "composite_score": 0.5762625,
+      "sensor_concern_score": 0.6885,
+      "composite_rank": 39,
+      "sensor_only_rank": 26
+    },
+    "sensor_data": {
+      "size": 47,
+      "unique_users": 12,
+      "events_per_user": 3.9,
+      "repeat_users": 9,
+      "repeat_user_percentage": 75.0,
+      "hazard_type": "mixed_braking_swerve_roughness",
+      "event_type": "mixed",
+      "braking_events": 23,
+      "swerve_events": 13,
+      "roughness_events": 20,
+      "median_severity": 4.0,
+      "max_severity": 10,
+      "avg_acceleration": 36.79432624,
+      "max_acceleration": 123.0,
+      "peak_events": 34,
+      "offpeak_events": 13,
+      "device_count": 12
+    },
+    "collision_reports": {
+      "total_count": 1,
+      "breakdown": {
+        "near_miss": 0,
+        "collision": 1,
+        "hazard": 0
+      },
+      "causes": {
+        "infrastructure": 0,
+        "driver_car": 0,
+        "driver_hgv": 0,
+        "driver_bus": 0
+      },
+      "outcomes": {
+        "no_injuries": 0,
+        "minor_injuries": 1,
+        "serious_injuries": 0,
+        "fatalities": 0
+      },
+      "severity": {
+        "average": 6.0,
+        "maximum": 6.0
+      },
+      "date_range": {
+        "start": "2025-04-02",
+        "end": "2025-04-02"
+      }
+    },
+    "flags": {
+      "has_fatality": false,
+      "has_serious_injury": false,
+      "has_collision_reports": true,
+      "is_validated": true
+    },
+    "narrative": {
+      "theme_summary": "pedestrian conflicts (1 mentions); bus-related incidents (1 mentions)",
+      "common_themes": {
+        "pedestrian_conflict": 1,
+        "bus": 1
+      },
+      "sample_descriptions": [
+        "Collision with pedestrian in Contraflow bus lane, knocking both cyclist and pedestran to the ground"
+      ]
+    }
+  },
+  {
+    "rank": 40,
+    "identification": {
+      "cluster_id": 103,
+      "street_name": "Rock Road",
+      "latitude": 53.3090028,
+      "longitude": -6.196281
+    },
+    "scores": {
+      "composite_score": 0.57235436508,
+      "sensor_concern_score": 0.5549656084666666,
+      "composite_rank": 40,
+      "sensor_only_rank": 92
+    },
+    "sensor_data": {
+      "size": 42,
+      "unique_users": 4,
+      "events_per_user": 10.5,
+      "repeat_users": 4,
+      "repeat_user_percentage": 100.0,
+      "hazard_type": "swerve",
+      "event_type": "swerve",
+      "braking_events": 6,
+      "swerve_events": 35,
+      "roughness_events": 6,
+      "median_severity": 4.0,
+      "max_severity": 6,
+      "avg_acceleration": 35.34920635,
+      "max_acceleration": 70.0,
+      "peak_events": 37,
+      "offpeak_events": 5,
+      "device_count": 4
+    },
+    "collision_reports": {
+      "total_count": 3,
+      "breakdown": {
+        "near_miss": 1,
+        "collision": 1,
+        "hazard": 1
+      },
+      "causes": {
+        "infrastructure": 1,
+        "driver_car": 1,
+        "driver_hgv": 0,
+        "driver_bus": 1
+      },
+      "outcomes": {
+        "no_injuries": 3,
+        "minor_injuries": 0,
+        "serious_injuries": 0,
+        "fatalities": 0
+      },
+      "severity": {
+        "average": 1.1666666666666667,
+        "maximum": 2.0
+      },
+      "date_range": {
+        "start": "2024-04-21",
+        "end": "2025-06-10"
+      }
+    },
+    "flags": {
+      "has_fatality": false,
+      "has_serious_injury": false,
+      "has_collision_reports": true,
+      "is_validated": true
+    },
+    "narrative": {
+      "theme_summary": "left-hook turning conflicts (2 mentions); blocked cycle lanes (1 mentions); bus-related incidents (1 mentions)",
+      "common_themes": {
+        "left_hook": 2,
+        "cycle_lane_blocked": 1,
+        "bus": 1
+      },
+      "sample_descriptions": [
+        "Car/SUV turning left on a flashing amber arrow, turned into the cycle lane (on a green light) and pushed the cyclist off. ",
+        "Bus left hook",
+        "Regularly blocked cycle lane where three lanes turn into two"
+      ]
+    }
+  },
+  {
+    "rank": 41,
+    "identification": {
+      "cluster_id": 2,
+      "street_name": "Terenure Road East",
+      "latitude": 53.310318,
+      "longitude": -6.2820443
+    },
+    "scores": {
+      "composite_score": 0.5704137987013334,
+      "sensor_concern_score": 0.684918831168889,
+      "composite_rank": 41,
+      "sensor_only_rank": 30
+    },
+    "sensor_data": {
+      "size": 231,
+      "unique_users": 4,
+      "events_per_user": 57.8,
+      "repeat_users": 4,
+      "repeat_user_percentage": 100.0,
+      "hazard_type": "mixed_braking_swerve",
+      "event_type": "mixed",
+      "braking_events": 108,
+      "swerve_events": 166,
+      "roughness_events": 55,
+      "median_severity": 6.0,
+      "max_severity": 8,
+      "avg_acceleration": 42.376623376666664,
+      "max_acceleration": 80.0,
+      "peak_events": 212,
+      "offpeak_events": 19,
+      "device_count": 4
+    },
+    "collision_reports": {
+      "total_count": 1,
+      "breakdown": {
+        "near_miss": 0,
+        "collision": 0,
+        "hazard": 1
+      },
+      "causes": {
+        "infrastructure": 0,
+        "driver_car": 1,
+        "driver_hgv": 0,
+        "driver_bus": 0
+      },
+      "outcomes": {
+        "no_injuries": 1,
+        "minor_injuries": 0,
+        "serious_injuries": 0,
+        "fatalities": 0
+      },
+      "severity": {
+        "average": 0.5,
+        "maximum": 0.5
+      },
+      "date_range": {
+        "start": "2024-05-13",
+        "end": "2024-05-13"
+      }
+    },
+    "flags": {
+      "has_fatality": false,
+      "has_serious_injury": false,
+      "has_collision_reports": true,
+      "is_validated": true
+    },
+    "narrative": {
+      "theme_summary": "blocked cycle lanes (1 mentions); bus-related incidents (1 mentions)",
+      "common_themes": {
+        "cycle_lane_blocked": 1,
+        "bus": 1
+      },
+      "sample_descriptions": [
+        "Vehicles parked in southbound bus lane every day during evening rush hour operation hours"
+      ]
+    }
+  },
+  {
+    "rank": 42,
+    "identification": {
+      "cluster_id": 81,
+      "street_name": "Stillorgan Road",
+      "latitude": 53.30379129,
+      "longitude": -6.209097774
+    },
+    "scores": {
+      "composite_score": 0.569938978496,
+      "sensor_concern_score": 0.6153566308266667,
+      "composite_rank": 42,
+      "sensor_only_rank": 69
+    },
+    "sensor_data": {
+      "size": 62,
+      "unique_users": 2,
+      "events_per_user": 31.0,
+      "repeat_users": 2,
+      "repeat_user_percentage": 100.0,
+      "hazard_type": "roughness",
+      "event_type": "roughness",
+      "braking_events": 10,
+      "swerve_events": 1,
+      "roughness_events": 57,
+      "median_severity": 6.0,
+      "max_severity": 10,
+      "avg_acceleration": 41.392473120000005,
+      "max_acceleration": 107.0,
+      "peak_events": 54,
+      "offpeak_events": 8,
+      "device_count": 2
+    },
+    "collision_reports": {
+      "total_count": 2,
+      "breakdown": {
+        "near_miss": 1,
+        "collision": 1,
+        "hazard": 0
+      },
+      "causes": {
+        "infrastructure": 0,
+        "driver_car": 0,
+        "driver_hgv": 0,
+        "driver_bus": 0
+      },
+      "outcomes": {
+        "no_injuries": 2,
+        "minor_injuries": 0,
+        "serious_injuries": 0,
+        "fatalities": 0
+      },
+      "severity": {
+        "average": 1.5,
+        "maximum": 2.0
+      },
+      "date_range": {
+        "start": "2024-03-21",
+        "end": "2024-12-18"
+      }
+    },
+    "flags": {
+      "has_fatality": false,
+      "has_serious_injury": false,
+      "has_collision_reports": true,
+      "is_validated": true
+    },
+    "narrative": {
+      "theme_summary": "red light violations (2 mentions); junction design issues (1 mentions)",
+      "common_themes": {
+        "red_light": 2,
+        "junction_design": 1
+      },
+      "sample_descriptions": [
+        "Cyclists have not been watching their set of traffic lights and are not stopping when they have a red light and the vehicles have a green ",
+        "There’s a cycle traffic light at this junction \nLight was red for bikes \nLight green for car to turn left \nCyclist went through red light "
+      ]
+    }
+  },
+  {
+    "rank": 43,
+    "identification": {
+      "cluster_id": 56,
+      "street_name": "Stillorgan Road",
+      "latitude": 53.30766127,
+      "longitude": -6.215138664
+    },
+    "scores": {
+      "composite_score": 0.5662146666666666,
+      "sensor_concern_score": 0.7308577777777778,
+      "composite_rank": 43,
+      "sensor_only_rank": 11
+    },
+    "sensor_data": {
+      "size": 200,
+      "unique_users": 1,
+      "events_per_user": 200.0,
+      "repeat_users": 1,
+      "repeat_user_percentage": 100.0,
+      "hazard_type": "mixed_braking_swerve_roughness",
+      "event_type": "mixed",
+      "braking_events": 124,
+      "swerve_events": 76,
+      "roughness_events": 53,
+      "median_severity": 6.0,
+      "max_severity": 8,
+      "avg_acceleration": 44.89333333333334,
+      "max_acceleration": 90.0,
+      "peak_events": 193,
+      "offpeak_events": 7,
+      "device_count": 1
+    },
+    "collision_reports": {
+      "total_count": 0,
+      "breakdown": {
+        "near_miss": 0,
+        "collision": 0,
+        "hazard": 0
+      },
+      "causes": {
+        "infrastructure": 0,
+        "driver_car": 0,
+        "driver_hgv": 0,
+        "driver_bus": 0
+      },
+      "outcomes": {
+        "no_injuries": 0,
+        "minor_injuries": 0,
+        "serious_injuries": 0,
+        "fatalities": 0
+      },
+      "severity": {
+        "average": 0.0,
+        "maximum": 0.0
+      },
+      "date_range": {
+        "start": null,
+        "end": null
+      }
+    },
+    "flags": {
+      "has_fatality": false,
+      "has_serious_injury": false,
+      "has_collision_reports": false,
+      "is_validated": false
+    },
+    "narrative": {
+      "theme_summary": "",
+      "common_themes": {},
+      "sample_descriptions": []
+    }
+  },
+  {
+    "rank": 44,
+    "identification": {
+      "cluster_id": 23,
+      "street_name": "Merrion Road",
+      "latitude": 53.3186284,
+      "longitude": -6.2123884
+    },
+    "scores": {
+      "composite_score": 0.5659092857146667,
+      "sensor_concern_score": 0.6874738095244445,
+      "composite_rank": 44,
+      "sensor_only_rank": 28
+    },
+    "sensor_data": {
+      "size": 70,
+      "unique_users": 4,
+      "events_per_user": 17.5,
+      "repeat_users": 3,
+      "repeat_user_percentage": 75.0,
+      "hazard_type": "mixed_braking_swerve_roughness",
+      "event_type": "mixed",
+      "braking_events": 32,
+      "swerve_events": 23,
+      "roughness_events": 28,
+      "median_severity": 6.0,
+      "max_severity": 8,
+      "avg_acceleration": 40.542857143333336,
+      "max_acceleration": 98.0,
+      "peak_events": 66,
+      "offpeak_events": 4,
+      "device_count": 4
+    },
+    "collision_reports": {
+      "total_count": 1,
+      "breakdown": {
+        "near_miss": 0,
+        "collision": 0,
+        "hazard": 1
+      },
+      "causes": {
+        "infrastructure": 1,
+        "driver_car": 0,
+        "driver_hgv": 0,
+        "driver_bus": 0
+      },
+      "outcomes": {
+        "no_injuries": 1,
+        "minor_injuries": 0,
+        "serious_injuries": 0,
+        "fatalities": 0
+      },
+      "severity": {
+        "average": 0.5,
+        "maximum": 0.5
+      },
+      "date_range": {
+        "start": null,
+        "end": null
+      }
+    },
+    "flags": {
+      "has_fatality": false,
+      "has_serious_injury": false,
+      "has_collision_reports": true,
+      "is_validated": true
+    },
+    "narrative": {
+      "theme_summary": "No common themes identified",
+      "common_themes": {},
+      "sample_descriptions": [
+        "Cycle lane turns into hatch markings"
+      ]
+    }
+  },
+  {
+    "rank": 45,
+    "identification": {
+      "cluster_id": 20,
+      "street_name": "Foster's Avenue",
+      "latitude": 53.3104924,
+      "longitude": -6.2261668
+    },
+    "scores": {
+      "composite_score": 0.5627375,
+      "sensor_concern_score": 0.73025,
+      "composite_rank": 45,
+      "sensor_only_rank": 12
+    },
+    "sensor_data": {
+      "size": 117,
+      "unique_users": 1,
+      "events_per_user": 117.0,
+      "repeat_users": 1,
+      "repeat_user_percentage": 100.0,
+      "hazard_type": "mixed_braking_swerve_roughness",
+      "event_type": "mixed",
+      "braking_events": 32,
+      "swerve_events": 55,
+      "roughness_events": 61,
+      "median_severity": 6.0,
+      "max_severity": 10,
+      "avg_acceleration": 40.19658119666666,
+      "max_acceleration": 153.0,
+      "peak_events": 117,
+      "offpeak_events": 0,
+      "device_count": 1
+    },
+    "collision_reports": {
+      "total_count": 0,
+      "breakdown": {
+        "near_miss": 0,
+        "collision": 0,
+        "hazard": 0
+      },
+      "causes": {
+        "infrastructure": 0,
+        "driver_car": 0,
+        "driver_hgv": 0,
+        "driver_bus": 0
+      },
+      "outcomes": {
+        "no_injuries": 0,
+        "minor_injuries": 0,
+        "serious_injuries": 0,
+        "fatalities": 0
+      },
+      "severity": {
+        "average": 0.0,
+        "maximum": 0.0
+      },
+      "date_range": {
+        "start": null,
+        "end": null
+      }
+    },
+    "flags": {
+      "has_fatality": false,
+      "has_serious_injury": false,
+      "has_collision_reports": false,
+      "is_validated": false
+    },
+    "narrative": {
+      "theme_summary": "",
+      "common_themes": {},
+      "sample_descriptions": []
+    }
+  },
+  {
+    "rank": 46,
+    "identification": {
+      "cluster_id": 40,
+      "street_name": "Portland Row",
+      "latitude": 53.35657458,
+      "longitude": -6.249079122
+    },
+    "scores": {
+      "composite_score": 0.5591635159013333,
+      "sensor_concern_score": 0.7008975265022223,
+      "composite_rank": 46,
+      "sensor_only_rank": 21
+    },
+    "sensor_data": {
+      "size": 566,
+      "unique_users": 2,
+      "events_per_user": 283.0,
+      "repeat_users": 1,
+      "repeat_user_percentage": 50.0,
+      "hazard_type": "roughness",
+      "event_type": "roughness",
+      "braking_events": 39,
+      "swerve_events": 34,
+      "roughness_events": 548,
+      "median_severity": 6.0,
+      "max_severity": 10,
+      "avg_acceleration": 43.17314487666666,
+      "max_acceleration": 103.0,
+      "peak_events": 539,
+      "offpeak_events": 27,
+      "device_count": 2
+    },
+    "collision_reports": {
+      "total_count": 3,
+      "breakdown": {
+        "near_miss": 0,
+        "collision": 2,
+        "hazard": 1
+      },
+      "causes": {
+        "infrastructure": 0,
+        "driver_car": 3,
+        "driver_hgv": 0,
+        "driver_bus": 0
+      },
+      "outcomes": {
+        "no_injuries": 1,
+        "minor_injuries": 2,
+        "serious_injuries": 0,
+        "fatalities": 0
+      },
+      "severity": {
+        "average": 4.166666666666667,
+        "maximum": 6.0
+      },
+      "date_range": {
+        "start": "2024-02-13",
+        "end": "2024-02-26"
+      }
+    },
+    "flags": {
+      "has_fatality": false,
+      "has_serious_injury": false,
+      "has_collision_reports": true,
+      "is_validated": true
+    },
+    "narrative": {
+      "theme_summary": "left-hook turning conflicts (2 mentions); car door incidents (1 mentions); red light violations (1 mentions)",
+      "common_themes": {
+        "left_hook": 2,
+        "dooring": 1,
+        "red_light": 1
+      },
+      "sample_descriptions": [
+        "I was cycling up to traffic lights towards Portland Row. Cycling between 2 car lanes. Passenger door opened into me. Crash, shoulder injury.",
+        "Was cut off by left turning vehicle onto Dunne St. while turning left. One lane is used as two meaning very little road space overall.",
+        "Often illegally parked cars along bike lane here"
+      ]
+    }
+  },
+  {
+    "rank": 47,
+    "identification": {
+      "cluster_id": 44,
+      "street_name": "St. Stephen's Green",
+      "latitude": 53.33619403,
+      "longitude": -6.257478791
+    },
+    "scores": {
+      "composite_score": 0.5546372222213333,
+      "sensor_concern_score": 0.5678953703688889,
+      "composite_rank": 47,
+      "sensor_only_rank": 87
+    },
+    "sensor_data": {
+      "size": 72,
+      "unique_users": 6,
+      "events_per_user": 12.0,
+      "repeat_users": 4,
+      "repeat_user_percentage": 66.7,
+      "hazard_type": "swerve",
+      "event_type": "swerve",
+      "braking_events": 14,
+      "swerve_events": 52,
+      "roughness_events": 8,
+      "median_severity": 4.0,
+      "max_severity": 8,
+      "avg_acceleration": 30.652777776666667,
+      "max_acceleration": 96.0,
+      "peak_events": 56,
+      "offpeak_events": 16,
+      "device_count": 6
+    },
+    "collision_reports": {
+      "total_count": 2,
+      "breakdown": {
+        "near_miss": 0,
+        "collision": 2,
+        "hazard": 0
+      },
+      "causes": {
+        "infrastructure": 0,
+        "driver_car": 2,
+        "driver_hgv": 0,
+        "driver_bus": 0
+      },
+      "outcomes": {
+        "no_injuries": 1,
+        "minor_injuries": 0,
+        "serious_injuries": 1,
+        "fatalities": 0
+      },
+      "severity": {
+        "average": 6.0,
+        "maximum": 10.0
+      },
+      "date_range": {
+        "start": "2007-02-14",
+        "end": "2025-02-07"
+      }
+    },
+    "flags": {
+      "has_fatality": false,
+      "has_serious_injury": true,
+      "has_collision_reports": true,
+      "is_validated": true
+    },
+    "narrative": {
+      "theme_summary": "left-hook turning conflicts (1 mentions); car door incidents (1 mentions)",
+      "common_themes": {
+        "left_hook": 1,
+        "dooring": 1
+      },
+      "sample_descriptions": [
+        "Doored while filtering. Car stuck in traffic, in OUTSIDE lane, decided to let schoolchild passenger out here",
+        "I had the green light. Cycling the bike lane straight. The driver did not check for cyclists and turned left and hit me."
+      ]
+    }
+  },
+  {
+    "rank": 48,
+    "identification": {
+      "cluster_id": 110,
+      "street_name": "Stillorgan Road",
+      "latitude": 53.30033666,
+      "longitude": -6.205437914
+    },
+    "scores": {
+      "composite_score": 0.5541022222213333,
+      "sensor_concern_score": 0.7156703703688889,
+      "composite_rank": 48,
+      "sensor_only_rank": 20
+    },
+    "sensor_data": {
+      "size": 120,
+      "unique_users": 1,
+      "events_per_user": 120.0,
+      "repeat_users": 1,
+      "repeat_user_percentage": 100.0,
+      "hazard_type": "mixed_braking_swerve_roughness",
+      "event_type": "mixed",
+      "braking_events": 89,
+      "swerve_events": 44,
+      "roughness_events": 75,
+      "median_severity": 6.0,
+      "max_severity": 8,
+      "avg_acceleration": 50.50277777666667,
+      "max_acceleration": 88.0,
+      "peak_events": 112,
+      "offpeak_events": 8,
+      "device_count": 1
+    },
+    "collision_reports": {
+      "total_count": 0,
+      "breakdown": {
+        "near_miss": 0,
+        "collision": 0,
+        "hazard": 0
+      },
+      "causes": {
+        "infrastructure": 0,
+        "driver_car": 0,
+        "driver_hgv": 0,
+        "driver_bus": 0
+      },
+      "outcomes": {
+        "no_injuries": 0,
+        "minor_injuries": 0,
+        "serious_injuries": 0,
+        "fatalities": 0
+      },
+      "severity": {
+        "average": 0.0,
+        "maximum": 0.0
+      },
+      "date_range": {
+        "start": null,
+        "end": null
+      }
+    },
+    "flags": {
+      "has_fatality": false,
+      "has_serious_injury": false,
+      "has_collision_reports": false,
+      "is_validated": false
+    },
+    "narrative": {
+      "theme_summary": "",
+      "common_themes": {},
+      "sample_descriptions": []
+    }
+  },
+  {
+    "rank": 49,
+    "identification": {
+      "cluster_id": 34,
+      "street_name": "Taney Road",
+      "latitude": 53.29192555,
+      "longitude": -6.232175597
+    },
+    "scores": {
+      "composite_score": 0.5540385458826667,
+      "sensor_concern_score": 0.6562934098044445,
+      "composite_rank": 49,
+      "sensor_only_rank": 46
+    },
+    "sensor_data": {
+      "size": 247,
+      "unique_users": 5,
+      "events_per_user": 49.4,
+      "repeat_users": 4,
+      "repeat_user_percentage": 80.0,
+      "hazard_type": "mixed_swerve_roughness",
+      "event_type": "mixed",
+      "braking_events": 13,
+      "swerve_events": 202,
+      "roughness_events": 79,
+      "median_severity": 6.0,
+      "max_severity": 8,
+      "avg_acceleration": 43.407557353333324,
+      "max_acceleration": 80.0,
+      "peak_events": 231,
+      "offpeak_events": 16,
+      "device_count": 5
+    },
+    "collision_reports": {
+      "total_count": 1,
+      "breakdown": {
+        "near_miss": 0,
+        "collision": 0,
+        "hazard": 1
+      },
+      "causes": {
+        "infrastructure": 1,
+        "driver_car": 0,
+        "driver_hgv": 0,
+        "driver_bus": 0
+      },
+      "outcomes": {
+        "no_injuries": 1,
+        "minor_injuries": 0,
+        "serious_injuries": 0,
+        "fatalities": 0
+      },
+      "severity": {
+        "average": 0.5,
+        "maximum": 0.5
+      },
+      "date_range": {
+        "start": null,
+        "end": null
+      }
+    },
+    "flags": {
+      "has_fatality": false,
+      "has_serious_injury": false,
+      "has_collision_reports": true,
+      "is_validated": true
+    },
+    "narrative": {
+      "theme_summary": "No common themes identified",
+      "common_themes": {},
+      "sample_descriptions": [
+        "Residential vehicle owners always park at exit of poorly maintained cycle pathway."
+      ]
+    }
+  },
+  {
+    "rank": 50,
+    "identification": {
+      "cluster_id": 45,
+      "street_name": "Merrion Road",
+      "latitude": 53.32051879,
+      "longitude": -6.215664751
+    },
+    "scores": {
+      "composite_score": 0.5538792748933333,
+      "sensor_concern_score": 0.6519862914888889,
+      "composite_rank": 50,
+      "sensor_only_rank": 49
+    },
+    "sensor_data": {
+      "size": 77,
+      "unique_users": 4,
+      "events_per_user": 19.2,
+      "repeat_users": 3,
+      "repeat_user_percentage": 75.0,
+      "hazard_type": "mixed_braking_roughness",
+      "event_type": "mixed",
+      "braking_events": 51,
+      "swerve_events": 11,
+      "roughness_events": 40,
+      "median_severity": 6.0,
+      "max_severity": 8,
+      "avg_acceleration": 41.61471861666667,
+      "max_acceleration": 99.0,
+      "peak_events": 74,
+      "offpeak_events": 3,
+      "device_count": 4
+    },
+    "collision_reports": {
+      "total_count": 1,
+      "breakdown": {
+        "near_miss": 0,
+        "collision": 1,
+        "hazard": 0
+      },
+      "causes": {
+        "infrastructure": 0,
+        "driver_car": 1,
+        "driver_hgv": 0,
+        "driver_bus": 0
+      },
+      "outcomes": {
+        "no_injuries": 0,
+        "minor_injuries": 1,
+        "serious_injuries": 0,
+        "fatalities": 0
+      },
+      "severity": {
+        "average": 6.0,
+        "maximum": 6.0
+      },
+      "date_range": {
+        "start": "2025-01-06",
+        "end": "2025-01-06"
+      }
+    },
+    "flags": {
+      "has_fatality": false,
+      "has_serious_injury": false,
+      "has_collision_reports": true,
+      "is_validated": true
+    },
+    "narrative": {
+      "theme_summary": "No common themes identified",
+      "common_themes": {},
+      "sample_descriptions": [
+        "Car using left slip lane collided with bicycle "
+      ]
+    }
+  }
+]
