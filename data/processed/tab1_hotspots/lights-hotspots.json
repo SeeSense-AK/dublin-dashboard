@@ -1264,8 +1264,8 @@
     "identification": {
       "cluster_id": 50,
       "street_name": "Blackthorn Avenue",
-      "latitude": 53.2773088,
-      "longitude": -6.2104233,
+      "latitude": 53.27936593934573,
+      "longitude": -6.211003051440005,
       "geometry_type": "corridor"
     },
     "scores": {
