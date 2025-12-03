@@ -91,6 +91,7 @@ static/route_popularity_timeseries_small.geojson
 !data/processed/tab2_trend/route_popularity/*.csv
 !data/processed/tab2_trend/route_popularity/*.geojson
 !data/processed/tab2_trend/timed_heatmap.html
+!data/processed/tab2_trend/dublin-cycleways.geojson
 
 # 🧹 Exclude heavy and unnecessary files/folders
 data/processed/tab2_trend/hardbrake/
