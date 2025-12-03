@@ -1266,7 +1266,7 @@
       "street_name": "Blackthorn Avenue",
       "latitude": 53.2773088,
       "longitude": -6.2104233,
-      "geometry_type": "point"
+      "geometry_type": "corridor"
     },
     "scores": {
       "composite_score": 0.761745415653334,
