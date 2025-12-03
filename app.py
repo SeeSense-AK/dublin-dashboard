@@ -68,6 +68,7 @@ if str(src_path) not in sys.path:
 # ────────────────────────────────────────────────
 # 6️⃣ Import ENHANCED tab modules safely
 # ────────────────────────────────────────────────
+# Import Tab 1 - Hotspot Analysis
 try:
     from tab1_hotspots_enhanced import render_tab1_enhanced
     tab1_available = True
@@ -75,14 +76,23 @@ except ImportError as e:
     tab1_available = False
     st.warning(f"Enhanced Tab 1 module not found ({e}). Ensure tab1_hotspots_enhanced.py exists.")
 
+# Import Tab 2 - Abnormal Events
 try:
-    from tab2_trends_enhanced import render_tab2_enhanced
+    from tab2_abnormal_events import render_tab2
     tab2_available = True
 except ImportError as e:
     tab2_available = False
-    st.warning(f"Enhanced Tab 2 module not found ({e}). Ensure tab2_trends_enhanced.py exists.")
+    st.warning(f"Tab 2 module not found ({e}). Ensure tab2_abnormal_events.py exists.")
 
-# Fallback to original tabs if enhanced versions are not available
+# Import Tab 3 - Route Popularity
+try:
+    from tab3_route_popularity import render_tab3
+    tab3_available = True
+except ImportError as e:
+    tab3_available = False
+    st.warning(f"Tab 3 module not found ({e}). Ensure tab3_route_popularity.py exists.")
+
+# Fallback to original tab1 if enhanced version is not available
 if not tab1_available:
     try:
         from tab1_hotspots import render_tab1
@@ -91,21 +101,13 @@ if not tab1_available:
     except ImportError:
         tab1_available = False
 
-if not tab2_available:
-    try:
-        from tab2_trends import render_tab2
-        tab2_available = True
-        st.info("Using original Tab 2 - Enhanced version not available")
-    except ImportError:
-        tab2_available = False
-
 # ────────────────────────────────────────────────
 # 6.5️⃣ Import Report Generator and AI
 # ────────────────────────────────────────────────
 try:
     from src.report_generator import generate_pdf_report
     from src.tab1_hotspots_enhanced import load_preprocessed_data
-    from src.tab2_trends_enhanced import load_route_popularity_data
+    from src.tab3_route_popularity import load_route_popularity_data
     from src.ai_insights import generate_hotspot_insights, extract_user_comments, generate_route_insights
     report_gen_available = True
 except ImportError as e:
@@ -223,7 +225,7 @@ def main():
     # ────────────────────────────────────────────────
     # 8️⃣ Tabs with ENHANCED functionality
     # ────────────────────────────────────────────────
-    tab1, tab2 = st.tabs(["Hotspot Analysis", "Trend Analysis"])
+    tab1, tab2, tab3 = st.tabs(["Hotspot Analysis", "Abnormal Events", "Change in Route Popularity"])
 
     with tab1:
         if tab1_available:
@@ -241,15 +243,20 @@ def main():
     with tab2:
         if tab2_available:
             try:
-                # Use enhanced tab 2 if available, otherwise fallback to original
-                if 'render_tab2_enhanced' in globals():
-                    render_tab2_enhanced()
-                else:
-                    render_tab2()
+                render_tab2()
             except Exception as e:
                 st.error(f"Error in Tab 2: {e}")
         else:
-            st.info("Tab 2 (Route Popularity) is not yet available.")
+            st.info("Tab 2 (Abnormal Events) is not yet available.")
+    
+    with tab3:
+        if tab3_available:
+            try:
+                render_tab3()
+            except Exception as e:
+                st.error(f"Error in Tab 3: {e}")
+        else:
+            st.info("Tab 3 (Route Popularity) is not yet available.")
     
     # Close content card container
     st.markdown('</div>', unsafe_allow_html=True)

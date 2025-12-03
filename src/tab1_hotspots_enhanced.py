@@ -194,7 +194,7 @@ def render_compact_hotspot_list(top_30_selected, corridor_selected):
             location = row.get('road_name', 'Unknown')
             event_type = row.get('dominant_category', 'N/A')
             device_count = "-"
-            user_reports = row.get('report_count', 0)
+            user_reports = int(row.get('report_count', 0))
             lat, lng = row.get('center_lat'), row.get('center_lng')
             priority_cat = row.get('priority_category', 'MEDIUM')
             
@@ -212,8 +212,8 @@ def render_compact_hotspot_list(top_30_selected, corridor_selected):
                 location = " / ".join(location)
                 
             event_type = row.get('sensor_data.event_type', 'N/A')
-            device_count = row.get('sensor_data.device_count', 0)
-            user_reports = row.get('collision_reports.total_count', 0)
+            device_count = int(row.get('sensor_data.device_count', 0))
+            user_reports = int(row.get('collision_reports.total_count', 0))
             lat, lng = row.get('identification.latitude'), row.get('identification.longitude')
             
             # Determine Color
@@ -642,7 +642,7 @@ def render_hotspot_details_page():
             
             # Full-width section for recommended actions below themes
             st.markdown("<hr style='border-color: #e5e7eb; margin: 2rem 0;'>", unsafe_allow_html=True)
-            st.markdown('<div class="analysis-subtitle">Recommended Actions</div>', unsafe_allow_html=True)
+            st.markdown('<div class="analysis-subtitle">Treatments to Consider</div>', unsafe_allow_html=True)
             if insights.get('recommendations'):
                 recs_html = '<ul class="analysis-list">' + ''.join([f'<li>{r}</li>' for r in insights['recommendations']]) + '</ul>'
                 st.markdown(recs_html, unsafe_allow_html=True)
@@ -1144,7 +1144,7 @@ def render_tab1_enhanced():
     
     # Enhanced sidebar controls
     st.sidebar.markdown("---")
-    st.sidebar.subheader("Display Settings")
+    st.sidebar.subheader("Tab 1: Hotspot Analysis Settings")
     
     # Hotspot count selector
     total_hotspots = st.sidebar.selectbox(
