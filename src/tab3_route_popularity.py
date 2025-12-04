@@ -390,7 +390,7 @@ def create_route_detail_card(street_name, row):
                 
                 fig_bar.update_xaxes(tickangle=0)
                 
-                st.plotly_chart(fig_bar, use_container_width=True)
+                st.plotly_chart(fig_bar, use_column_width=True)
             else:
                 st.info("No day of week data available for this street")
         
@@ -415,7 +415,7 @@ def create_route_detail_card(street_name, row):
                     paper_bgcolor='white'
                 )
                 
-                st.plotly_chart(fig_pie, use_container_width=True)
+                st.plotly_chart(fig_pie, use_column_width=True)
             else:
                 st.info("No peak/non-peak data available for this street")
 
@@ -801,7 +801,7 @@ def render_tab3():
             
             if st.button(f"View Detailed Analysis for {clicked_street}", 
                         type="primary", 
-                        use_container_width=True,
+                        use_column_width=True,
                         key=f"analyze_{clicked_street}"):
                 st.session_state.route_analysis = clicked_street
     
@@ -820,7 +820,7 @@ def render_tab3():
         
         show_route_details(df, street_name)
         
-        if st.button("Close Analysis", key="close_route_analysis", use_container_width=True):
+        if st.button("Close Analysis", key="close_route_analysis", use_column_width=True):
             st.session_state.route_analysis = None
             st.session_state.route_analysis_loaded = None
 

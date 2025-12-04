@@ -132,7 +132,7 @@ def main():
     # Display Logo
     logo_path = Path("assets/logo.png")
     if logo_path.exists():
-        st.sidebar.image(str(logo_path), use_container_width=True)
+        st.sidebar.image(str(logo_path), use_column_width=True)
         st.sidebar.markdown("---")
     
     if report_gen_available:
@@ -147,7 +147,7 @@ def main():
             </div>
             """, unsafe_allow_html=True)
             
-            if st.sidebar.button("Generate Report", type="primary", use_container_width=True):
+            if st.sidebar.button("Generate Report", type="primary", use_column_width=True):
                 # Create a progress bar
                 progress_bar = st.sidebar.progress(0)
                 status_text = st.sidebar.empty()
@@ -209,7 +209,7 @@ def main():
                             data=pdf_bytes,
                             file_name="spinovate_safety_report.pdf",
                             mime="application/pdf",
-                            use_container_width=True
+                            use_column_width=True
                         )
                         st.sidebar.success("Report generated successfully!")
                         

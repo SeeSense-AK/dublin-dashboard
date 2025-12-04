@@ -245,7 +245,7 @@ def render_compact_hotspot_list(top_30_selected, corridor_selected):
             # Center the button vertically using a container with padding if needed, 
             # but st.button is hard to style directly. 
             # We rely on the text padding to match the button's natural height/spacing.
-            if st.button("View", key=f"btn_{i}", use_container_width=True):
+            if st.button("View", key=f"btn_{i}", use_column_width=True):
                 st.session_state['selected_hotspot'] = row
                 st.session_state['selected_source'] = source
                 st.session_state['view_mode'] = 'detail'
@@ -660,7 +660,7 @@ def render_hotspot_details_page():
     col_pdf1, col_pdf2, col_pdf3 = st.columns([1, 1, 1])
     
     with col_pdf2:
-        if st.button("📄 Save as PDF", use_container_width=True, type="primary"):
+        if st.button("📄 Save as PDF", use_column_width=True, type="primary"):
             try:
                 from src.hotspot_pdf import generate_hotspot_pdf
                 
@@ -683,7 +683,7 @@ def render_hotspot_details_page():
                     data=pdf_bytes,
                     file_name=f"hotspot_{hotspot_name.replace(' ', '_').lower()}_{datetime.now().strftime('%Y%m%d')}.pdf",
                     mime="application/pdf",
-                    use_container_width=True
+                    use_column_width=True
                 )
                 st.success("PDF generated successfully!")
                 
