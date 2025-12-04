@@ -409,7 +409,7 @@ def create_route_detail_card(street_name, row, analysis_type="popularity"):
                     
                     fig_bar.update_xaxes(tickangle=0)
                     
-                    st.plotly_chart(fig_bar, use_container_width=True)
+                    st.plotly_chart(fig_bar, width="stretch")
                 else:
                     st.info("No day of week data available for this street")
             
@@ -434,7 +434,7 @@ def create_route_detail_card(street_name, row, analysis_type="popularity"):
                         paper_bgcolor='white'
                     )
                     
-                    st.plotly_chart(fig_pie, use_container_width=True)
+                    st.plotly_chart(fig_pie, width="stretch")
                 else:
                     st.info("No peak/non-peak data available for this street")
         
@@ -1356,7 +1356,7 @@ def render_tab2_enhanced():
             # Use separate session state for route analysis
             if st.button(f"View Detailed Analysis for {clicked_street}", 
                         type="primary", 
-                        use_container_width=True,
+                        width="stretch",
                         key=f"analyze_{clicked_street}"):
                 # Store the street to analyze in session state
                 st.session_state.route_analysis = clicked_street
@@ -1378,7 +1378,7 @@ def render_tab2_enhanced():
         show_route_details(df, street_name)
         
         # Close button for route analysis
-        if st.button("Close Analysis", key="close_route_analysis", use_container_width=True):
+        if st.button("Close Analysis", key="close_route_analysis", width="stretch"):
             st.session_state.route_analysis = None
             st.session_state.route_analysis_loaded = None
     
@@ -1427,7 +1427,7 @@ def render_tab2_enhanced():
             # Use separate session state for abnormal analysis
             if st.button(f"View Detailed Analysis for {clicked_abnormal_street}", 
                         type="primary", 
-                        use_container_width=True,
+                        width="stretch",
                         key=f"analyze_abnormal_{clicked_abnormal_street}"):
                 # Store the street to analyze in session state
                 st.session_state.abnormal_analysis = clicked_abnormal_street
@@ -1448,7 +1448,7 @@ def render_tab2_enhanced():
         show_abnormal_events_details(abnormal_df, street_name)
         
         # Close button for abnormal analysis
-        if st.button("Close Analysis", key="close_abnormal_analysis", use_container_width=True):
+        if st.button("Close Analysis", key="close_abnormal_analysis", width="stretch"):
             st.session_state.abnormal_analysis = None
             st.session_state.abnormal_analysis_loaded = None
 

@@ -8,6 +8,7 @@ import streamlit as st
 import sys, os
 from pathlib import Path
 import pandas as pd
+import streamlit_authenticator as stauth
 
 # ────────────────────────────────────────────────
 # 1️⃣ MUST be the first Streamlit command
@@ -131,7 +132,7 @@ def main():
     # Display Logo
     logo_path = Path("assets/logo.png")
     if logo_path.exists():
-        st.sidebar.image(str(logo_path), use_column_width=True)
+        st.sidebar.image(str(logo_path), width="stretch")
         st.sidebar.markdown("---")
     
     if report_gen_available:
@@ -146,7 +147,7 @@ def main():
             </div>
             """, unsafe_allow_html=True)
             
-            if st.sidebar.button("Generate Report", type="primary", use_container_width=True):
+            if st.sidebar.button("Generate Report", type="primary", width="stretch"):
                 # Create a progress bar
                 progress_bar = st.sidebar.progress(0)
                 status_text = st.sidebar.empty()
@@ -208,7 +209,7 @@ def main():
                             data=pdf_bytes,
                             file_name="spinovate_safety_report.pdf",
                             mime="application/pdf",
-                            use_container_width=True
+                            width="stretch"
                         )
                         st.sidebar.success("Report generated successfully!")
                         
@@ -262,6 +263,13 @@ def main():
     st.markdown('</div>', unsafe_allow_html=True)
     
     # ────────────────────────────────────────────────
+    # Logout button at the bottom of sidebar
+    # ────────────────────────────────────────────────
+    if 'authenticator' in st.session_state:
+        st.sidebar.markdown("---")
+        st.session_state['authenticator'].logout('Logout', 'sidebar', key='logout_button')
+    
+    # ────────────────────────────────────────────────
     # 9️⃣ Footer / technical info (Enhanced styling)
     # ────────────────────────────────────────────────
     # st.markdown("---")
@@ -302,7 +310,39 @@ def main():
     #     """)
 
 # ────────────────────────────────────────────────
-# 🔟 Run the application
+# 🔟 Authentication and Run the application
 # ────────────────────────────────────────────────
 if __name__ == "__main__":
-    main()
+    # Configure authenticator from secrets
+    # Create a deep mutable copy of credentials (st.secrets is immutable)
+    import copy
+    credentials = {
+        'usernames': {}
+    }
+    
+    # Deep copy each user's credentials
+    for username, user_data in st.secrets["credentials"]["usernames"].items():
+        credentials['usernames'][username] = dict(user_data)
+    
+    authenticator = stauth.Authenticate(
+        credentials,
+        st.secrets["credentials"]["cookie_name"],
+        st.secrets["credentials"]["cookie_key"],
+        st.secrets["credentials"]["cookie_expiry_days"]
+    )
+    
+    # Login form - newer API stores results in session state
+    authenticator.login()
+    
+    # Check authentication status from session state
+    if st.session_state.get("authentication_status"):
+        # User is authenticated - show dashboard
+        # Store authenticator in session state for logout button
+        st.session_state['authenticator'] = authenticator
+        main()
+    elif st.session_state.get("authentication_status") is False:
+        st.error('Username/password is incorrect')
+        st.info('📋 **Demo credentials:** Username: `admin`, Password: `changeme123`')
+    elif st.session_state.get("authentication_status") is None:
+        st.warning('Please enter your username and password')
+        st.info('📋 **Demo credentials:** Username: `admin`, Password: `changeme123`')
