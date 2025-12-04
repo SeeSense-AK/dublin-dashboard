@@ -63,4 +63,4 @@ def render_tab3():
         zmid=df['weight'].median() if len(df) > 0 else 1
     )
     
-    st.plotly_chart(fig, width="stretch")
+    st.plotly_chart(fig, use_container_width=True)

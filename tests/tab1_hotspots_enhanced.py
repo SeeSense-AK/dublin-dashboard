@@ -182,11 +182,11 @@ def create_hotspot_card_enhanced(row, source):
         col1, col2 = st.columns(2)
         
         with col1:
-            view_details = st.button("View Detailed Analysis", key=f"details_{hotspot_name}", width="stretch")
+            view_details = st.button("View Detailed Analysis", key=f"details_{hotspot_name}", use_container_width=True)
         
         with col2:
             street_view_url = STREET_VIEW_URL_TEMPLATE.format(lat=lat, lng=lng, heading=0)
-            st.link_button("Open Street View", street_view_url, width="stretch")
+            st.link_button("Open Street View", street_view_url, use_container_width=True)
         
         # Show details if button clicked
         if view_details:

@@ -918,7 +918,7 @@ def render_tab2():
             # Use separate session state for route analysis
             if st.button(f"🔍 View Detailed AI Analysis for {clicked_street}", 
                         type="primary", 
-                        width="stretch",
+                        use_container_width=True,
                         key=f"analyze_{clicked_street}"):
                 # Store the street to analyze in session state
                 st.session_state.route_analysis = clicked_street
@@ -940,7 +940,7 @@ def render_tab2():
         show_route_details(df, street_name)
         
         # Close button for route analysis
-        if st.button("Close Analysis", key="close_route_analysis", width="stretch"):
+        if st.button("Close Analysis", key="close_route_analysis", use_container_width=True):
             st.session_state.route_analysis = None
             st.session_state.route_analysis_loaded = None
     
@@ -986,7 +986,7 @@ def render_tab2():
             # Use separate session state for abnormal analysis
             if st.button(f"🔍 View Detailed Analysis for {clicked_abnormal_street}", 
                         type="primary", 
-                        width="stretch",
+                        use_container_width=True,
                         key=f"analyze_abnormal_{clicked_abnormal_street}"):
                 # Store the street to analyze in session state
                 st.session_state.abnormal_analysis = clicked_abnormal_street
@@ -1007,7 +1007,7 @@ def render_tab2():
         show_abnormal_events_details(abnormal_df, street_name)
         
         # Close button for abnormal analysis
-        if st.button("Close Analysis", key="close_abnormal_analysis", width="stretch"):
+        if st.button("Close Analysis", key="close_abnormal_analysis", use_container_width=True):
             st.session_state.abnormal_analysis = None
             st.session_state.abnormal_analysis_loaded = None
 
