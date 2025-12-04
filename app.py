@@ -342,7 +342,7 @@ if __name__ == "__main__":
         main()
     elif st.session_state.get("authentication_status") is False:
         st.error('Username/password is incorrect')
-        st.info('📋 **Demo credentials:** Username: `admin`, Password: `changeme123`')
+        #st.info('📋 **Demo credentials:** Username: `admin`, Password: `changeme123`')
     elif st.session_state.get("authentication_status") is None:
         st.warning('Please enter your username and password')
-        st.info('📋 **Demo credentials:** Username: `admin`, Password: `changeme123`')
+        #st.info('📋 **Demo credentials:** Username: `admin`, Password: `changeme123`')
