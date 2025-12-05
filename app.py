@@ -335,12 +335,12 @@ if __name__ == "__main__":
         st.session_state['authenticator'] = authenticator
         main()
         
-        # Add Footer to Sidebar
-        st.sidebar.markdown("---")
-        st.sidebar.markdown(
+        # Add Footer to Main Page (Bottom)
+        st.markdown("---")
+        st.markdown(
             """
-            <div style="text-align: center; color: #666; font-size: 0.8em;">
-                © See.Sense 2025<br>(All rights reserved)
+            <div style="text-align: center; color: #666; font-size: 0.8em; padding-bottom: 2rem;">
+                © See.Sense 2025 (All rights reserved)
             </div>
             """, 
             unsafe_allow_html=True
