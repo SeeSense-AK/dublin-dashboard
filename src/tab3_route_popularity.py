@@ -801,7 +801,7 @@ def render_tab3():
             
             if st.button(f"View Detailed Analysis for {clicked_street}", 
                         type="primary", 
-                        use_column_width=True,
+                        use_container_width=True,
                         key=f"analyze_{clicked_street}"):
                 st.session_state.route_analysis = clicked_street
     

@@ -209,7 +209,7 @@ def main():
                             data=pdf_bytes,
                             file_name="spinovate_safety_report.pdf",
                             mime="application/pdf",
-                            use_column_width=True
+                            use_container_width=True
                         )
                         st.sidebar.success("Report generated successfully!")
                         
