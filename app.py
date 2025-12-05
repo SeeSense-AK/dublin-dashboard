@@ -326,80 +326,60 @@ if __name__ == "__main__":
         st.secrets["credentials"]["cookie_expiry_days"]
     )
     
-    # Check authentication status first to apply login-specific styling
-    authenticator.login()
     
+    # Check if we are already authenticated via session state (persisting from previous run)
     if st.session_state.get("authentication_status"):
         # ────────────────────────────────────────────────
         # LOGGED IN STATE
         # ────────────────────────────────────────────────
         st.session_state['authenticator'] = authenticator
-        
-        # Logout button in sidebar
         authenticator.logout('Logout', 'sidebar')
-        
-        # Run main dashboard
         main()
         
     else:
         # ────────────────────────────────────────────────
-        # LOGIN STATE (Unauthenticated or Failed)
+        # LOGIN STATE (Unauthenticated)
         # ────────────────────────────────────────────────
         
-        # 1. Custom CSS for Login Page
+        # 1. Styles
         st.markdown("""
         <style>
-            /* Hide the default Streamlit header/hamburger menu */
             header {visibility: hidden;}
             footer {visibility: hidden;}
+            [data-testid="stSidebar"] {display: none;}
             
-            /* Center the login form */
             .stApp {
-                background-color: #f8fafc; /* Light grey background */
+                background-color: #f8fafc;
             }
             
-            /* Style the login container */
-            [data-testid="stSidebar"] {
-                display: none; /* Hide sidebar on login page */
-            }
-            
-            /* Target the main block where forms usually live */
             .main .block-container {
                 max_width: 500px;
                 padding-top: 4rem;
                 padding-bottom: 2rem;
             }
             
-            /* Create a card-like effect for the login form elements */
             div[data-testid="stForm"] {
                 background-color: white;
                 padding: 2.5rem;
                 border-radius: 12px;
-                box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+                box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
                 border: 1px solid #e2e8f0;
             }
             
-            /* Style the inputs */
             input {
                 border-radius: 6px !important;
                 border: 1px solid #cbd5e1 !important;
                 padding: 0.5rem 1rem !important;
             }
             
-            /* Style the button */
             button[kind="primary"] {
                 width: 100%;
                 border-radius: 6px;
-                padding: 0.5rem 1rem;
                 background-color: #2563eb;
                 font-weight: 600;
                 margin-top: 1rem;
             }
-            button[kind="primary"]:hover {
-                background-color: #1d4ed8;
-            }
             
-            /* Welcome Text */
             .login-header {
                 text-align: center;
                 margin-bottom: 2rem;
@@ -417,8 +397,7 @@ if __name__ == "__main__":
         </style>
         """, unsafe_allow_html=True)
         
-        # 2. Header Content (Logo + Welcome)
-        # Verify logo path exists
+        # 2. Render Header Content FIRST
         logo_path = Path("assets/logo.png")
         if logo_path.exists():
             col1, col2, col3 = st.columns([1, 2, 1])
@@ -432,7 +411,15 @@ if __name__ == "__main__":
         </div>
         """, unsafe_allow_html=True)
 
-        # 3. Error Handling
-        if st.session_state.get("authentication_status") is False:
+        # 3. Render Login Form BELOW Header
+        authenticator.login()
+        
+        # 4. Handle State Transition
+        # If login succeeded during this run, rerun immediately to show dashboard
+        if st.session_state.get("authentication_status"):
+            st.rerun()
+        
+        # 5. Error Handling
+        elif st.session_state.get("authentication_status") is False:
             st.error('Incorrect username or password')
 
