@@ -333,8 +333,18 @@ if __name__ == "__main__":
         # LOGGED IN STATE
         # ────────────────────────────────────────────────
         st.session_state['authenticator'] = authenticator
-        authenticator.logout('Logout', 'sidebar')
         main()
+        
+        # Add Footer to Sidebar
+        st.sidebar.markdown("---")
+        st.sidebar.markdown(
+            """
+            <div style="text-align: center; color: #666; font-size: 0.8em;">
+                © See.Sense 2025<br>(All rights reserved)
+            </div>
+            """, 
+            unsafe_allow_html=True
+        )
         
     else:
         # ────────────────────────────────────────────────
