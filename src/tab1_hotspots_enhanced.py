@@ -683,7 +683,7 @@ def render_hotspot_details_page():
                     data=pdf_bytes,
                     file_name=f"hotspot_{hotspot_name.replace(' ', '_').lower()}_{datetime.now().strftime('%Y%m%d')}.pdf",
                     mime="application/pdf",
-                    use_column_width=True
+                    use_container_width=True
                 )
                 st.success("PDF generated successfully!")
                 
