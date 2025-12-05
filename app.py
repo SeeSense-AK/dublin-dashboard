@@ -314,13 +314,8 @@ def main():
 # ────────────────────────────────────────────────
 if __name__ == "__main__":
     # Configure authenticator from secrets
-    # Create a deep mutable copy of credentials (st.secrets is immutable)
     import copy
-    credentials = {
-        'usernames': {}
-    }
-    
-    # Deep copy each user's credentials
+    credentials = {'usernames': {}}
     for username, user_data in st.secrets["credentials"]["usernames"].items():
         credentials['usernames'][username] = dict(user_data)
     
@@ -331,18 +326,113 @@ if __name__ == "__main__":
         st.secrets["credentials"]["cookie_expiry_days"]
     )
     
-    # Login form - newer API stores results in session state
+    # Check authentication status first to apply login-specific styling
     authenticator.login()
     
-    # Check authentication status from session state
     if st.session_state.get("authentication_status"):
-        # User is authenticated - show dashboard
-        # Store authenticator in session state for logout button
+        # ────────────────────────────────────────────────
+        # LOGGED IN STATE
+        # ────────────────────────────────────────────────
         st.session_state['authenticator'] = authenticator
+        
+        # Logout button in sidebar
+        authenticator.logout('Logout', 'sidebar')
+        
+        # Run main dashboard
         main()
-    elif st.session_state.get("authentication_status") is False:
-        st.error('Username/password is incorrect')
-        #st.info('📋 **Demo credentials:** Username: `admin`, Password: `changeme123`')
-    elif st.session_state.get("authentication_status") is None:
-        st.warning('Please enter your username and password')
-        #st.info('📋 **Demo credentials:** Username: `admin`, Password: `changeme123`')
+        
+    else:
+        # ────────────────────────────────────────────────
+        # LOGIN STATE (Unauthenticated or Failed)
+        # ────────────────────────────────────────────────
+        
+        # 1. Custom CSS for Login Page
+        st.markdown("""
+        <style>
+            /* Hide the default Streamlit header/hamburger menu */
+            header {visibility: hidden;}
+            footer {visibility: hidden;}
+            
+            /* Center the login form */
+            .stApp {
+                background-color: #f8fafc; /* Light grey background */
+            }
+            
+            /* Style the login container */
+            [data-testid="stSidebar"] {
+                display: none; /* Hide sidebar on login page */
+            }
+            
+            /* Target the main block where forms usually live */
+            .main .block-container {
+                max_width: 500px;
+                padding-top: 4rem;
+                padding-bottom: 2rem;
+            }
+            
+            /* Create a card-like effect for the login form elements */
+            div[data-testid="stForm"] {
+                background-color: white;
+                padding: 2.5rem;
+                border-radius: 12px;
+                box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+                border: 1px solid #e2e8f0;
+            }
+            
+            /* Style the inputs */
+            input {
+                border-radius: 6px !important;
+                border: 1px solid #cbd5e1 !important;
+                padding: 0.5rem 1rem !important;
+            }
+            
+            /* Style the button */
+            button[kind="primary"] {
+                width: 100%;
+                border-radius: 6px;
+                padding: 0.5rem 1rem;
+                background-color: #2563eb;
+                font-weight: 600;
+                margin-top: 1rem;
+            }
+            button[kind="primary"]:hover {
+                background-color: #1d4ed8;
+            }
+            
+            /* Welcome Text */
+            .login-header {
+                text-align: center;
+                margin-bottom: 2rem;
+            }
+            .login-title {
+                font-size: 1.875rem;
+                font-weight: 700;
+                color: #0f172a;
+                margin-bottom: 0.5rem;
+            }
+            .login-subtitle {
+                color: #64748b;
+                font-size: 1rem;
+            }
+        </style>
+        """, unsafe_allow_html=True)
+        
+        # 2. Header Content (Logo + Welcome)
+        # Verify logo path exists
+        logo_path = Path("assets/logo.png")
+        if logo_path.exists():
+            col1, col2, col3 = st.columns([1, 2, 1])
+            with col2:
+                st.image(str(logo_path), use_column_width=True)
+        
+        st.markdown("""
+        <div class="login-header">
+            <div class="login-title">Welcome Back</div>
+            <div class="login-subtitle">Please sign in to access the Safety Dashboard</div>
+        </div>
+        """, unsafe_allow_html=True)
+
+        # 3. Error Handling
+        if st.session_state.get("authentication_status") is False:
+            st.error('Incorrect username or password')
+
