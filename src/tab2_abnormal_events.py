@@ -640,7 +640,7 @@ def render_tab2():
         
         show_abnormal_events_details(abnormal_df, street_name)
         
-        if st.button("Close Analysis", key="close_abnormal_analysis", use_column_width=True):
+        if st.button("Close Analysis", key="close_abnormal_analysis", use_container_width=True):
             st.session_state.abnormal_analysis = None
             st.session_state.abnormal_analysis_loaded = None
 

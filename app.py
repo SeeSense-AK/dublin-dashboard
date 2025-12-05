@@ -147,7 +147,7 @@ def main():
             </div>
             """, unsafe_allow_html=True)
             
-            if st.sidebar.button("Generate Report", type="primary", use_column_width=True):
+            if st.sidebar.button("Generate Report", type="primary", use_container_width=True):
                 # Create a progress bar
                 progress_bar = st.sidebar.progress(0)
                 status_text = st.sidebar.empty()
