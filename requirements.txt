@@ -45,5 +45,9 @@ fiona>=1.9.5,<1.10
 # Reporting
 fpdf==1.7.2
 
+# AI APIs
+google-generativeai>=0.7.2
+openai>=1.0.0
+
 # Authentication
 streamlit-authenticator>=0.3.0

@@ -37,6 +37,19 @@ else:
 if GOOGLE_API_KEY:
     genai.configure(api_key=GOOGLE_API_KEY)
 
+# Load Groq API key (fallback)
+GROQ_API_KEY = os.getenv('GROQ_API_KEY')
+if not GROQ_API_KEY:
+    try:
+        import streamlit as st
+        GROQ_API_KEY = st.secrets.get("GROQ_API_KEY")
+        if GROQ_API_KEY:
+            print(f"DEBUG: Found GROQ_API_KEY in st.secrets")
+    except:
+        pass
+else:
+    print(f"DEBUG: Found GROQ_API_KEY in environment")
+
 # ═══════════════════════════════════════════════════════════════════════════
 # HOTSPOT ANALYSIS
 # ═══════════════════════════════════════════════════════════════════════════
@@ -44,6 +57,7 @@ if GOOGLE_API_KEY:
 def generate_hotspot_insights(hotspot_data: dict, user_comments: list = None) -> dict:
     """
     Generate AI insights for a hotspot location.
+    Uses Gemini API with Groq (Llama 3.3 70B) as fallback.
     
     Args:
         hotspot_data: Hotspot metadata (event type, location, severity, etc.)
@@ -52,27 +66,61 @@ def generate_hotspot_insights(hotspot_data: dict, user_comments: list = None) ->
     Returns:
         dict: {'summary': str, 'themes': list, 'recommendations': list}
     """
-    if not GOOGLE_API_KEY:
+    # Build prompt once (works for both APIs)
+    prompt = build_analysis_prompt(hotspot_data, user_comments)
+    
+    # Try Gemini first
+    if GOOGLE_API_KEY:
+        try:
+            model = genai.GenerativeModel('gemini-2.0-flash-001')
+            response = model.generate_content(prompt)
+            return parse_ai_response(response.text)
+        except Exception as e:
+            error_str = str(e)
+            print(f"DEBUG: Gemini API failed: {error_str}")
+            # If quota exceeded or any Gemini error, try Groq
+            if "429" in error_str or "quota" in error_str.lower():
+                print("DEBUG: Quota exceeded, trying Groq fallback...")
+    
+    # Try Groq as fallback (Llama 3.3 70B - very intelligent)
+    if GROQ_API_KEY:
+        try:
+            from groq import Groq
+            client = Groq(api_key=GROQ_API_KEY)
+            
+            response = client.chat.completions.create(
+                model="llama-3.3-70b-versatile",  # Best model for intelligence
+                messages=[
+                    {"role": "system", "content": "You are a road safety analyst providing insights for city planners."},
+                    {"role": "user", "content": prompt}
+                ],
+                temperature=0.7,
+                max_tokens=2000
+            )
+            
+            return parse_ai_response(response.choices[0].message.content)
+        except Exception as e:
+            print(f"DEBUG: Groq API also failed: {str(e)}")
+            return {
+                'summary': f'Error generating insights (both APIs failed): Gemini and Groq unavailable',
+                'themes': [],
+                'recommendations': []
+            }
+    
+    # No API keys available
+    if not GOOGLE_API_KEY and not GROQ_API_KEY:
         return {
-            'summary': 'AI insights unavailable - Google API key not configured',
+            'summary': 'AI insights unavailable - No API keys configured (Gemini or Groq)',
             'themes': [],
             'recommendations': []
         }
     
-    try:
-        # Build prompt and generate insights
-        prompt = build_analysis_prompt(hotspot_data, user_comments)
-        model = genai.GenerativeModel('gemini-2.0-flash-001')
-        response = model.generate_content(prompt)
-        
-        return parse_ai_response(response.text)
-        
-    except Exception as e:
-        return {
-            'summary': f'Error generating insights: {str(e)}',
-            'themes': [],
-            'recommendations': []
-        }
+    # Gemini failed and no Groq key
+    return {
+        'summary': 'AI insights unavailable - Gemini API failed and Groq not configured',
+        'themes': [],
+        'recommendations': []
+    }
 
 
 def build_analysis_prompt(hotspot_data: dict, user_comments: list = None) -> str:
