@@ -14,6 +14,7 @@ import plotly.graph_objects as go
 import json
 import re
 import os
+from branca.element import MacroElement, Template
 
 try:
     import geopandas as gpd
@@ -717,6 +718,53 @@ def create_route_map(df, road_segments_df, show_cycleways=False):
         </div>
         """
         m.get_root().html.add_child(folium.Element(legend_html))
+        
+        # Add Chrome visibility fix - invalidate map size when visible
+        visibility_template = """
+        {% macro script(this, kwargs) %}
+        <script>
+        (function() {
+            console.log('[Tab3 Map Init] Initializing...');
+            var map = {{this._parent.get_name()}};
+            
+            // Chrome visibility fix - invalidate size when map becomes visible
+            function invalidateMapSize() {
+                if (map && map._container) {
+                    setTimeout(function() {
+                        map.invalidateSize();
+                        console.log('[Tab3 Map Init] Size invalidated');
+                    }, 100);
+                }
+            }
+            
+            // Use IntersectionObserver to detect when map becomes visible
+            if (window.IntersectionObserver && map._container) {
+                var observer = new IntersectionObserver(function(entries) {
+                    entries.forEach(function(entry) {
+                        if (entry.isIntersecting) {
+                            invalidateMapSize();
+                        }
+                    });
+                }, { threshold: 0.1 });
+                observer.observe(map._container);
+            }
+            
+            // Also invalidate on window focus and resize
+            window.addEventListener('focus', invalidateMapSize);
+            window.addEventListener('resize', invalidateMapSize);
+            
+            // Invalidate immediately and after delays
+            invalidateMapSize();
+            setTimeout(invalidateMapSize, 500);
+            setTimeout(invalidateMapSize, 1000);
+        })();
+        </script>
+        {% endmacro %}
+        """
+        
+        macro = MacroElement()
+        macro._template = Template(visibility_template)
+        m.get_root().add_child(macro)
     
     return m, routes_added
 

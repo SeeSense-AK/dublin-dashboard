@@ -487,17 +487,48 @@ def create_abnormal_events_map(df, road_segments_df, show_cycleways=False):
         """
         m.get_root().html.add_child(folium.Element(legend_html))
         
-        # Add dynamic polygon scaling
+        # Add dynamic polygon scaling and visibility fix for Chrome
         template = """
         {% macro script(this, kwargs) %}
         <script>
         (function() {
-            console.log('[Polygon Scaling] Initializing...');
+            console.log('[Map Init] Initializing...');
+            var map = {{this._parent.get_name()}};
             var polygonBaseStyles = {};
             var polygonCounter = 0;
             
+            // Chrome visibility fix - invalidate size when map becomes visible
+            function invalidateMapSize() {
+                if (map && map._container) {
+                    setTimeout(function() {
+                        map.invalidateSize();
+                        console.log('[Map Init] Size invalidated');
+                    }, 100);
+                }
+            }
+            
+            // Use IntersectionObserver to detect when map becomes visible
+            if (window.IntersectionObserver && map._container) {
+                var observer = new IntersectionObserver(function(entries) {
+                    entries.forEach(function(entry) {
+                        if (entry.isIntersecting) {
+                            invalidateMapSize();
+                        }
+                    });
+                }, { threshold: 0.1 });
+                observer.observe(map._container);
+            }
+            
+            // Also invalidate on window focus and resize
+            window.addEventListener('focus', invalidateMapSize);
+            window.addEventListener('resize', invalidateMapSize);
+            
+            // Invalidate immediately and after delays
+            invalidateMapSize();
+            setTimeout(invalidateMapSize, 500);
+            setTimeout(invalidateMapSize, 1000);
+            
             function updatePolygonSizes() {
-                var map = {{this._parent.get_name()}};
                 if (!map) return;
                 
                 var zoom = map.getZoom();
@@ -526,8 +557,8 @@ def create_abnormal_events_map(df, road_segments_df, show_cycleways=False):
                 });
             }
             
-            {{this._parent.get_name()}}.on('zoomend', updatePolygonSizes);
-            {{this._parent.get_name()}}.whenReady(function() {
+            map.on('zoomend', updatePolygonSizes);
+            map.whenReady(function() {
                 setTimeout(updatePolygonSizes, 100);
             });
         })();
