@@ -828,7 +828,7 @@ def render_tab3():
             route_map, 
             width=None,
             height=500,
-            returned_objects=[],
+            returned_objects=["last_object_clicked_popup"],
             key="tab3_route_map"
         )
         st.markdown('</div>', unsafe_allow_html=True)
