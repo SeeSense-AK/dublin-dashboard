@@ -224,11 +224,18 @@ def main():
     st.markdown('<div class="content-card">', unsafe_allow_html=True)
     
     # ────────────────────────────────────────────────
-    # 8️⃣ Tabs with ENHANCED functionality
+    # 8️⃣ Tab Navigation with Pills (Chrome-compatible)
     # ────────────────────────────────────────────────
-    tab1, tab2, tab3 = st.tabs(["Hotspot Analysis", "Abnormal Events", "Change in Route Popularity"])
-
-    with tab1:
+    selected_tab = st.pills(
+        "Navigation",
+        ["Hotspot Analysis", "Abnormal Events", "Change in Route Popularity"],
+        selection_mode="single",
+        default="Hotspot Analysis",
+        label_visibility="collapsed"
+    )
+    
+    # Render selected tab
+    if selected_tab == "Hotspot Analysis":
         if tab1_available:
             try:
                 # Use enhanced tab 1 if available, otherwise fallback to original
@@ -240,8 +247,8 @@ def main():
                 st.error(f"Error in Tab 1: {e}")
         else:
             st.info("Tab 1 (Hotspot Analysis) is not yet available.")
-
-    with tab2:
+    
+    elif selected_tab == "Abnormal Events":
         if tab2_available:
             try:
                 render_tab2()
@@ -250,7 +257,7 @@ def main():
         else:
             st.info("Tab 2 (Abnormal Events) is not yet available.")
     
-    with tab3:
+    elif selected_tab == "Change in Route Popularity":
         if tab3_available:
             try:
                 render_tab3()
@@ -258,75 +265,6 @@ def main():
                 st.error(f"Error in Tab 3: {e}")
         else:
             st.info("Tab 3 (Route Popularity) is not yet available.")
-    
-    # JavaScript to auto-click "Show Cycleways" checkbox on first tab visit (Chrome fix)
-    st.markdown("""
-    <script>
-    (function() {
-        console.log('[Auto-Click Fix] Initializing...');
-        
-        // Track which tabs have been auto-clicked
-        if (!sessionStorage.getItem('tab2_auto_clicked')) {
-            sessionStorage.setItem('tab2_auto_clicked', 'false');
-        }
-        if (!sessionStorage.getItem('tab3_auto_clicked')) {
-            sessionStorage.setItem('tab3_auto_clicked', 'false');
-        }
-        
-        // Function to find and click the checkbox
-        function autoClickCheckbox(tabIndex) {
-            const tabKey = 'tab' + (tabIndex + 1) + '_auto_clicked';
-            
-            if (sessionStorage.getItem(tabKey) === 'false') {
-                console.log('[Auto-Click Fix] First visit to Tab ' + (tabIndex + 1) + ', searching for checkbox...');
-                
-                // Wait a bit for the tab content to render
-                setTimeout(function() {
-                    // Find all checkboxes
-                    const checkboxes = document.querySelectorAll('input[type="checkbox"]');
-                    console.log('[Auto-Click Fix] Found ' + checkboxes.length + ' checkboxes');
-                    
-                    // Look for the "Show Cycleways" checkbox
-                    checkboxes.forEach(function(checkbox, index) {
-                        const label = checkbox.parentElement;
-                        if (label && label.textContent.includes('Show Cycleways')) {
-                            console.log('[Auto-Click Fix] Found Show Cycleways at index ' + index + ', clicking...');
-                            sessionStorage.setItem(tabKey, 'true');
-                            
-                            // Click it twice with delay to toggle on then off (or off then on)
-                            checkbox.click();
-                            setTimeout(function() {
-                                checkbox.click();
-                            }, 100);
-                        }
-                    });
-                }, 500);
-            }
-        }
-        
-        // Observe tab clicks
-        setTimeout(function() {
-            const tabButtons = document.querySelectorAll('[data-baseweb="tab"] button');
-            console.log('[Auto-Click Fix] Found ' + tabButtons.length + ' tab buttons');
-            
-            if (tabButtons.length >= 3) {
-                // Tab 2 and Tab 3 (0-indexed: 1 and 2)
-                tabButtons[1].addEventListener('click', function() {
-                    console.log('[Auto-Click Fix] Tab 2 clicked');
-                    autoClickCheckbox(1);
-                });
-                
-                tabButtons[2].addEventListener('click', function() {
-                    console.log('[Auto-Click Fix] Tab 3 clicked');
-                    autoClickCheckbox(2);
-                });
-                
-                console.log('[Auto-Click Fix] Listeners attached');
-            }
-        }, 1000);
-    })();
-    </script>
-    """, unsafe_allow_html=True)
     
     # Close content card container
     st.markdown('</div>', unsafe_allow_html=True)

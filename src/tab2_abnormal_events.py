@@ -628,12 +628,6 @@ def render_tab2():
     abnormal_map, routes_added = create_abnormal_events_map(abnormal_df, abnormal_segments_df, show_cycleways)
     
     if routes_added > 0:
-        # Small delay to ensure Chrome fully paints the tab before iframe initialization
-        import time
-        if 'tab2_rendered_once' not in st.session_state:
-            time.sleep(0.5)
-            st.session_state.tab2_rendered_once = True
-        
         st.markdown('<div class="map-container">', unsafe_allow_html=True)
         map_data = st_folium(
             abnormal_map, 
