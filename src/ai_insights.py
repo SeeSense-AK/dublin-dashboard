@@ -23,16 +23,13 @@ if not GOOGLE_API_KEY:
         import streamlit as st
         GOOGLE_API_KEY = st.secrets.get("GOOGLE_API_KEY")
         if GOOGLE_API_KEY:
-            print(f"DEBUG: Found GOOGLE_API_KEY in st.secrets (length: {len(GOOGLE_API_KEY)})")
+            st.write(f"✅ Found GOOGLE_API_KEY in st.secrets")
         else:
-            print("DEBUG: GOOGLE_API_KEY not found in st.secrets")
-            # Dump available keys (safely) to see what's there
-            print(f"DEBUG: Available secret keys: {list(st.secrets.keys())}")
+            st.error("❌ GOOGLE_API_KEY not found in st.secrets")
+            st.write(f"Available secret keys: {list(st.secrets.keys())}")
     except Exception as e:
-        print(f"DEBUG: Error accessing st.secrets: {e}")
+        st.error(f"❌ Error accessing st.secrets: {e}")
         pass
-else:
-    print(f"DEBUG: Found GOOGLE_API_KEY in environment (length: {len(GOOGLE_API_KEY)})")
 
 if GOOGLE_API_KEY:
     genai.configure(api_key=GOOGLE_API_KEY)
@@ -44,11 +41,9 @@ if not GROQ_API_KEY:
         import streamlit as st
         GROQ_API_KEY = st.secrets.get("GROQ_API_KEY")
         if GROQ_API_KEY:
-            print(f"DEBUG: Found GROQ_API_KEY in st.secrets")
+            st.write(f"✅ Found GROQ_API_KEY in st.secrets")
     except:
         pass
-else:
-    print(f"DEBUG: Found GROQ_API_KEY in environment")
 
 # ═══════════════════════════════════════════════════════════════════════════
 # HOTSPOT ANALYSIS
