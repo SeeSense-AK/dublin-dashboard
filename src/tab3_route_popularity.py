@@ -814,7 +814,12 @@ def render_tab3():
     # Sidebar controls
     st.sidebar.markdown("---")
     st.sidebar.subheader("Tab 3: Change in Route Popularity Settings")
-    show_cycleways = st.sidebar.checkbox("Show Cycleways", key="tab3_cycleways_route", value=False)
+    show_cycleways = st.sidebar.checkbox("Show Cycleways", key="tab3_cycleways_route", value=True)
+    
+    # Force rerun on first tab visit to fix Chrome rendering
+    if 'tab3_visited' not in st.session_state:
+        st.session_state.tab3_visited = True
+        st.rerun()
     
     # Map section
     create_section_header("Route Performance Map", "Visual representation of route popularity and performance")
