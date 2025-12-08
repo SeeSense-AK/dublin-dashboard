@@ -22,8 +22,17 @@ if not GOOGLE_API_KEY:
     try:
         import streamlit as st
         GOOGLE_API_KEY = st.secrets.get("GOOGLE_API_KEY")
-    except:
+        if GOOGLE_API_KEY:
+            print(f"DEBUG: Found GOOGLE_API_KEY in st.secrets (length: {len(GOOGLE_API_KEY)})")
+        else:
+            print("DEBUG: GOOGLE_API_KEY not found in st.secrets")
+            # Dump available keys (safely) to see what's there
+            print(f"DEBUG: Available secret keys: {list(st.secrets.keys())}")
+    except Exception as e:
+        print(f"DEBUG: Error accessing st.secrets: {e}")
         pass
+else:
+    print(f"DEBUG: Found GOOGLE_API_KEY in environment (length: {len(GOOGLE_API_KEY)})")
 
 if GOOGLE_API_KEY:
     genai.configure(api_key=GOOGLE_API_KEY)
