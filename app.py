@@ -242,11 +242,6 @@ def main():
             st.info("Tab 1 (Hotspot Analysis) is not yet available.")
 
     with tab2:
-        # Trigger rerun on first access to Tab 2
-        if 'tab2_accessed' not in st.session_state:
-            st.session_state.tab2_accessed = True
-            st.rerun()
-        
         if tab2_available:
             try:
                 render_tab2()
@@ -256,11 +251,6 @@ def main():
             st.info("Tab 2 (Abnormal Events) is not yet available.")
     
     with tab3:
-        # Trigger rerun on first access to Tab 3
-        if 'tab3_accessed' not in st.session_state:
-            st.session_state.tab3_accessed = True
-            st.rerun()
-        
         if tab3_available:
             try:
                 render_tab3()
@@ -268,6 +258,60 @@ def main():
                 st.error(f"Error in Tab 3: {e}")
         else:
             st.info("Tab 3 (Route Popularity) is not yet available.")
+    
+    # Chrome map rendering fix - detects when map becomes visible and triggers resize
+    st.markdown("""
+    <script>
+    // Fix for Chrome map rendering in hidden Streamlit tabs
+    document.addEventListener('DOMContentLoaded', function() {
+        console.log('[Map Fix] Initializing Chrome map rendering fix...');
+        
+        // Listen for tab changes
+        const observer = new MutationObserver(function(mutations) {
+            mutations.forEach(function(mutation) {
+                if (mutation.type === 'childList') {
+                    // Check if any folium map container became visible
+                    const mapContainers = document.querySelectorAll('.folium-map');
+                    mapContainers.forEach(function(mapContainer) {
+                        if (mapContainer.offsetParent !== null && !mapContainer.dataset.fixed) {
+                            console.log('[Map Fix] Found visible map container, fixing...');
+                            mapContainer.dataset.fixed = 'true';
+                            
+                            // Force map resize after a delay
+                            setTimeout(function() {
+                                const iframe = mapContainer.querySelector('iframe');
+                                if (iframe && iframe.contentWindow) {
+                                    try {
+                                        iframe.contentWindow.postMessage('invalidateSize', '*');
+                                    } catch(e) {
+                                        console.log('[Map Fix] Could not post message to iframe');
+                                    }
+                                }
+                                // Trigger window resize which Leaflet responds to
+                                window.dispatchEvent(new Event('resize'));
+                            }, 500);
+                        }
+                    });
+                }
+            });
+        });
+        
+        // Start observing the document
+        observer.observe(document.body, { childList: true, subtree: true });
+        
+        // Also check on visibility change
+        document.addEventListener('visibilitychange', function() {
+            if (!document.hidden) {
+                setTimeout(function() {
+                    window.dispatchEvent(new Event('resize'));
+                }, 300);
+            }
+        });
+        
+        console.log('[Map Fix] Observer initialized');
+    });
+    </script>
+    """, unsafe_allow_html=True)
     
     # Close content card container
     st.markdown('</div>', unsafe_allow_html=True)
