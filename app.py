@@ -229,14 +229,17 @@ def main():
     # CSS to make pills larger and more tab-like
     st.markdown("""
     <style>
-    /* Make pills larger and more prominent */
+    /* Make pills larger and more prominent - high specificity */
     div[data-testid="stPills"] {
         margin-bottom: 0px;
     }
-    div[data-testid="stPills"] button {
-        font-size: 16px !important;
-        padding: 12px 24px !important;
-        font-weight: 500 !important;
+    div[data-testid="stPills"] > div > button,
+    div[data-testid="stPills"] button[kind="secondary"],
+    div[data-testid="stPills"] button[kind="primary"] {
+        font-size: 17px !important;
+        padding: 16px 28px !important;
+        font-weight: 600 !important;
+        min-height: 48px !important;
     }
     </style>
     """, unsafe_allow_html=True)
