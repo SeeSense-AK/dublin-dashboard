@@ -8,7 +8,7 @@ import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 import folium
-from streamlit_folium import st_folium
+from streamlit_folium import folium_static
 import geopandas as gpd
 import plotly.graph_objects as go
 import json
@@ -823,14 +823,8 @@ def render_tab3():
     
     if routes_added > 0:
         st.markdown('<div class="map-container">', unsafe_allow_html=True)
-        # Use explicit width for Chrome compatibility in hidden tabs
-        map_data = st_folium(
-            route_map, 
-            width=None,
-            height=500,
-            returned_objects=["last_object_clicked_popup"],
-            key="tab3_route_map"
-        )
+        # Use folium_static like Tab 1 - static HTML rendering works better in Chrome
+        folium_static(route_map, width=1200, height=600)
         st.markdown('</div>', unsafe_allow_html=True)
         
         # Check if user clicked on a popup

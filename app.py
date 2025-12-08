@@ -132,7 +132,7 @@ def main():
     # Display Logo
     logo_path = Path("assets/logo.png")
     if logo_path.exists():
-        st.sidebar.image(str(logo_path), use_column_width=True)
+        st.sidebar.image(str(logo_path), use_container_width=True)
         st.sidebar.markdown("---")
     
     if report_gen_available:
@@ -466,7 +466,7 @@ if __name__ == "__main__":
         if logo_path.exists():
             col1, col2, col3 = st.columns([1, 2, 1])
             with col2:
-                st.image(str(logo_path), use_column_width=True)
+                st.image(str(logo_path), use_container_width=True)
         
         st.markdown("""
         <div class="login-header">
