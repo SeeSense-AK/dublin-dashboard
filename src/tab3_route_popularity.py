@@ -775,11 +775,14 @@ def render_tab3():
     
     if routes_added > 0:
         st.markdown('<div class="map-container">', unsafe_allow_html=True)
-        # Initialize tab visit counter to force proper map rendering on first visit
-        if 'tab3_map_render_key' not in st.session_state:
-            st.session_state.tab3_map_render_key = 0
-            st.session_state.tab3_map_render_key += 1
-        map_data = st_folium(route_map, height=500, width=None, key=f"tab3_route_map_{st.session_state.tab3_map_render_key}")
+        # Use returned_objects=[] and use_container_width=True to fix Streamlit Cloud rendering
+        map_data = st_folium(
+            route_map, 
+            height=500, 
+            use_container_width=True,
+            returned_objects=["last_object_clicked_popup"],
+            key="tab3_route_map"
+        )
         st.markdown('</div>', unsafe_allow_html=True)
         
         # Check if user clicked on a popup
