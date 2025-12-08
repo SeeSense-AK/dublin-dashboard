@@ -21,7 +21,11 @@ GOOGLE_API_KEY = os.getenv('GOOGLE_API_KEY')
 if not GOOGLE_API_KEY:
     try:
         import streamlit as st
+        # Try flat structure first
         GOOGLE_API_KEY = st.secrets.get("GOOGLE_API_KEY")
+        # If not found, try nested under 'credentials'
+        if not GOOGLE_API_KEY and "credentials" in st.secrets:
+            GOOGLE_API_KEY = st.secrets["credentials"].get("GOOGLE_API_KEY")
     except:
         pass
 
@@ -33,7 +37,11 @@ GROQ_API_KEY = os.getenv('GROQ_API_KEY')
 if not GROQ_API_KEY:
     try:
         import streamlit as st
+        # Try flat structure first
         GROQ_API_KEY = st.secrets.get("GROQ_API_KEY")
+        # If not found, try nested under 'credentials'
+        if not GROQ_API_KEY and "credentials" in st.secrets:
+            GROQ_API_KEY = st.secrets["credentials"].get("GROQ_API_KEY")
     except:
         pass
 
