@@ -226,6 +226,21 @@ def main():
     # ────────────────────────────────────────────────
     # 8️⃣ Tab Navigation with Pills (Chrome-compatible)
     # ────────────────────────────────────────────────
+    # CSS to make pills larger and more tab-like
+    st.markdown("""
+    <style>
+    /* Make pills larger and more prominent */
+    div[data-testid="stPills"] {
+        margin-bottom: 0px;
+    }
+    div[data-testid="stPills"] button {
+        font-size: 16px !important;
+        padding: 12px 24px !important;
+        font-weight: 500 !important;
+    }
+    </style>
+    """, unsafe_allow_html=True)
+    
     selected_tab = st.pills(
         "Navigation",
         ["Hotspot Analysis", "Abnormal Events", "Change in Route Popularity"],
@@ -233,6 +248,9 @@ def main():
         default="Hotspot Analysis",
         label_visibility="collapsed"
     )
+    
+    # Separator line below pills
+    st.markdown("<hr style='margin-top: 0px; margin-bottom: 20px; border: none; border-top: 1px solid #e0e0e0;'>", unsafe_allow_html=True)
     
     # Render selected tab
     if selected_tab == "Hotspot Analysis":
