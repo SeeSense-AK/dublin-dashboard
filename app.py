@@ -242,6 +242,11 @@ def main():
             st.info("Tab 1 (Hotspot Analysis) is not yet available.")
 
     with tab2:
+        # Trigger rerun on first access to Tab 2
+        if 'tab2_accessed' not in st.session_state:
+            st.session_state.tab2_accessed = True
+            st.rerun()
+        
         if tab2_available:
             try:
                 render_tab2()
@@ -251,6 +256,11 @@ def main():
             st.info("Tab 2 (Abnormal Events) is not yet available.")
     
     with tab3:
+        # Trigger rerun on first access to Tab 3
+        if 'tab3_accessed' not in st.session_state:
+            st.session_state.tab3_accessed = True
+            st.rerun()
+        
         if tab3_available:
             try:
                 render_tab3()

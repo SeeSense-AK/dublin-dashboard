@@ -822,30 +822,16 @@ def render_tab3():
     route_map, routes_added = create_route_map(df, road_segments_df, show_cycleways)
     
     if routes_added > 0:
-        # Chrome fix: Use auto-refresh mechanism to force map render
-        if 'tab3_map_loaded' not in st.session_state:
-            st.session_state.tab3_map_loaded = False
-        
-        map_placeholder = st.empty()
-        
-        with map_placeholder.container():
-            st.markdown('<div class="map-container">', unsafe_allow_html=True)
-            # Use explicit width for Chrome compatibility in hidden tabs
-            map_data = st_folium(
-                route_map, 
-                width=None,
-                height=500,
-                returned_objects=["last_object_clicked_popup"],
-                key="tab3_route_map"
-            )
-            st.markdown('</div>', unsafe_allow_html=True)
-        
-        # Auto-refresh on first load to fix Chrome rendering
-        if not st.session_state.tab3_map_loaded:
-            st.session_state.tab3_map_loaded = True
-            import time
-            time.sleep(0.1)
-            st.rerun()
+        st.markdown('<div class="map-container">', unsafe_allow_html=True)
+        # Use explicit width for Chrome compatibility in hidden tabs
+        map_data = st_folium(
+            route_map, 
+            width=None,
+            height=500,
+            returned_objects=["last_object_clicked_popup"],
+            key="tab3_route_map"
+        )
+        st.markdown('</div>', unsafe_allow_html=True)
         
         # Check if user clicked on a popup
         clicked_street = None
