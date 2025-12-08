@@ -811,22 +811,41 @@ def render_tab3():
     # Professional metrics
     create_route_metrics(df)
     
+    # Sidebar controls
+    st.sidebar.markdown("---")
+    st.sidebar.subheader("Tab 3: Change in Route Popularity Settings")
+    show_cycleways = st.sidebar.checkbox("Show Cycleways", key="tab3_cycleways_route", value=False)
+    
     # Map section
     create_section_header("Route Performance Map", "Visual representation of route popularity and performance")
     
-    route_map, routes_added = create_route_map(df, road_segments_df, show_cycleways=False)
+    route_map, routes_added = create_route_map(df, road_segments_df, show_cycleways)
     
     if routes_added > 0:
-        st.markdown('<div class="map-container">', unsafe_allow_html=True)
-        # Use explicit width for Chrome compatibility in hidden tabs
-        map_data = st_folium(
-            route_map, 
-            width=None,
-            height=500,
-            returned_objects=["last_object_clicked_popup"],
-            key="tab3_route_map"
-        )
-        st.markdown('</div>', unsafe_allow_html=True)
+        # Chrome fix: Use auto-refresh mechanism to force map render
+        if 'tab3_map_loaded' not in st.session_state:
+            st.session_state.tab3_map_loaded = False
+        
+        map_placeholder = st.empty()
+        
+        with map_placeholder.container():
+            st.markdown('<div class="map-container">', unsafe_allow_html=True)
+            # Use explicit width for Chrome compatibility in hidden tabs
+            map_data = st_folium(
+                route_map, 
+                width=None,
+                height=500,
+                returned_objects=["last_object_clicked_popup"],
+                key="tab3_route_map"
+            )
+            st.markdown('</div>', unsafe_allow_html=True)
+        
+        # Auto-refresh on first load to fix Chrome rendering
+        if not st.session_state.tab3_map_loaded:
+            st.session_state.tab3_map_loaded = True
+            import time
+            time.sleep(0.1)
+            st.rerun()
         
         # Check if user clicked on a popup
         clicked_street = None
