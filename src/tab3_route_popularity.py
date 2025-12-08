@@ -811,15 +811,10 @@ def render_tab3():
     # Professional metrics
     create_route_metrics(df)
     
-    # Sidebar controls
-    st.sidebar.markdown("---")
-    st.sidebar.subheader("Tab 3: Change in Route Popularity Settings")
-    show_cycleways = st.sidebar.checkbox("Show Cycleways", key="tab3_cycleways_route", value=False)
-    
     # Map section
     create_section_header("Route Performance Map", "Visual representation of route popularity and performance")
     
-    route_map, routes_added = create_route_map(df, road_segments_df, show_cycleways)
+    route_map, routes_added = create_route_map(df, road_segments_df, show_cycleways=False)
     
     if routes_added > 0:
         st.markdown('<div class="map-container">', unsafe_allow_html=True)

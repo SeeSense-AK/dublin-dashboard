@@ -615,15 +615,10 @@ def render_tab2():
     # Professional metrics
     create_abnormal_metrics(abnormal_df)
     
-    # Sidebar controls
-    st.sidebar.markdown("---")
-    st.sidebar.subheader("Tab 2: Abnormal Events Settings")
-    show_cycleways = st.sidebar.checkbox("Show Cycleways", key="cycleways_abnormal", value=False)
-    
     # Map section
     create_section_header("Abnormal Events Map", "Visual representation of safety incidents and risk levels")
     
-    abnormal_map, routes_added = create_abnormal_events_map(abnormal_df, abnormal_segments_df, show_cycleways)
+    abnormal_map, routes_added = create_abnormal_events_map(abnormal_df, abnormal_segments_df, show_cycleways=False)
     
     if routes_added > 0:
         st.markdown('<div class="map-container">', unsafe_allow_html=True)
