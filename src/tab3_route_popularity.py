@@ -8,7 +8,7 @@ import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 import folium
-from streamlit_folium import folium_static
+from streamlit_folium import st_folium
 import geopandas as gpd
 import plotly.graph_objects as go
 import json
@@ -821,10 +821,22 @@ def render_tab3():
     
     route_map, routes_added = create_route_map(df, road_segments_df, show_cycleways)
     
+    # Auto-trigger on first tab visit to force Chrome to render the map
+    if 'tab3_first_load' not in st.session_state:
+        st.session_state.tab3_first_load = True
+        # Toggle checkbox to trigger rerun when tab is visible
+        st.session_state.tab3_cycleways_route = not show_cycleways
+        st.rerun()
+    
     if routes_added > 0:
         st.markdown('<div class="map-container">', unsafe_allow_html=True)
-        # Use folium_static like Tab 1 - static HTML rendering works better in Chrome
-        folium_static(route_map, width=1200, height=600)
+        map_data = st_folium(
+            route_map, 
+            width=1200,
+            height=600,
+            returned_objects=["last_object_clicked_popup"],
+            key="tab3_route_map"
+        )
         st.markdown('</div>', unsafe_allow_html=True)
         
         # Check if user clicked on a popup
