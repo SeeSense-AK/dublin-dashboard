@@ -766,7 +766,7 @@ def render_tab3():
     # Sidebar controls
     st.sidebar.markdown("---")
     st.sidebar.subheader("Tab 3: Change in Route Popularity Settings")
-    show_cycleways = st.sidebar.checkbox("Show Cycleways", key="cycleways_route", value=False)
+    show_cycleways = st.sidebar.checkbox("Show Cycleways", key="tab3_cycleways_route", value=False)
     
     # Map section
     create_section_header("Route Performance Map", "Visual representation of route popularity and performance")
@@ -775,7 +775,7 @@ def render_tab3():
     
     if routes_added > 0:
         st.markdown('<div class="map-container">', unsafe_allow_html=True)
-        map_data = st_folium(route_map, height=500, width=None, key="route_map")
+        map_data = st_folium(route_map, height=500, width=None, key="tab3_route_map")
         st.markdown('</div>', unsafe_allow_html=True)
         
         # Check if user clicked on a popup

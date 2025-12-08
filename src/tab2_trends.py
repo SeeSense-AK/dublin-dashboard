@@ -884,12 +884,12 @@ def render_tab2():
     st.subheader("Route Popularity")
     
     # Add cycleway toggle for route popularity map
-    show_cycleways_route = st.checkbox("Show Cycleways", key="cycleways_route", value=False)
+    show_cycleways_route = st.checkbox("Show Cycleways", key="tab2_cycleways_route", value=False)
     
     route_map, routes_added = create_route_map(df, road_segments_df, show_cycleways_route)
     
     if routes_added > 0:
-        map_data = st_folium(route_map, height=500, width=None, key="route_map")
+        map_data = st_folium(route_map, height=500, width=None, key="tab2_route_map")
         
         # Check if user clicked on a popup and extract street name
         clicked_street = None
