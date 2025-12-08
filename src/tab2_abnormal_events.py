@@ -618,12 +618,7 @@ def render_tab2():
     # Sidebar controls
     st.sidebar.markdown("---")
     st.sidebar.subheader("Tab 2: Abnormal Events Settings")
-    show_cycleways = st.sidebar.checkbox("Show Cycleways", key="cycleways_abnormal", value=True)
-    
-    # Force rerun on first tab visit to fix Chrome rendering
-    if 'tab2_visited' not in st.session_state:
-        st.session_state.tab2_visited = True
-        st.rerun()
+    show_cycleways = st.sidebar.checkbox("Show Cycleways", key="cycleways_abnormal", value=False)
     
     # Map section
     create_section_header("Abnormal Events Map", "Visual representation of safety incidents and risk levels")
