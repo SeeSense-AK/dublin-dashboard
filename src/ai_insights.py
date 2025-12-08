@@ -22,13 +22,7 @@ if not GOOGLE_API_KEY:
     try:
         import streamlit as st
         GOOGLE_API_KEY = st.secrets.get("GOOGLE_API_KEY")
-        if GOOGLE_API_KEY:
-            st.write(f"✅ Found GOOGLE_API_KEY in st.secrets")
-        else:
-            st.error("❌ GOOGLE_API_KEY not found in st.secrets")
-            st.write(f"Available secret keys: {list(st.secrets.keys())}")
-    except Exception as e:
-        st.error(f"❌ Error accessing st.secrets: {e}")
+    except:
         pass
 
 if GOOGLE_API_KEY:
@@ -40,8 +34,6 @@ if not GROQ_API_KEY:
     try:
         import streamlit as st
         GROQ_API_KEY = st.secrets.get("GROQ_API_KEY")
-        if GROQ_API_KEY:
-            st.write(f"✅ Found GROQ_API_KEY in st.secrets")
     except:
         pass
 
@@ -104,8 +96,22 @@ def generate_hotspot_insights(hotspot_data: dict, user_comments: list = None) ->
     
     # No API keys available
     if not GOOGLE_API_KEY and not GROQ_API_KEY:
+        # Build diagnostic message
+        diagnostics = []
+        diagnostics.append("Checked: os.getenv('GOOGLE_API_KEY') = " + ("None" if not os.getenv('GOOGLE_API_KEY') else "Found"))
+        diagnostics.append("Checked: os.getenv('GROQ_API_KEY') = " + ("None" if not os.getenv('GROQ_API_KEY') else "Found"))
+        
+        try:
+            import streamlit as st
+            diagnostics.append("st.secrets accessible: Yes")
+            diagnostics.append("st.secrets keys: " + str(list(st.secrets.keys())))
+            diagnostics.append("st.secrets.get('GOOGLE_API_KEY') = " + ("None" if not st.secrets.get('GOOGLE_API_KEY') else "Found"))
+            diagnostics.append("st.secrets.get('GROQ_API_KEY') = " + ("None" if not st.secrets.get('GROQ_API_KEY') else "Found"))
+        except Exception as e:
+            diagnostics.append(f"st.secrets error: {str(e)}")
+            
         return {
-            'summary': 'AI insights unavailable - No API keys configured (Gemini or Groq)',
+            'summary': 'AI insights unavailable - No API keys configured. DIAGNOSTICS: ' + ' | '.join(diagnostics),
             'themes': [],
             'recommendations': []
         }
