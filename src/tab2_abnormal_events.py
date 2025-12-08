@@ -627,11 +627,9 @@ def render_tab2():
     
     abnormal_map, routes_added = create_abnormal_events_map(abnormal_df, abnormal_segments_df, show_cycleways)
     
-    # Auto-trigger on first tab visit to force Chrome to render the map
+    # Auto-trigger rerun on first tab visit to force Chrome to render the map
     if 'tab2_first_load' not in st.session_state:
         st.session_state.tab2_first_load = True
-        # Toggle checkbox to trigger rerun when tab is visible
-        st.session_state.cycleways_abnormal = not show_cycleways
         st.rerun()
     
     if routes_added > 0:

@@ -821,11 +821,9 @@ def render_tab3():
     
     route_map, routes_added = create_route_map(df, road_segments_df, show_cycleways)
     
-    # Auto-trigger on first tab visit to force Chrome to render the map
+    # Auto-trigger rerun on first tab visit to force Chrome to render the map
     if 'tab3_first_load' not in st.session_state:
         st.session_state.tab3_first_load = True
-        # Toggle checkbox to trigger rerun when tab is visible
-        st.session_state.tab3_cycleways_route = not show_cycleways
         st.rerun()
     
     if routes_added > 0:
