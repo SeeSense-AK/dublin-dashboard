@@ -823,12 +823,12 @@ def render_tab3():
     
     if routes_added > 0:
         st.markdown('<div class="map-container">', unsafe_allow_html=True)
-        # Use returned_objects=[] and use_container_width=True to fix Streamlit Cloud rendering
+        # Use explicit width for Chrome compatibility in hidden tabs
         map_data = st_folium(
             route_map, 
-            height=500, 
-            use_container_width=True,
-            returned_objects=["last_object_clicked_popup"],
+            width=None,
+            height=500,
+            returned_objects=[],
             key="tab3_route_map"
         )
         st.markdown('</div>', unsafe_allow_html=True)
