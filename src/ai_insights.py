@@ -8,7 +8,7 @@ This module provides AI-generated safety analysis by:
 """
 import os
 from datetime import datetime
-import google.generativeai as genai
+from google import genai  # UPDATED: New package
 from dotenv import load_dotenv
 
 # Load environment variables and configure Gemini
@@ -29,8 +29,11 @@ if not GOOGLE_API_KEY:
     except:
         pass
 
+# UPDATED: Initialize client instead of configure
 if GOOGLE_API_KEY:
-    genai.configure(api_key=GOOGLE_API_KEY)
+    gemini_client = genai.Client(api_key=GOOGLE_API_KEY)
+else:
+    gemini_client = None
 
 # Load Groq API key (fallback)
 GROQ_API_KEY = os.getenv('GROQ_API_KEY')
@@ -65,10 +68,13 @@ def generate_hotspot_insights(hotspot_data: dict, user_comments: list = None) ->
     prompt = build_analysis_prompt(hotspot_data, user_comments)
     
     # Try Gemini first
-    if GOOGLE_API_KEY:
+    if gemini_client:  # UPDATED: Check client instead of API key
         try:
-            model = genai.GenerativeModel('gemini-2.0-flash-001')
-            response = model.generate_content(prompt)
+            # UPDATED: New API call format
+            response = gemini_client.models.generate_content(
+                model='gemini-2.0-flash-exp-0827',
+                contents=prompt
+            )
             return parse_ai_response(response.text)
         except Exception as e:
             error_str = str(e)
@@ -103,7 +109,7 @@ def generate_hotspot_insights(hotspot_data: dict, user_comments: list = None) ->
             }
     
     # No API keys available
-    if not GOOGLE_API_KEY and not GROQ_API_KEY:
+    if not gemini_client and not GROQ_API_KEY:  # UPDATED: Check client
         # Build diagnostic message
         diagnostics = []
         diagnostics.append("Checked: os.getenv('GOOGLE_API_KEY') = " + ("None" if not os.getenv('GOOGLE_API_KEY') else "Found"))
@@ -195,259 +201,118 @@ def build_analysis_prompt(hotspot_data: dict, user_comments: list = None) -> str
         try: roughness = int(roughness)
         except: pass
     
-    if braking is not None or swerve is not None or roughness is not None:
+    if braking or swerve or roughness:
         prompt += "\n**Event Breakdown:**\n"
-        if braking is not None:
-            prompt += f"- Braking Events: {braking}\n"
-        if swerve is not None:
-            prompt += f"- Swerve Events: {swerve}\n"
-        if roughness is not None:
-            prompt += f"- Roughness Events: {roughness}\n"
+        if braking:
+            prompt += f"  - Harsh Braking: {braking}\n"
+        if swerve:
+            prompt += f"  - Swerves: {swerve}\n"
+        if roughness:
+            prompt += f"  - Road Roughness: {roughness}\n"
     
-    # Add temporal patterns (new data structure - check csv_data)
-    peak = (csv_data.get('peak_events') or 
-            hotspot_data.get('csv_data.peak_events') or 
-            hotspot_data.get('peak_events'))
-            
-    offpeak = (csv_data.get('offpeak_events') or 
-               hotspot_data.get('csv_data.offpeak_events') or 
-               hotspot_data.get('offpeak_events'))
-               
-    weekday = (csv_data.get('weekday_events') or 
-               hotspot_data.get('csv_data.weekday_events') or 
-               hotspot_data.get('weekday_events'))
-               
-    weekend = (csv_data.get('weekend_events') or 
-               hotspot_data.get('csv_data.weekend_events') or 
-               hotspot_data.get('weekend_events'))
-               
-    morning_peak = (csv_data.get('morning_peak') or 
-                    hotspot_data.get('csv_data.morning_peak') or 
-                    hotspot_data.get('morning_peak'))
-                    
-    evening_peak = (csv_data.get('evening_peak') or 
-                    hotspot_data.get('csv_data.evening_peak') or 
-                    hotspot_data.get('evening_peak'))
+    # Add temporal data if available (weekday vs weekend)
+    weekday_events = hotspot_data.get('weekday_events') or hotspot_data.get('temporal_data.weekday_events')
+    weekend_events = hotspot_data.get('weekend_events') or hotspot_data.get('temporal_data.weekend_events')
     
-    # Convert to int if they're strings
-    for var_name, var_val in [('peak', peak), ('offpeak', offpeak), ('weekday', weekday), 
-                             ('weekend', weekend), ('morning_peak', morning_peak), 
-                             ('evening_peak', evening_peak)]:
-        if var_val and isinstance(var_val, str):
-            try:
-                if var_name == 'peak': peak = int(var_val)
-                elif var_name == 'offpeak': offpeak = int(var_val)
-                elif var_name == 'weekday': weekday = int(var_val)
-                elif var_name == 'weekend': weekend = int(var_val)
-                elif var_name == 'morning_peak': morning_peak = int(var_val)
-                elif var_name == 'evening_peak': evening_peak = int(var_val)
-            except: pass
-    
-    if any([peak, offpeak, weekday, weekend, morning_peak, evening_peak]):
+    if weekday_events or weekend_events:
         prompt += "\n**Temporal Patterns:**\n"
-        if peak is not None and offpeak is not None:
-            prompt += f"- Peak Hours: {peak} events, Off-Peak: {offpeak} events\n"
-        if weekday is not None and weekend is not None:
-            prompt += f"- Weekdays: {weekday} events, Weekends: {weekend} events\n"
-        if morning_peak is not None:
-            prompt += f"- Morning Peak (7-9am): {morning_peak} events\n"
-        if evening_peak is not None:
-            prompt += f"- Evening Peak (5-7pm): {evening_peak} events\n"
+        if weekday_events:
+            prompt += f"  - Weekday Events: {weekday_events}\n"
+        if weekend_events:
+            prompt += f"  - Weekend Events: {weekend_events}\n"
     
-    # Add monthly distribution if available (check csv_data with correct field names)
-    monthly_keys = ['jan', 'feb', 'mar', 'apr', 'may', 'jun', 
-                    'jul', 'aug', 'sep', 'oct', 'nov', 'dec']
-    monthly_data = {}
+    # Add peak/off-peak data
+    peak_events = hotspot_data.get('peak_events') or hotspot_data.get('temporal_data.peak_events')
+    offpeak_events = hotspot_data.get('offpeak_events') or hotspot_data.get('temporal_data.offpeak_events')
     
-    # Try csv_data first (both dict and flattened keys)
-    for key in monthly_keys:
-        val = csv_data.get(key)
-        if val is None:
-            val = hotspot_data.get(f'csv_data.{key}')
-            
-        if val is not None:
-            # Convert to int if string
-            try:
-                monthly_data[key] = int(val) if isinstance(val, str) else val
-            except:
-                monthly_data[key] = val
+    if peak_events or offpeak_events:
+        if not (weekday_events or weekend_events):
+            prompt += "\n**Temporal Patterns:**\n"
+        if peak_events:
+            prompt += f"  - Peak Hours (7-10am, 4-7pm): {peak_events}\n"
+        if offpeak_events:
+            prompt += f"  - Off-Peak Hours: {offpeak_events}\n"
     
-    # Fallback to old format with _events suffix
-    if not monthly_data:
-        old_monthly_keys = ['jan_events', 'feb_events', 'mar_events', 'apr_events', 
-                           'may_events', 'jun_events', 'jul_events', 'aug_events', 
-                           'sep_events', 'oct_events', 'nov_events', 'dec_events']
-        for key in old_monthly_keys:
-            val = hotspot_data.get(key)
-            if val is not None:
-                monthly_data[key] = val
-    
-    if monthly_data:
+    # Add seasonal data if available
+    monthly_data = hotspot_data.get('monthly_distribution') or hotspot_data.get('temporal_data.monthly_distribution')
+    if monthly_data and isinstance(monthly_data, dict):
         prompt += "\n**Monthly Distribution:**\n"
-        month_names = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 
-                       'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
-        for i, (key, value) in enumerate(monthly_data.items()):
-            if i < len(month_names):
-                prompt += f"- {month_names[i]}: {value} events\n"
+        for month, count in sorted(monthly_data.items()):
+            prompt += f"  - {month}: {count}\n"
     
-    # Add collision data (new structure)
-    total_collisions = hotspot_data.get('total_collisions')
-    near_miss = hotspot_data.get('near_miss')
-    collision_count = hotspot_data.get('collision')
-    hazard_count = hotspot_data.get('hazard')
+    # Add weather data if available
+    avg_temp = hotspot_data.get('avg_temp') or hotspot_data.get('weather_data.avg_temp')
+    avg_rainfall = hotspot_data.get('avg_rainfall') or hotspot_data.get('weather_data.avg_rainfall')
     
-    if total_collisions is not None or any([near_miss, collision_count, hazard_count]):
-        prompt += "\n**Collision Reports:**\n"
-        if total_collisions is not None:
-            prompt += f"- Total Reports: {total_collisions}\n"
-        if near_miss is not None:
-            prompt += f"- Near Misses: {near_miss}\n"
-        if collision_count is not None:
-            prompt += f"- Actual Collisions: {collision_count}\n"
-        if hazard_count is not None:
-            prompt += f"- Hazard Reports: {hazard_count}\n"
+    if avg_temp or avg_rainfall:
+        prompt += "\n**Weather Conditions:**\n"
+        if avg_temp:
+            prompt += f"  - Average Temperature: {avg_temp:.1f}°C\n"
+        if avg_rainfall:
+            prompt += f"  - Average Rainfall: {avg_rainfall:.1f}mm\n"
     
-    # Add injury outcomes (new structure)
-    no_injuries = hotspot_data.get('no_injuries')
-    minor_injuries = hotspot_data.get('minor_injuries')
-    serious_injuries = hotspot_data.get('serious_injuries')
-    fatalities = hotspot_data.get('fatalities')
-    
-    if any([no_injuries, minor_injuries, serious_injuries, fatalities]):
-        prompt += "\n**Injury Outcomes:**\n"
-        if no_injuries is not None:
-            prompt += f"- No Injuries: {no_injuries}\n"
-        if minor_injuries is not None:
-            prompt += f"- Minor Injuries: {minor_injuries}\n"
-        if serious_injuries is not None:
-            prompt += f"- Serious Injuries: {serious_injuries}\n"
-        if fatalities is not None:
-            prompt += f"- Fatalities: {fatalities}\n"
-    
-    # Add old severity metrics if available (for backwards compatibility)
-    if 'median_severity' in hotspot_data or 'max_severity' in hotspot_data:
-        prompt += "\n**Severity Metrics:**\n"
-        if hotspot_data.get('median_severity'):
-            prompt += f"- Median Severity: {hotspot_data.get('median_severity'):.1f}/10\n"
-        if hotspot_data.get('p90_severity'):
-            prompt += f"- 90th Percentile Severity: {hotspot_data.get('p90_severity'):.1f}/10\n"
-        if hotspot_data.get('max_severity'):
-            prompt += f"- Maximum Severity: {hotspot_data.get('max_severity')}/10\n"
-    
-    # Add sample descriptions (new data structure - replaces user_comments)
-    sample_descriptions = hotspot_data.get('sample_descriptions', [])
-    if sample_descriptions and isinstance(sample_descriptions, list) and len(sample_descriptions) > 0:
-        prompt += f"\n**CRITICAL - User Reports ({len(sample_descriptions)} reports):**\n"
-        prompt += "These are REAL experiences from cyclists/road users. Analyze these carefully for patterns, specific hazards, and recurring themes:\n\n"
-        for i, desc in enumerate(sample_descriptions[:10], 1):  # Limit to 10 for API efficiency
-            prompt += f"{i}. \"{desc}\"\n"
-        prompt += "\nPay special attention to:\n"
-        prompt += "- Specific hazards mentioned (road roughness, obstructions, close passes, etc.)\n"
-        prompt += "- Time of day patterns if mentioned\n"
-        prompt += "- Severity indicators (lost control, nearly fell, puncture, etc.)\n"
-        prompt += "- Infrastructure issues (road surface, visibility, signage)\n"
-        prompt += "- Behavioral issues (taxi drivers, traffic, etc.)\n"
-    # Fallback to old user_comments format if sample_descriptions not available
-    elif user_comments and len(user_comments) > 0:
-        prompt += f"\n**CRITICAL - User Reports ({len(user_comments)} reports):**\n"
-        prompt += "These are REAL experiences from cyclists/road users. Analyze these carefully for patterns, specific hazards, and recurring themes:\n\n"
-        for i, comment in enumerate(user_comments[:10], 1):
-            prompt += f"{i}. \"{comment}\"\n"
-        prompt += "\nPay special attention to:\n"
-        prompt += "- Specific hazards mentioned (road roughness, obstructions, close passes, etc.)\n"
-        prompt += "- Time of day patterns if mentioned\n"
-        prompt += "- Severity indicators (lost control, nearly fell, puncture, etc.)\n"
-        prompt += "- Infrastructure issues (road surface, visibility, signage)\n"
-        prompt += "- Behavioral issues (taxi drivers, traffic, etc.)\n"
-    
-    # Add temporal context and calculate duration (old format)
-    if 'first_seen' in hotspot_data or 'last_seen' in hotspot_data:
-        prompt += "\n**Temporal Context:**\n"
-        if hotspot_data.get('first_seen'):
-            prompt += f"- First Reported: {hotspot_data.get('first_seen')}\n"
-        if hotspot_data.get('last_seen'):
-            prompt += f"- Last Reported: {hotspot_data.get('last_seen')}\n"
+    # Add user comments if provided
+    if user_comments:
+        # Filter out generic placeholder comments
+        meaningful_comments = [
+            c for c in user_comments 
+            if c.lower() not in ['issue reported at this location', 'n/a', '']
+        ]
         
-        # Calculate persistence duration
-        if hotspot_data.get('first_seen') and hotspot_data.get('last_seen'):
-            try:
-                first = hotspot_data.get('first_seen')
-                last = hotspot_data.get('last_seen')
-                if isinstance(first, str):
-                    first = datetime.fromisoformat(first.replace('Z', '+00:00'))
-                if isinstance(last, str):
-                    last = datetime.fromisoformat(last.replace('Z', '+00:00'))
-                duration_days = (last - first).days
-                if duration_days > 0:
-                    prompt += f"- Duration: {duration_days} days (persistent issue)\n"
-            except:
-                pass
+        if meaningful_comments:
+            prompt += "\n**User-Reported Safety Concerns:**\n"
+            for i, comment in enumerate(meaningful_comments[:10], 1):  # Limit to 10 comments
+                prompt += f"{i}. {comment}\n"
     
-    # Add corridor-specific road characteristics (old format)
-    if source == 'corridor':
-        prompt += f"\n**Road Characteristics:**\n"
-        prompt += f"- Priority Level: {hotspot_data.get('priority_category', 'N/A')}\n"
-        prompt += f"- Speed Limit: {hotspot_data.get('maxspeed', 'N/A')}\n"
-        prompt += f"- Number of Lanes: {hotspot_data.get('lanes', 'N/A')}\n"
+    # Add severity if available
+    severity = hotspot_data.get('severity_label') or hotspot_data.get('identification.severity_label')
+    if severity:
+        prompt += f"\n**Risk Level:** {severity}\n"
+    
+    # Add accident data if available
+    total_accidents = hotspot_data.get('total_accidents') or hotspot_data.get('accident_data.total_accidents')
+    if total_accidents:
+        prompt += f"\n**Historical Accidents:** {total_accidents} reported incidents\n"
+        
+        # Add injury breakdown if available
+        fatal = hotspot_data.get('fatal_injuries') or hotspot_data.get('accident_data.fatal_injuries')
+        serious = hotspot_data.get('serious_injuries') or hotspot_data.get('accident_data.serious_injuries')
+        slight = hotspot_data.get('slight_injuries') or hotspot_data.get('accident_data.slight_injuries')
+        
+        if fatal or serious or slight:
+            prompt += "**Injury Breakdown:**\n"
+            if fatal:
+                prompt += f"  - Fatal: {fatal}\n"
+            if serious:
+                prompt += f"  - Serious: {serious}\n"
+            if slight:
+                prompt += f"  - Slight: {slight}\n"
     
     # Add analysis instructions
     prompt += """
+
 **Task:**
-You are a road safety expert providing analysis to city planners in Dublin, Ireland. Synthesize ALL available data (sensor events, temporal patterns, collision reports, injury outcomes, and user experiences) into a cohesive safety assessment.
-
-You have access to your full knowledge base - feel free to draw upon:
-- Your understanding of Dublin's road network and cycling infrastructure
-- General traffic engineering principles and safety best practices
-- Seasonal weather patterns in Ireland and their impact on cycling
-- Common urban mobility patterns in European cities
-- Relevant research on road safety interventions
-
-Your analysis should:
-- **CRITICAL: Analyze the Location Name for context.** (e.g., "Business Park" implies office commuters, "School Rd" implies school traffic, "Main St" implies retail/mixed use). Use this to ground your analysis.
-- Provide a holistic understanding of what's happening at this location
-- Identify patterns across sensor data, time periods, and reported incidents
-- Explain the underlying safety issues without forcing artificial connections
-- Be data-driven yet readable and professional
-- Avoid quoting individual comments - instead, synthesize common themes
-- Focus on the overall safety picture, not individual anecdotes
-- Use your broader knowledge to provide context and insights beyond just the raw data
-
-Provide your response in EXACTLY this format:
+Based on the data above, provide your response in EXACTLY this format:
 
 SUMMARY:
-[Write 5-6 sentences that tell the complete story of this hotspot. Integrate sensor data patterns, temporal trends, collision statistics, and injury outcomes naturally. If user reports reveal common themes, weave them in organically. 
-
-CRITICAL: Do not limit yourself to just the provided data. Use your broader knowledge of:
-- Dublin's specific road network and infrastructure challenges
-- General traffic engineering principles and safety standards
-- Similar safety patterns observed in other European cities
-- The impact of urban design on cyclist behavior
-
-Synthesize the dashboard data with this broader context to explain 'why' these issues are happening and 'what it means' for the city. Make it flow like a professional safety assessment report.]
+[5-6 sentences providing a comprehensive analysis of the hotspot's safety issues and their severity. Synthesize sensor data, user reports, and accident statistics into a professional narrative. If user comments highlight specific concerns (e.g., "aggressive drivers", "poor road surface"), reference these insights in your summary to show we're listening to community feedback.]
 
 THEMES:
-[Comma-separated list of 2-4 specific safety issues identified from the data, e.g., "Infrastructure deficiencies", "Peak hour congestion conflicts", "Surface quality concerns", "Visibility challenges"]
+[Comma-separated list of 2-4 specific themes that capture the core issues, e.g., "Aggressive Driving Behavior", "Infrastructure Deficit", "Poor Road Surface Quality", "High Pedestrian Risk"]
 
 TRAFFIC TYPE:
-[IMPORTANT: 2-3 sentences maximum. Analyze ONLY the temporal data from csv_data (peak vs off-peak, weekday vs weekend, morning vs evening peaks) AND the Location Name context. 
-- If the location is a "Business Park", expect and explain commuter patterns. 
-- If it's a "Greenway" or "Park", look for leisure patterns.
-- DO NOT default to generic explanations. Match the data to the specific location context.
-Determine if this is commuter traffic (weekday peak concentration), leisure traffic (weekend/off-peak), or mixed use. Use percentages and ratios from the data to support your classification.]
+[2-3 sentences describing traffic patterns based STRICTLY on temporal data provided above. Use phrases like "Predominantly weekday commuter traffic" or "Evening peak concentrated" or "Balanced weekday/weekend usage". Focus on peak/offpeak ratios and weekday/weekend splits. Keep this data-driven and concise.]
 
 SEASONALITY:
-[2-3 sentences analyzing monthly distribution. Identify peak months and provide informed interpretation based on your knowledge of Dublin's weather, daylight hours, and THE SPECIFIC LOCATION CONTEXT. 
-- If it's a business park, don't attribute traffic to "school terms" unless data supports it. 
-- If it's a university area, academic terms are relevant.
-- If monthly data shows clear patterns, explain the likely causes using your understanding of Irish seasonal conditions and the specific land use.]
+[2-3 sentences analyzing seasonal patterns from the monthly distribution data above. Consider Irish weather patterns and cycling seasonality when interpreting the data. Use your knowledge to explain why certain months might be higher/lower (e.g., "May peak aligns with favorable cycling weather" or "Winter months show reduced activity due to shorter daylight hours"). Keep this insightful but concise.]
 
 POSSIBLE MITIGATION ACTIONS:
-[2-3 bullet points with practical, advisory recommendations. Use professional language like "Consider...", "Potential improvements include...", "It may be beneficial to investigate...". Draw upon international best practices and successful interventions from similar contexts. Avoid commands or quotes.]
+[2-3 bullet points with specific, advisory actions. Use soft, non-prescriptive language like "Consider...", "Potential options include...", "It may be beneficial to...". Avoid direct commands like "Fix this" or "Install that". Draw upon global best practices and reference successful interventions from similar contexts.]
 
-IMPORTANT GUIDELINES:
-- Start IMMEDIATELY with "SUMMARY:" - no preamble
-- Write in a professional, flowing narrative style
-- DO NOT quote user comments directly
+IMPORTANT:
+- Start IMMEDIATELY with "SUMMARY:"
+- Be professional and data-driven
+- Use short, sharp sentences that get to the point
 - DO NOT use phrases like "One user said..." or "According to reports..."
 - Instead, synthesize patterns: "Reports indicate...", "The data suggests...", "Common experiences include..."
 - Let the data tell the story naturally - don't force connections
@@ -573,7 +438,7 @@ def extract_user_comments(hotspot_data: dict) -> list:
 #     Returns:
 #         dict: {'summary': str, 'themes': list, 'recommendations': list}
 #     """
-#     if not GOOGLE_API_KEY:
+#     if not gemini_client:  # UPDATED: Check client instead of API key
 #         return {
 #             'summary': 'AI insights unavailable - Google API key not configured',
 #             'themes': [],
@@ -583,8 +448,12 @@ def extract_user_comments(hotspot_data: dict) -> list:
 #     try:
 #         # Build prompt and generate insights
 #         prompt = build_route_prompt(route_data)
-#         model = genai.GenerativeModel('gemini-2.0-flash-001')
-#         response = model.generate_content(prompt)
+#         
+#         # UPDATED: New API call format
+#         response = gemini_client.models.generate_content(
+#             model='gemini-2.0-flash-exp-0827',
+#             contents=prompt
+#         )
         
 #         # Reuse hotspot parser (same format)
 #         return parse_ai_response(response.text)

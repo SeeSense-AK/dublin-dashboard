@@ -100,3 +100,7 @@ data/processed/tab2_trend/swerve/
 data/processed/tab2_trend/route_popularity_timeseries.geojson
 verify_tab1_refactor.py
 verify_tab1_ui.py
+data/processed/tab1_hotspots/central-dublin-hotspots.json
+scripts/debug_dlr.py
+scripts/split_hotspots.py
+src/spin-tab2.py
